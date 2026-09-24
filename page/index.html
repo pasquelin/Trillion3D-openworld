@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="thumbnail" content="8" />
     <title>Open world</title>
+    <link rel="canonical" href="https://www.trillion3d.com/openworld/" />
     <style>
       html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0f17; }
       canvas { display: block; width: 100%; height: 100%; }
@@ -18,7 +19,7 @@
     <script type="module">
       /*
        * An open world of 8 × 8 km, generated from one seed and compiled into one cache
-       * (`node scripts/docs-openworld.ts`). You arrive on foot at the airport: walk it in first
+       * (`pnpm cook`). You arrive on foot at the airport: walk it in first
        * person, take a car or a plane. The engine streams the pages the frame reads, under a
        * fixed budget.
        *
@@ -30,11 +31,12 @@
        * Waiting on the engine: fog and aerial perspective, environment lighting, post-processing
        * (bloom, heat haze), skinning, and moving hand-built meshes beside a compiled cache.
        */
-      import { createWorld, geometry, material, object, light, math, buffer, blending, side, texture, metric } from '../runtime/engine.js';
-      import { controls, readout } from '../runtime/kit.js';
-      import { createPlay, createSky, beamHeading } from '../runtime/openworld.js';
+      import { createWorld, geometry, material, object, light, math, buffer, blending, side, texture, metric } from './runtime/engine.js';
+      import { controls, readout } from './runtime/kit.js';
+      import { createPlay, createSky, beamHeading } from './runtime/openworld.js';
 
-      const assets = '../assets/examples/openworld/';
+      // The cooked world, under its key (`scripts/cook-key.ts`), written in by `pnpm build`.
+      const assets = './assets/';
       const engine = { geometry, material, object, light, math, buffer, blending, side, texture };
       // The world builds in steps; the screen says which one it is on, and lifts when the first
       // frame around you is ready. Waiting on the engine: load progress for `scene.load`.
@@ -54,7 +56,7 @@
       world.budget.texturePool = 256 * 2 ** 20;
       const model = await world.scene.load(`${assets}cache/native/full/manifest.json`);
       // The world draws and settles before anything built in code joins it. Waiting on the engine
-      // (#358): a hand-built mesh added while a compiled world's session is still opening loses
+      // (Trillion3D#358): a hand-built mesh added while a compiled world's session is still opening loses
       // the device (WEBGPU_LOST); three seconds after the first frame, it draws.
       await drawn();
       await new Promise((settled) => setTimeout(settled, 3000));

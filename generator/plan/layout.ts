@@ -1,5 +1,5 @@
 /**
- * Where each region lies and how two regions blend at their border (#332). The six rectangles
+ * Where each region lies and how two regions blend at their border (Trillion3D#332). The six rectangles
  * tile the whole map; the sea is not a rectangle but whatever the relief puts below sea level.
  * One rule, `landWeights`, gives every point its blend: region refinements and ground paint both
  * read it, so no seam can appear between two regions.

@@ -1,5 +1,5 @@
 /**
- * What rivers, lakes, the airport platform and roads do to the ground (#332). Each is one pure
+ * What rivers, lakes, the airport platform and roads do to the ground (Trillion3D#332). Each is one pure
  * function of (x, z, height below it), continuous everywhere, so the terrain has no step and two
  * tiles that sample one point read one height.
  */

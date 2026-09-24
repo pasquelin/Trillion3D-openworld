@@ -3,11 +3,7 @@
  * collision mesh per solid prop (`collision.ts` here), and per tile the placements of those
  * meshes whose origin it holds. Plants are walked through; the terrain is the heightfield.
  */
-import {
-  scaleOf,
-  type ColliderInstance,
-  type CollisionMesh,
-} from '../../../../../site/examples/kit/openworld/play/collision.ts';
+import { scaleOf, type ColliderInstance, type CollisionMesh } from '../../page/play/collision.ts';
 import type { Instance, PropMesh } from '../plan/contract.ts';
 import { collisionMeshes } from './collision.ts';
 

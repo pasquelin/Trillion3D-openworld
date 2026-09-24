@@ -1,6 +1,6 @@
 import { headingOf } from '../math3.ts';
 import { nearestRoad, sampleAt } from '../roads.ts';
-import { mulberry32 } from '../../../random.ts';
+import { mulberry32 } from '../../kit/random.ts';
 import { CRUISE, type RoadGraph } from './roadGraph.ts';
 
 /**

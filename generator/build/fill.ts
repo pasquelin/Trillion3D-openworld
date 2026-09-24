@@ -1,5 +1,5 @@
 /**
- * No empty land (#332): once every region has placed its content, each 100 m cell of dry land
+ * No empty land (Trillion3D#332): once every region has placed its content, each 100 m cell of dry land
  * that holds nothing — no prop reaching into it, no road, no water, not the airport platform —
  * receives a few of the plants its own region already scatters most (its trees, bushes, cacti,
  * dune grass: props the physics walks through), turned and offset at random, standing on the plan's ground. Nothing new is

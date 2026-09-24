@@ -1,5 +1,5 @@
 /**
- * A grid index of line segments over the map (#332): each cell lists the segments whose reach
+ * A grid index of line segments over the map (Trillion3D#332): each cell lists the segments whose reach
  * (half-width plus shoulder) touches it, so a height or paint query visits only the few roads or
  * rivers near its point, not the whole network.
  */

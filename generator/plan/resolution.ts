@@ -1,6 +1,6 @@
 /**
  * How the terrain's share of the cache splits between triangles and baked ground textures
- * (#332). Both errors are lengths on the ground, in metres, so they are compared in one unit: a
+ * (Trillion3D#332). Both errors are lengths on the ground, in metres, so they are compared in one unit: a
  * triangle mesh misses the relief by up to its error threshold, and an image misplaces a colour
  * by up to half its texel. The split keeps the larger of the two as small as it can be; a
  * texture side is a multiple of four, so its BC7 blocks need no padding. No weight bridges them.

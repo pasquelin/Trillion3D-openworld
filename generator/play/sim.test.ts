@@ -1,24 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import initJolt from 'jolt-physics/wasm';
-import {
-  H,
-  idleInputs,
-  STEP,
-  type Inputs,
-} from '../../../../../site/examples/kit/openworld/play/protocol.ts';
-import {
-  createSim,
-  step,
-  type Sim,
-} from '../../../../../site/examples/kit/openworld/play/sim/core.ts';
-import { FOOT } from '../../../../../site/examples/kit/openworld/play/sim/foot.ts';
-import {
-  playerPosition,
-  teleport,
-} from '../../../../../site/examples/kit/openworld/play/sim/player.ts';
-import { writeSnapshot } from '../../../../../site/examples/kit/openworld/play/sim/snapshot.ts';
-import type { ColliderInstance } from '../../../../../site/examples/kit/openworld/play/collision.ts';
+import { H, idleInputs, STEP, type Inputs } from '../../page/play/protocol.ts';
+import { createSim, step, type Sim } from '../../page/play/sim/core.ts';
+import { FOOT } from '../../page/play/sim/foot.ts';
+import { playerPosition, teleport } from '../../page/play/sim/player.ts';
+import { writeSnapshot } from '../../page/play/sim/snapshot.ts';
+import type { ColliderInstance } from '../../page/play/collision.ts';
 import { fixtureWorld, LIMITS, slope, solidSource, tileHeights } from './fixture.ts';
 
 /** Jolt's WebAssembly build, loaded in Node as the worker loads it in the browser. */

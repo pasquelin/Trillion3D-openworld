@@ -1,13 +1,10 @@
-import type {
-  SimLimits,
-  SimWorld,
-} from '../../../../../site/examples/kit/openworld/play/protocol.ts';
-import type { Road, Vec3 } from '../../../../../site/examples/kit/openworld/play/types.ts';
+import type { SimLimits, SimWorld } from '../../page/play/protocol.ts';
+import type { Road, Vec3 } from '../../page/play/types.ts';
 import {
   decodeCollisionMesh,
   encodeCollisionMesh,
   type ColliderInstance,
-} from '../../../../../site/examples/kit/openworld/play/collision.ts';
+} from '../../page/play/collision.ts';
 import { collisionMesh } from '../build/collision.ts';
 import { box, prop, SURFACES } from '../props/index.ts';
 import { churchSquare } from '../regions/countryside/church.ts';

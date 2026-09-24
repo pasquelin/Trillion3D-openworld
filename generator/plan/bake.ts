@@ -1,5 +1,5 @@
 /**
- * One terrain tile's baked base colour (#332): a `size`² sRGB image covering the tile once, its
+ * One terrain tile's baked base colour (Trillion3D#332): a `size`² sRGB image covering the tile once, its
  * texel `(i, j)` centred on the world point `(x0 + i·step, z0 + j·step)`, `step = tile / (size −
  * 1)`. The first and last texels of a row sit on the tile's edges, so two neighbouring tiles bake
  * the same world points there, through the same functions, into the same bytes: no seam.

@@ -1,5 +1,5 @@
 /**
- * The terrain's surfaces (#332): the ones every biome shares (sand, rock, snow, the sea, rivers,
+ * The terrain's surfaces (Trillion3D#332): the ones every biome shares (sand, rock, snow, the sea, rivers,
  * roads) and a default ground per region for when its module is not given. Colours are linear
  * RGB, as glTF's base colour factor states them.
  *

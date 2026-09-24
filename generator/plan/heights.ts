@@ -1,5 +1,5 @@
 /**
- * The physics heights beside the cache (#332): one `heights/<tx>_<tz>.bin` per tile, Float32,
+ * The physics heights beside the cache (Trillion3D#332): one `heights/<tx>_<tz>.bin` per tile, Float32,
  * (samples + 1)² values row-major from the tile's −X, −Z corner, as `WorldRuntimeData` states.
  * They are `plan.height` at the same world coordinates the terrain mesh samples, so the ground
  * the player stands on is the ground the page draws, and two tiles share their border rows.

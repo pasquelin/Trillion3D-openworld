@@ -1,5 +1,5 @@
 import type { NodeLike, SkyEngine } from './engine.ts';
-import { mulberry32 } from '../../random.ts';
+import { mulberry32 } from '../kit/random.ts';
 import type { Wind } from './wind.ts';
 
 /** Espy's rule: a cloud base rises 125 m per degree between air temperature and dew point. */

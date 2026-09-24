@@ -1,5 +1,5 @@
 /**
- * Least-cost paths over a coarse height grid (#332): how rivers find their way to the sea and
+ * Least-cost paths over a coarse height grid (Trillion3D#332): how rivers find their way to the sea and
  * roads their way across the land. A* over sixteen directions, so a path can climb a slope at
  * a shallow angle instead of only along the eight grid directions.
  */

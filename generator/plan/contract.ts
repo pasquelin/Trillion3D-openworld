@@ -1,5 +1,5 @@
 /**
- * The contract every part of the open world follows (#332): the world plan, the region modules,
+ * The contract every part of the open world follows (Trillion3D#332): the world plan, the region modules,
  * the shared props and the runtime data the page reads. Metres, Y up, origin at the map centre,
  * +X east, +Z south. One seed makes the whole world; each part draws from its own sub-seed.
  *

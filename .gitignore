@@ -1,0 +1,7 @@
+node_modules/
+# The engine, checked out at the commit package.json pins (`pnpm engine`): never committed.
+.engine/
+# The built page and the cooked world (`pnpm build`, `pnpm cook`): rebuilt on demand, never
+# committed.
+dist/
+.DS_Store

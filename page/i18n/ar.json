@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "الإعدادات"
+    },
+    "stats": {
+      "FPS": "إطار/ث",
+      "FPS (held)": "إطار/ث (متوقف)",
+      "triangles": "مثلثات",
+      "triangles (scene)": "مثلثات (المشهد)",
+      "draw calls": "أوامر رسم",
+      "pages": "صفحات",
+      "geometry pool": "مخزن الأشكال",
+      "lights": "أضواء",
+      "GPU frame": "إطار GPU",
+      "GPU frame (last)": "إطار GPU (الأخير)",
+      "CPU frame": "إطار CPU",
+      "page hooks": "شيفرة الصفحة",
+      "engine CPU": "CPU المحرك"
+    },
+    "failure": {
+      "title": "توقف هذا المثال بسبب خطأ"
+    },
+    "banner": {
+      "close": "إغلاق"
+    }
+  },
+  "openworld": {
+    "banner": "امشِ بالمفاتيح W A S D. اضغط E قرب سيارة أو طائرة لتركبها.",
+    "controls": {
+      "keys": "WASD للمشي · Shift للركض · مسافة للقفز · C للانحناء · E لركوب سيارة أو طائرة أو النزول منها",
+      "teleport": "انتقال",
+      "timeOfDay": "الوقت من اليوم",
+      "daySpeed": "سرعة اليوم",
+      "pause": "إيقاف مؤقت",
+      "rain": "مطر",
+      "geometryMB": "الهندسة ميغابايت",
+      "textureMB": "الخامات ميغابايت",
+      "view": "العرض"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "البث"
+    }
+  }
+}

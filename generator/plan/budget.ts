@@ -1,5 +1,5 @@
 /**
- * The cache budget of the world (#332), derived from the published envelope and the measured cook
+ * The cache budget of the world (Trillion3D#332), derived from the published envelope and the measured cook
  * costs: a twentieth of the envelope is kept as margin, the regions take what they ask for, and
  * the terrain takes everything left — its triangles and its baked ground textures together.
  */

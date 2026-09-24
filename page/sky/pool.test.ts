@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { createPool, spawn, step, type Forces } from './pool.ts';
 import { launch } from './particles.ts';
 import { PRESETS } from './presets.ts';
-import { mulberry32 } from '../../random.ts';
+import { mulberry32 } from '../kit/random.ts';
 
 const still: Forces = { lift: -9.81, drag: 0, wind: { x: 0, z: 0 } };
 const none = { radius: 0, rate: 0 };

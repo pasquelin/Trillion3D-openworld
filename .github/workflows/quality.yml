@@ -1,0 +1,60 @@
+name: Quality
+
+# The gates of every pull request to main, as in Trillion3D: `quick` reads the sources alone,
+# `typescript` type-checks the page against the pinned engine and builds it, `test` runs the unit
+# suite. `validate` is the one required check (`.github/ruleset.json`).
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quick:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/node
+      - run: pnpm run validate:quick
+
+  typescript:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/node
+      - run: pnpm run validate:typescript
+
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/node
+      - run: pnpm test
+
+  # A single stable name whatever the jobs above are split into. A group that failed, was
+  # cancelled or never ran fails it.
+  validate:
+    needs: [quick, typescript, test]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Every group green
+        env:
+          RESULTS: ${{ needs.quick.result }} ${{ needs.typescript.result }} ${{ needs.test.result }}
+        run: |
+          echo "quick typescript test: $RESULTS"
+          case "$RESULTS" in
+            'success success success') ;;
+            *) exit 1 ;;
+          esac

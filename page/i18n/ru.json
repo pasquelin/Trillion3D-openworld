@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "Настройки"
+    },
+    "stats": {
+      "FPS": "Кадров/с",
+      "FPS (held)": "Кадров/с (стоп)",
+      "triangles": "треугольники",
+      "triangles (scene)": "треугольники (сцена)",
+      "draw calls": "вызовы отрисовки",
+      "pages": "страницы",
+      "geometry pool": "запас геометрии",
+      "lights": "источники света",
+      "GPU frame": "кадр GPU",
+      "GPU frame (last)": "кадр GPU (последний)",
+      "CPU frame": "кадр CPU",
+      "page hooks": "код страницы",
+      "engine CPU": "CPU движка"
+    },
+    "failure": {
+      "title": "Этот пример остановился из-за ошибки"
+    },
+    "banner": {
+      "close": "Закрыть"
+    }
+  },
+  "openworld": {
+    "banner": "Ходи клавишами W A S D. Нажми E рядом с машиной или самолётом, чтобы сесть.",
+    "controls": {
+      "keys": "WASD идти · Shift бежать · Пробел прыжок · C присесть · E сесть в машину или самолёт и выйти",
+      "teleport": "Телепорт",
+      "timeOfDay": "Время суток",
+      "daySpeed": "Скорость дня",
+      "pause": "Пауза",
+      "rain": "Дождь",
+      "geometryMB": "Геометрия МБ",
+      "textureMB": "Текстуры МБ",
+      "view": "Вид"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "Стриминг"
+    }
+  }
+}

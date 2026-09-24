@@ -1,5 +1,5 @@
 import type { MeshLike, NodeLike, SkyEngine } from './engine.ts';
-import { mulberry32 } from '../../random.ts';
+import { mulberry32 } from '../kit/random.ts';
 
 /** Illuminance of a magnitude-0 star over the sun's, both outside the air (2.54 µlx / 128 klx). */
 const MAGNITUDE_ZERO = 2.54e-6 / 128_000;

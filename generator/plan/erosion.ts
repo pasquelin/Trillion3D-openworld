@@ -1,5 +1,5 @@
 /**
- * The erosion the relief has been through (#332): the natural ground is sampled on one working
+ * The erosion the relief has been through (Trillion3D#332): the natural ground is sampled on one working
  * grid over the whole map, the water (`hydraulic.ts`) and the talus (`talus.ts`) wear it down,
  * and what changed is handed back as fields sampled bilinearly anywhere: the displacement the plan
  * adds to its natural relief, the loose material lying on the rock, the rock worn away under

@@ -1,9 +1,4 @@
-import type {
-  LampLight,
-  Marker,
-  Mover,
-  Vec3,
-} from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+import type { LampLight, Marker, Mover, Vec3 } from '../../generator/plan/contract.ts';
 import { createClouds, type CloudSettings, type Clouds } from './clouds.ts';
 import { daylight, type Daylight } from './daylight.ts';
 import { createDome, DISC } from './dome.ts';
@@ -11,7 +6,7 @@ import { createEffects, type Effects } from './effects.ts';
 import type { SkyEngine, SkyWorld } from './engine.ts';
 import { createSkyLights } from './lights.ts';
 import { createRain, type Rain } from './rain.ts';
-import { hash } from '../../random.ts';
+import { hash } from '../kit/random.ts';
 import { createStars } from './stars.ts';
 import { moonPhase } from './sun.ts';
 import { createWind, type Wind, type WindSettings } from './wind.ts';

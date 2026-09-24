@@ -1,5 +1,5 @@
 /**
- * Where a road is bored through a ridge rather than cut open (#332). A road point lies under
+ * Where a road is bored through a ridge rather than cut open (Trillion3D#332). A road point lies under
  * cover when the ground on both sides, a little beyond its shoulders, stands more than `COVER`
  * metres above its surface; a covered run at least `MIN_RUN` long whose ground over the road
  * itself stands more than `CROWN` metres (by its median) is a tunnel. The plan leaves the ground

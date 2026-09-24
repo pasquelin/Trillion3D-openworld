@@ -1,5 +1,5 @@
 /**
- * Roads and water beds in a baked ground texture (#332). Every road span on the ground (bridges
+ * Roads and water beds in a baked ground texture (Trillion3D#332). Every road span on the ground (bridges
  * and tunnels excluded), river reach and lake is a capsule or a disc; each covers a texel by the
  * share of a texel-wide box it overlaps, so an edge falls between texels as a filtered image
  * would draw it, whatever the texel size. The ribbons laid over the terrain stay the surfaces a

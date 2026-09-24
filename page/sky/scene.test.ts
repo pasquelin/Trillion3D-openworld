@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type {
-  Marker,
-  Mover,
-} from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+import type { Marker, Mover } from '../../generator/plan/contract.ts';
 import { cloudWindow, createClouds, wrapAround } from './clouds.ts';
 import { createEffects } from './effects.ts';
 import type { SkyEngine } from './engine.ts';

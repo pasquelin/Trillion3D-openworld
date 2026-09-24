@@ -3,7 +3,7 @@ import type { ColliderInstance, CollisionMesh } from '../collision.ts';
 import type { Physics } from './physics.ts';
 
 /**
- * The props the physics collides with (#332): each prop's collision mesh is fetched once and
+ * The props the physics collides with (Trillion3D#332): each prop's collision mesh is fetched once and
  * becomes one Jolt mesh shape, kept for the session; a tile's placements become one static
  * compound that references those shapes, scaled and turned, without copying a triangle.
  */

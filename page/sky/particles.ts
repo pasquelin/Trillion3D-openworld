@@ -1,8 +1,8 @@
-import type { Vec3 } from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+import type { Vec3 } from '../../generator/plan/contract.ts';
 import type { GeometryLike, MeshLike, SkyEngine } from './engine.ts';
 import { createPool, spawn, step, type Pool } from './pool.ts';
 import type { Preset } from './presets.ts';
-import type { Random } from '../../random.ts';
+import type { Random } from '../kit/random.ts';
 import type { Wind } from './wind.ts';
 
 /**

@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "設定"
+    },
+    "stats": {
+      "FPS": "FPS",
+      "FPS (held)": "FPS（停止中）",
+      "triangles": "三角形",
+      "triangles (scene)": "三角形（シーン）",
+      "draw calls": "描画呼び出し",
+      "pages": "ページ",
+      "geometry pool": "ジオメトリ置き場",
+      "lights": "ライト",
+      "GPU frame": "GPUフレーム",
+      "GPU frame (last)": "GPUフレーム（直近）",
+      "CPU frame": "CPUフレーム",
+      "page hooks": "ページのコード",
+      "engine CPU": "エンジンCPU"
+    },
+    "failure": {
+      "title": "この例はエラーで止まりました"
+    },
+    "banner": {
+      "close": "閉じる"
+    }
+  },
+  "openworld": {
+    "banner": "W A S Dで歩こう。車か飛行機の近くでEをおすと乗れるよ。",
+    "controls": {
+      "keys": "WASD 歩く · Shift 走る · Space ジャンプ · C しゃがむ · E 車や飛行機に乗り降り",
+      "teleport": "テレポート",
+      "timeOfDay": "時刻",
+      "daySpeed": "一日の速さ",
+      "pause": "一時停止",
+      "rain": "雨",
+      "geometryMB": "ジオメトリ MB",
+      "textureMB": "テクスチャ MB",
+      "view": "表示"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "ストリーミング"
+    }
+  }
+}

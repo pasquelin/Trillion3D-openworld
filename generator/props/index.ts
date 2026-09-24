@@ -1,5 +1,5 @@
 /**
- * The open world's prop kit (#332): shapes, placement and surfaces every region builds from.
+ * The open world's prop kit (Trillion3D#332): shapes, placement and surfaces every region builds from.
  *
  * - Shapes stand on y = 0, centred on +Y (`sphere`, `torus` are centred on the origin):
  *   `box`, `plane`, `quads`, `roofPrism`, `extrude` (flat faces); `roundedBox`, `bevelExtrude`

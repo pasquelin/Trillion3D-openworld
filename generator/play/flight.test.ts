@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { rotate } from '../../../../../site/examples/kit/openworld/play/math3.ts';
+import { rotate } from '../../page/play/math3.ts';
 import {
   AIRCRAFT,
   aircraft,
   fly,
   liftRatio,
   type FlightInput,
-} from '../../../../../site/examples/kit/openworld/play/sim/flight.ts';
+} from '../../page/play/sim/flight.ts';
 
 const STEP = 1 / 60;
 const flat = () => 0;

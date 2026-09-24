@@ -1,5 +1,5 @@
 /**
- * The open world's sky, weather and effects (#332): a kit module the page calls with its own
+ * The open world's sky, weather and effects (Trillion3D#332): a kit module the page calls with its own
  * engine namespace, `createSky({ world, engine, seed, size, tile, markers, movers })`.
  */
 export { createSky, type Sky, type SkyOptions } from './sky.ts';

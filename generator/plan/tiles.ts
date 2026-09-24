@@ -1,5 +1,5 @@
 /**
- * The terrain tiles (#332): 50 × 50 tiles of 1 km, each its own mesh placed by its own node at
+ * The terrain tiles (Trillion3D#332): 50 × 50 tiles of 1 km, each its own mesh placed by its own node at
  * its −X, −Z corner. Each tile is a right-triangulated irregular network over the same height
  * function; one error threshold, shared by the whole map, decides every split. All land
  * weighs the same — a walker may stand anywhere — and only the ground under the sea fades to

@@ -1,7 +1,4 @@
-import type {
-  Marker,
-  Mover,
-} from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+import type { Marker, Mover } from '../../generator/plan/contract.ts';
 import type { MaterialLike, NodeLike, SkyEngine } from './engine.ts';
 
 type Beacon = Extract<Mover, { kind: 'beacon' }>;

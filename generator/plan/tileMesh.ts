@@ -1,5 +1,5 @@
 /**
- * One terrain tile as a mesh (#332): its ground as one part — positions local to the tile's
+ * One terrain tile as a mesh (Trillion3D#332): its ground as one part — positions local to the tile's
  * corner node, normals from the shared height samples, and, when the ground wears a baked image,
  * texture coordinates that put each texel's centre on the world point it was baked at — then the
  * tile's flat parts (sea, lakes, rivers, roads) beside it.

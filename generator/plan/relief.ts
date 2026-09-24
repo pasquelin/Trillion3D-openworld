@@ -1,5 +1,5 @@
 /**
- * The global, low-frequency relief of the world (#332), packed into the map's layout: the coast
+ * The global, low-frequency relief of the world (Trillion3D#332), packed into the map's layout: the coast
  * runs along the south edge with islands offshore, a compact range rises along the north edge, a
  * low desert plateau lies to the west, rolling land fills the rest. Regions refine it; rivers and
  * roads cut it later.

@@ -1,0 +1,8 @@
+/* The panel's stylesheet, served as `css/site.css`: Tailwind over the kit's and the page's class
+   names, with DaisyUI's components in the dark theme the panel wears (`kit/overlay.ts`). */
+@import 'tailwindcss' source(none);
+@source '.';
+@plugin 'daisyui' {
+  themes: dim --default;
+  logs: false;
+}

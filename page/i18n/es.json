@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "Ajustes"
+    },
+    "stats": {
+      "FPS": "Imágenes/s",
+      "FPS (held)": "Imágenes/s (congelado)",
+      "triangles": "triángulos",
+      "triangles (scene)": "triángulos (escena)",
+      "draw calls": "llamadas de dibujo",
+      "pages": "páginas",
+      "geometry pool": "reserva de geometría",
+      "lights": "luces",
+      "GPU frame": "imagen GPU",
+      "GPU frame (last)": "imagen GPU (última)",
+      "CPU frame": "imagen CPU",
+      "page hooks": "código de la página",
+      "engine CPU": "CPU del motor"
+    },
+    "failure": {
+      "title": "Este ejemplo se detuvo por un error"
+    },
+    "banner": {
+      "close": "Cerrar"
+    }
+  },
+  "openworld": {
+    "banner": "Camina con W A S D. Pulsa E junto a un coche o un avión para subir.",
+    "controls": {
+      "keys": "WASD caminar · Mayús correr · Espacio saltar · C agacharse · E subir o bajar de un coche o un avión",
+      "teleport": "Teletransporte",
+      "timeOfDay": "Hora del día",
+      "daySpeed": "Velocidad del día",
+      "pause": "Pausa",
+      "rain": "Lluvia",
+      "geometryMB": "Geometría MB",
+      "textureMB": "Texturas MB",
+      "view": "Vista"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "Streaming"
+    }
+  }
+}

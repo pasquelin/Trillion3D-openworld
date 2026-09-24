@@ -1,31 +1,30 @@
 /**
- * Generates the open world of #332 and compiles it into one cache, under
- * `site/assets/examples/openworld/` (ignored by git, rebuilt on demand): `source/` (glTF),
+ * Generates the open world and compiles it into one cache, under `dist/assets/<key>/` (ignored by
+ * git, rebuilt on demand; the key is `cook-key.ts`'s): `source/` (glTF),
  * `cache/`, `heights/` and `colliders/` for the physics, `world.json` and `vehicles.json` for
  * the page. `--source-only` skips the compiler. Same seed, same bytes.
  */
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { availableParallelism, totalmem } from 'node:os';
 import { dirname, resolve } from 'node:path';
-import { buildWorld } from './docs/examples/openworld/build/world.ts';
-import { tileColliders } from './docs/examples/openworld/build/colliders.ts';
-import {
-  collisionMeshPath,
-  encodeCollisionMesh,
-} from '../site/examples/kit/openworld/play/collision.ts';
-import { writeWorldGltf } from './docs/examples/openworld/gltf/write.ts';
-import { writeHeights } from './docs/examples/openworld/plan/heights.ts';
-import { VEHICLE_SPECS } from './docs/examples/openworld/props/vehicles.ts';
-import { compileFullCache } from './native-compiler.ts';
+import { buildWorld } from '../generator/build/world.ts';
+import { tileColliders } from '../generator/build/colliders.ts';
+import { collisionMeshPath, encodeCollisionMesh } from '../page/play/collision.ts';
+import { writeWorldGltf } from '../generator/gltf/write.ts';
+import { writeHeights } from '../generator/plan/heights.ts';
+import { VEHICLE_SPECS } from '../generator/props/vehicles.ts';
+import { compileFullCache } from './compiler.ts';
+import { cookKey } from './cook-key.ts';
 
-const root = resolve(import.meta.dirname, '..'),
-  out = resolve(root, 'site/assets/examples/openworld');
+const assets = resolve(import.meta.dirname, '../dist/assets'),
+  out = resolve(assets, cookKey());
 
 const started = performance.now(),
   lap = (label: string) =>
     console.log(`${label}: ${((performance.now() - started) / 1000).toFixed(1)} s`);
 
-await rm(out, { recursive: true, force: true });
+// One cook at a time: an older key's folder goes with the rest.
+await rm(assets, { recursive: true, force: true });
 const { plan, terrain, objects, solids, data } = buildWorld();
 lap('world built');
 const source = resolve(out, 'source');

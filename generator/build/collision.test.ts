@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {
-  decodeCollisionMesh,
-  encodeCollisionMesh,
-} from '../../../../../site/examples/kit/openworld/play/collision.ts';
-import { FOOT } from '../../../../../site/examples/kit/openworld/play/sim/foot.ts';
+import { decodeCollisionMesh, encodeCollisionMesh } from '../../page/play/collision.ts';
+import { FOOT } from '../../page/play/sim/foot.ts';
 import { box, prop, sharedProps, SURFACES, transform, triangleCount } from '../props/index.ts';
 import { churchSquare } from '../regions/countryside/church.ts';
 import { collisionMesh } from './collision.ts';

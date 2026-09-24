@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "Pengaturan"
+    },
+    "stats": {
+      "FPS": "Bingkai/dtk",
+      "FPS (held)": "Bingkai/dtk (diam)",
+      "triangles": "segitiga",
+      "triangles (scene)": "segitiga (adegan)",
+      "draw calls": "panggilan gambar",
+      "pages": "halaman",
+      "geometry pool": "kolam geometri",
+      "lights": "lampu",
+      "GPU frame": "bingkai GPU",
+      "GPU frame (last)": "bingkai GPU (terakhir)",
+      "CPU frame": "bingkai CPU",
+      "page hooks": "kode halaman",
+      "engine CPU": "CPU mesin"
+    },
+    "failure": {
+      "title": "Contoh ini berhenti karena sebuah kesalahan"
+    },
+    "banner": {
+      "close": "Tutup"
+    }
+  },
+  "openworld": {
+    "banner": "Berjalan dengan W A S D. Tekan E di dekat mobil atau pesawat untuk masuk.",
+    "controls": {
+      "keys": "WASD berjalan · Shift berlari · Spasi melompat · C jongkok · E naik atau turun dari mobil atau pesawat",
+      "teleport": "Teleportasi",
+      "timeOfDay": "Waktu",
+      "daySpeed": "Kecepatan hari",
+      "pause": "Jeda",
+      "rain": "Hujan",
+      "geometryMB": "Geometri MB",
+      "textureMB": "Tekstur MB",
+      "view": "Tampilan"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "Streaming"
+    }
+  }
+}

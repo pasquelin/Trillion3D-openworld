@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "Ayarlar"
+    },
+    "stats": {
+      "FPS": "Kare/sn",
+      "FPS (held)": "Kare/sn (durdu)",
+      "triangles": "üçgen",
+      "triangles (scene)": "üçgen (sahne)",
+      "draw calls": "çizim çağrısı",
+      "pages": "sayfa",
+      "geometry pool": "geometri deposu",
+      "lights": "ışık",
+      "GPU frame": "GPU karesi",
+      "GPU frame (last)": "GPU karesi (son)",
+      "CPU frame": "CPU karesi",
+      "page hooks": "sayfa kodu",
+      "engine CPU": "motor CPU"
+    },
+    "failure": {
+      "title": "Bu örnek bir hata yüzünden durdu"
+    },
+    "banner": {
+      "close": "Kapat"
+    }
+  },
+  "openworld": {
+    "banner": "W A S D ile yürü. Binmek için bir arabanın ya da uçağın yanında E'ye bas.",
+    "controls": {
+      "keys": "WASD yürü · Shift koş · Boşluk zıpla · C çömel · E arabaya veya uçağa bin ya da in",
+      "teleport": "Işınlan",
+      "timeOfDay": "Günün saati",
+      "daySpeed": "Gün hızı",
+      "pause": "Duraklat",
+      "rain": "Yağmur",
+      "geometryMB": "Geometri MB",
+      "textureMB": "Doku MB",
+      "view": "Görünüm"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "Akış"
+    }
+  }
+}

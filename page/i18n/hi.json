@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "सेटिंग्स"
+    },
+    "stats": {
+      "FPS": "फ़्रेम/से",
+      "FPS (held)": "फ़्रेम/से (रुका)",
+      "triangles": "त्रिभुज",
+      "triangles (scene)": "त्रिभुज (दृश्य)",
+      "draw calls": "ड्रॉ कॉल",
+      "pages": "पेज",
+      "geometry pool": "ज्यामिति भंडार",
+      "lights": "रोशनियाँ",
+      "GPU frame": "GPU फ़्रेम",
+      "GPU frame (last)": "GPU फ़्रेम (अंतिम)",
+      "CPU frame": "CPU फ़्रेम",
+      "page hooks": "पेज का कोड",
+      "engine CPU": "इंजन CPU"
+    },
+    "failure": {
+      "title": "यह उदाहरण एक गड़बड़ी पर रुक गया"
+    },
+    "banner": {
+      "close": "बंद करो"
+    }
+  },
+  "openworld": {
+    "banner": "W A S D से चलो। अंदर बैठने के लिए कार या हवाई जहाज़ के पास E दबाओ।",
+    "controls": {
+      "keys": "WASD चलें · Shift दौड़ें · Space कूदें · C झुकें · E कार या विमान में चढ़ें या उतरें",
+      "teleport": "टेलीपोर्ट",
+      "timeOfDay": "दिन का समय",
+      "daySpeed": "दिन की गति",
+      "pause": "रोकें",
+      "rain": "बारिश",
+      "geometryMB": "ज्यामिति MB",
+      "textureMB": "टेक्सचर MB",
+      "view": "दृश्य"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "स्ट्रीमिंग"
+    }
+  }
+}

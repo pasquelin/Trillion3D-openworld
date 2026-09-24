@@ -1,5 +1,5 @@
 /**
- * A right-triangulated irregular network over a tile's (2^k + 1)² height grid (#332), after
+ * A right-triangulated irregular network over a tile's (2^k + 1)² height grid (Trillion3D#332), after
  * Evans, Kirkpatrick and Townsend, "Right-Triangulated Irregular Networks" (Algorithmica, 2001).
  * The square is split along a diagonal, then every triangle in two at the midpoint of its
  * hypotenuse, as long as that midpoint's error exceeds a threshold. A vertex's error is the

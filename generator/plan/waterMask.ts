@@ -1,5 +1,5 @@
 /**
- * The cells of the erosion's working grid under the plan's water (#332): inside a lake's shore,
+ * The cells of the erosion's working grid under the plan's water (Trillion3D#332): inside a lake's shore,
  * or within half a river's width of its course — and at least half a cell's diagonal, so the
  * channel is a chain of cells touching edge to edge and the water it gathers runs on to the sea.
  */

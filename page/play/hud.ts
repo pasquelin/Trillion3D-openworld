@@ -1,4 +1,4 @@
-import { overlay } from '../../overlay.ts';
+import { overlay } from '../kit/overlay.ts';
 import { HINTS } from './keys.ts';
 import { minimap } from './minimap.ts';
 import type { Mode, Road } from './types.ts';

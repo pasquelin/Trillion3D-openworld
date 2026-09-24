@@ -1,7 +1,7 @@
-import type { Vec3 } from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+import type { Vec3 } from '../../generator/plan/contract.ts';
 import { wrapAround } from './clouds.ts';
 import type { MeshLike, SkyEngine } from './engine.ts';
-import { mulberry32 } from '../../random.ts';
+import { mulberry32 } from '../kit/random.ts';
 import type { Wind } from './wind.ts';
 
 /** Terminal speed of a 2 mm raindrop, m/s (Gunn & Kinzer 1949). */
