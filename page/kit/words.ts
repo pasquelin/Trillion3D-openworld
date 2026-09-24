@@ -23,7 +23,7 @@ export const language = () => code;
 const address = () => new URL(globalThis.document?.baseURI ?? 'about:blank');
 
 /** The page's part of the dictionary. */
-const exampleId = () => 'openworld';
+const PAGE = 'openworld';
 
 /** The language asked for: `?lang=` on `url`, else the first of `preferred` (the browser's),
  * reduced to its two letters. */
@@ -51,7 +51,7 @@ export const kitWord = (group: string, key: string, fallback = labelOf(key)) =>
 
 /** The example's word at `<id>.<group>.<key>…`, else `fallback`: a label, a choice, a readout. */
 export const exampleWord = (fallback: string, ...path: string[]) =>
-  lookup([exampleId(), ...path]) ?? fallback;
+  lookup([PAGE, ...path]) ?? fallback;
 
 /** Uses `dictionary` in the language `language`: what `loadWords` does once fetched. */
 function useWords(dictionary: WordTree, language: string) {
