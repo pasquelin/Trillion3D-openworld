@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-24.04
     # A cook from scratch takes about forty minutes; a cache hit, none.
     timeout-minutes: 90
+    outputs:
+      key: ${{ steps.key.outputs.key }}
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/node
@@ -106,10 +108,15 @@ jobs:
           rsync -rltz --delete-delay --delay-updates --stats
           -e "ssh -p $DEPLOY_SSH_PORT -i $HOME/.ssh/deploy -o StrictHostKeyChecking=yes"
           dist/ "$DEPLOY_TARGET:/"
-      # The address checked is the one the page declares canonical (page/index.html).
+      # The address checked is the one the page declares canonical (page/index.html), with the
+      # page's bundle and the manifest of the world it was built for.
       - name: Check the published page
+        env:
+          KEY: ${{ needs.build.outputs.key }}
         run: |
           url=$(grep -o 'rel="canonical" href="[^"]*"' dist/index.html | sed 's/.*href="//; s/"$//')
           test -n "$url" || { echo "::error::no canonical address in index.html"; exit 1; }
-          curl -fsS -o /dev/null --retry 2 --retry-all-errors --retry-delay 10 \
-            -w "%{http_code} $url\n" "$url"
+          for page in "$url" "${url}runtime/openworld.js" "${url}assets/$KEY/world.json"; do
+            curl -fsS -o /dev/null --retry 2 --retry-all-errors --retry-delay 10 \
+              -w "%{http_code} $page\n" "$page"
+          done
