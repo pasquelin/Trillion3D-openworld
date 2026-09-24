@@ -10,8 +10,17 @@ const config: KnipConfig = {
     '**/*.test.ts',
   ],
   project: ['generator/**/*.ts', 'page/**/*.ts', 'scripts/**/*.ts'],
-  // Run from node_modules/.bin by scripts/build.ts, and loaded by page/styles.css.
-  ignoreDependencies: ['@tailwindcss/cli', 'daisyui', 'tailwindcss'],
+  ignoreDependencies: [
+    // Run from node_modules/.bin by scripts/build.ts, and loaded by page/styles.css.
+    '@tailwindcss/cli',
+    'daisyui',
+    'tailwindcss',
+    // The engine's own: its checkout (`pnpm run engine`) resolves `three` from here, and the page
+    // names its entry point by the tsconfig path. Absent from the sources-only `quick` gates.
+    'three',
+    '@types/three',
+    'trillion3d-engine',
+  ],
 };
 
 export default config;
