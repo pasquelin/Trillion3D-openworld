@@ -1,5 +1,5 @@
 /**
- * Flat surfaces laid over the terrain (#332): the sea as one quad per tile at sea level, lakes as
+ * Flat surfaces laid over the terrain (Trillion3D#332): the sea as one quad per tile at sea level, lakes as
  * discs at their level, rivers as ribbons on their water line, and roads as ribbons on the
  * levelled ground. Each piece goes to the tile holding its middle, in that tile's local frame.
  */

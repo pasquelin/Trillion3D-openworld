@@ -1,0 +1,55 @@
+{
+  "name": "trillion3d-openworld",
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.16.0",
+  "type": "module",
+  "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "trillion3d": {
+    "repository": "https://github.com/pasquelin/Trillion3D.git",
+    "commit": "fbc89cbe3d9c5e6ebeca1974a34a837748a64447"
+  },
+  "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
+    "engine": "node scripts/engine.ts",
+    "engine:compiler": "node scripts/engine.ts --compiler",
+    "cook": "node scripts/cook.ts",
+    "build": "node scripts/build.ts",
+    "serve": "node scripts/serve.ts",
+    "test": "node --test \"generator/**/*.test.ts\" \"page/**/*.test.ts\"",
+    "validate": "pnpm run validate:quick && pnpm run validate:typescript && pnpm test",
+    "validate:quick": "pnpm run format:check && pnpm run lint && pnpm run check:lines && pnpm run knip",
+    "validate:typescript": "pnpm run engine && pnpm run typecheck && pnpm run build",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.{ts,json}\"",
+    "format:check": "prettier --ignore-path .gitignore --check \"**/*.{ts,json}\"",
+    "lint": "eslint .",
+    "check:lines": "node scripts/check-lines.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "knip": "knip"
+  },
+  "dependencies": {
+    "jolt-physics": "1.1.0",
+    "three": "^0.174.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tailwindcss/cli": "^4.3.3",
+    "@types/node": "^22.20.2",
+    "@types/three": "^0.174.0",
+    "@webgpu/types": "^0.1.72",
+    "daisyui": "^5.7.42",
+    "esbuild": "^0.25.12",
+    "eslint": "^10.10.0",
+    "fast-png": "^8.0.0",
+    "globals": "^17.12.0",
+    "knip": "^6.35.1",
+    "meshoptimizer": "~0.18.1",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.70.0"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

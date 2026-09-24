@@ -4,7 +4,7 @@
  * types of its public entry point, erased from the bundle. Members the engine does not have
  * yet are added here, each marked as waiting on the engine: the API a user would reach for.
  */
-import type * as Engine from '../../../../../packages/sdk-browser/src/index.ts';
+import type * as Engine from 'trillion3d-engine';
 
 type Families = typeof Engine;
 

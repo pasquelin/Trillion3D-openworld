@@ -1,0 +1,50 @@
+{
+  "kit": {
+    "panel": {
+      "controls": "Ajustes"
+    },
+    "stats": {
+      "FPS": "Quadros/s",
+      "FPS (held)": "Quadros/s (parado)",
+      "triangles": "triângulos",
+      "triangles (scene)": "triângulos (cena)",
+      "draw calls": "chamadas de desenho",
+      "pages": "páginas",
+      "geometry pool": "reserva de geometria",
+      "lights": "luzes",
+      "GPU frame": "quadro GPU",
+      "GPU frame (last)": "quadro GPU (último)",
+      "CPU frame": "quadro CPU",
+      "page hooks": "código da página",
+      "engine CPU": "CPU do motor"
+    },
+    "failure": {
+      "title": "Este exemplo parou por causa de um erro"
+    },
+    "banner": {
+      "close": "Fechar"
+    }
+  },
+  "openworld": {
+    "banner": "Ande com W A S D. Aperte E perto de um carro ou avião para entrar.",
+    "controls": {
+      "keys": "WASD andar · Shift correr · Espaço saltar · C agachar · E entrar ou sair de um carro ou avião",
+      "teleport": "Teletransporte",
+      "timeOfDay": "Hora do dia",
+      "daySpeed": "Velocidade do dia",
+      "pause": "Pausa",
+      "rain": "Chuva",
+      "geometryMB": "Geometria MB",
+      "textureMB": "Texturas MB",
+      "view": "Vista"
+    },
+    "choices": {
+      "teleport": {
+        "—": "—"
+      }
+    },
+    "readouts": {
+      "streaming": "Streaming"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /**
- * The hillslope processes of the erosion (#332). Thermal erosion after Musgrave, Kolb & Mace,
+ * The hillslope processes of the erosion (Trillion3D#332). Thermal erosion after Musgrave, Kolb & Mace,
  * "The Synthesis and Rendering of Eroded Fractal Terrains" (SIGGRAPH 1989): wherever the ground
  * stands above a neighbour by more than the talus angle allows, part of the excess slides down
  * and lies there as scree. The talus angle is the angle of repose: at the scale of the working

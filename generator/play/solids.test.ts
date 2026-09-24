@@ -1,13 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import initJolt from 'jolt-physics/wasm';
-import type { ColliderInstance } from '../../../../../site/examples/kit/openworld/play/collision.ts';
-import { idleInputs, STEP } from '../../../../../site/examples/kit/openworld/play/protocol.ts';
-import { createSim, step } from '../../../../../site/examples/kit/openworld/play/sim/core.ts';
-import {
-  playerPosition,
-  teleport,
-} from '../../../../../site/examples/kit/openworld/play/sim/player.ts';
+import type { ColliderInstance } from '../../page/play/collision.ts';
+import { idleInputs, STEP } from '../../page/play/protocol.ts';
+import { createSim, step } from '../../page/play/sim/core.ts';
+import { playerPosition, teleport } from '../../page/play/sim/player.ts';
 import { SQUARE_CENTRE } from '../regions/countryside/church.ts';
 import { fixtureWorld, LIMITS, slope, solidSource, tileHeights } from './fixture.ts';
 

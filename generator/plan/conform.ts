@@ -1,5 +1,5 @@
 /**
- * Error thresholds of the terrain tiles (#332): the error histogram that says how many triangles
+ * Error thresholds of the terrain tiles (Trillion3D#332): the error histogram that says how many triangles
  * a threshold keeps, the exact count of a conforming network, and the border matching that makes
  * neighbouring tiles hold the same vertices.
  */

@@ -1,5 +1,5 @@
 /**
- * The open world's regions (#332), in the order the plan composes their height refinements.
+ * The open world's regions (Trillion3D#332), in the order the plan composes their height refinements.
  * Each is a `RegionModule` of its own folder; the world is whatever this list holds.
  */
 import type { RegionModule } from '../plan/contract.ts';

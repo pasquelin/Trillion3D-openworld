@@ -1,5 +1,5 @@
 /**
- * Seeded noise and small numeric helpers of the world plan (#332). Everything is a pure function
+ * Seeded noise and small numeric helpers of the world plan (Trillion3D#332). Everything is a pure function
  * of its seed and coordinates: no `Math.random`, no clock, so one seed rebuilds the same bytes.
  */
 

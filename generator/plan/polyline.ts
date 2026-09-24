@@ -1,4 +1,4 @@
-/** Polyline helpers of the world plan (#332): rounding grid paths and resampling them evenly. */
+/** Polyline helpers of the world plan (Trillion3D#332): rounding grid paths and resampling them evenly. */
 
 export type Point2 = readonly [number, number];
 

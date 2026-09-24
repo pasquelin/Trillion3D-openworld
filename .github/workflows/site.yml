@@ -1,0 +1,122 @@
+name: Site
+
+# The published open world: on a push to main (or a manual run), the world is cooked, the page
+# built against the pinned engine and the whole `dist/` transferred to the server. The cook is
+# cached on the generator, the compiler and the pinned engine: it only runs again when one of them
+# changes. Where it goes is the maintainer's, in secrets: nothing of the server is written here.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    # A cook from scratch takes about forty minutes; a cache hit, none.
+    timeout-minutes: 90
+    outputs:
+      key: ${{ steps.key.outputs.key }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/node
+      # The cooked world, under the key that names everything deciding its bytes: the generator,
+      # the play code it reads, the cook and compiler scripts, the locked dependencies and the
+      # pinned engine commit (`scripts/cook-key.ts`). The same key names its published folder.
+      - id: key
+        run: echo "key=$(node scripts/cook-key.ts)" >> "$GITHUB_OUTPUT"
+      - id: cook
+        uses: actions/cache@v4
+        with:
+          path: dist/assets
+          key: cook-${{ steps.key.outputs.key }}
+      - if: steps.cook.outputs.cache-hit != 'true'
+        uses: dtolnay/rust-toolchain@stable
+      - if: steps.cook.outputs.cache-hit != 'true'
+        run: pnpm run engine:compiler
+      - if: steps.cook.outputs.cache-hit != 'true'
+        run: pnpm run cook
+      - run: pnpm run build
+      # The floor of a sound output: the page, its words and runtime, and for each tile of the
+      # world its physics heights and colliders.
+      - name: Refuse an empty or partial output
+        env:
+          KEY: ${{ steps.key.outputs.key }}
+        run: |
+          for file in index.html runtime/engine.js runtime/openworld.js "assets/$KEY/world.json" \
+            "assets/$KEY/cache/native/full/manifest.json"; do
+            test -s "dist/$file" || { echo "::error::dist/$file is missing"; exit 1; }
+          done
+          tiles=$(node -p "const w = require('./dist/assets/$KEY/world.json'); (w.size / w.tile) ** 2")
+          floor=$(( $(git ls-files page/i18n | wc -l) + 13 + 2 * tiles ))
+          count=$(find dist -type f | wc -l)
+          echo "$count files, floor $floor"
+          test "$count" -ge "$floor" || { echo "::error::$count files, fewer than $floor"; exit 1; }
+      - uses: actions/upload-artifact@v7
+        with:
+          name: openworld
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
+
+  # Its own job: until the maintainer adds the DEPLOY_* secrets, it fails with a message and the
+  # build above stays green.
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # One deployment at a time, and never one cut off halfway through its transfer.
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    env:
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+      DEPLOY_TARGET: ${{ secrets.DEPLOY_TARGET }}
+      DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+    steps:
+      - name: Require the deploy secrets
+        run: |
+          missing=""
+          for name in DEPLOY_SSH_KEY DEPLOY_KNOWN_HOSTS DEPLOY_TARGET DEPLOY_SSH_PORT; do
+            test -n "${!name}" || missing="$missing $name"
+          done
+          test -z "$missing" || { echo "::error::missing secrets:$missing"; exit 1; }
+      - uses: actions/download-artifact@v8
+        with:
+          name: openworld
+          path: dist
+      # Served as is by the web server beside each original (`gzip_static`); the binary pages,
+      # heights and textures do not shrink, so only the text files are compressed.
+      - name: Pre-compress the text files
+        run: >-
+          find dist -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.json'
+          -o -name '*.gltf' \) -exec gzip -9 -k -f {} +
+      - name: Install the deploy key
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy ~/.ssh/known_hosts
+      # The key is restricted by rrsync to this repository's own folder on the server, so the
+      # target path is that folder's root (README.md, "Deploy").
+      - name: Transfer
+        run: >-
+          rsync -rltz --delete-delay --delay-updates --stats
+          -e "ssh -p $DEPLOY_SSH_PORT -i $HOME/.ssh/deploy -o StrictHostKeyChecking=yes"
+          dist/ "$DEPLOY_TARGET:/"
+      # The address checked is the one the page declares canonical (page/index.html), with the
+      # page's bundle and the manifest of the world it was built for.
+      - name: Check the published page
+        env:
+          KEY: ${{ needs.build.outputs.key }}
+        run: |
+          url=$(grep -o 'rel="canonical" href="[^"]*"' dist/index.html | sed 's/.*href="//; s/"$//')
+          test -n "$url" || { echo "::error::no canonical address in index.html"; exit 1; }
+          for page in "$url" "${url}runtime/openworld.js" "${url}assets/$KEY/world.json"; do
+            curl -fsS -o /dev/null --retry 2 --retry-all-errors --retry-delay 10 \
+              -w "%{http_code} $page\n" "$page"
+          done

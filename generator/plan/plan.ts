@@ -1,5 +1,5 @@
 /**
- * The world plan (#332): one seed and the region modules make every height, biome, river, road
+ * The world plan (Trillion3D#332): one seed and the region modules make every height, biome, river, road
  * and settlement of the 8 × 8 km world. The height is composed in one fixed order — global
  * relief, region refinements faded by the biome weights, erosion, river and lake cuts, the
  * airport platform, road earthworks — so any module reading `plan.height` reads the ground the

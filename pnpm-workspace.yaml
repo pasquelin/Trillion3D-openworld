@@ -1,0 +1,5 @@
+# esbuild's install script only checks its native binary; allowing it avoids pnpm's warning on each
+# install. The stylesheet build never watches, so the watcher's native build is not needed.
+allowBuilds:
+  esbuild: true
+  '@parcel/watcher': false

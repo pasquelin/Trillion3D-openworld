@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "@webgpu/types"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "trillion3d-engine": ["./.engine/packages/sdk-browser/src/index.ts"]
+    }
+  },
+  "include": ["generator/**/*.ts", "page/**/*.ts", "scripts/**/*.ts", "*.ts"],
+  "exclude": ["node_modules", ".engine", "dist"]
+}

@@ -1,14 +1,9 @@
-import type {
-  EffectKind,
-  Marker,
-  Mover,
-  Vec3,
-} from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+import type { EffectKind, Marker, Mover, Vec3 } from '../../generator/plan/contract.ts';
 import { createBeams } from './beam.ts';
 import type { NodeLike, SkyEngine, SkyWorld } from './engine.ts';
 import { createParticleSystem, type ParticleSystem } from './particles.ts';
 import { isParticleKind, PRESETS, type ParticleKind } from './presets.ts';
-import { mulberry32 } from '../../random.ts';
+import { mulberry32 } from '../kit/random.ts';
 import type { Wind } from './wind.ts';
 
 type Emitter = Extract<Marker, { kind: 'emitter' }>;

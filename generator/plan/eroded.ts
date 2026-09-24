@@ -1,5 +1,5 @@
 /**
- * The natural ground the plan builds on (#332): the global relief and the region refinements,
+ * The natural ground the plan builds on (Trillion3D#332): the global relief and the region refinements,
  * eroded. The erosion runs once on the working grid (`erosion.ts`) and its displacement is added
  * back to the uneroded height, sampled bilinearly, so the detail finer than the grid stays and the
  * gullies, fans and talus the water and the slides made are laid over it. The sea keeps its own

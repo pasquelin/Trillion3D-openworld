@@ -1,5 +1,5 @@
 /**
- * Builds the whole open world from one seed (#332): the plan composed with every region, the
+ * Builds the whole open world from one seed (Trillion3D#332): the plan composed with every region, the
  * terrain tiles, what each region places, and the data the page reads beside the cache.
  */
 import {

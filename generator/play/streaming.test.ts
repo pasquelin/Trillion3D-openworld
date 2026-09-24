@@ -9,8 +9,8 @@ import {
   tilesAround,
   type StreamLimits,
   type TileKey,
-} from '../../../../../site/examples/kit/openworld/play/grid.ts';
-import { heightAt, heightStore } from '../../../../../site/examples/kit/openworld/play/heights.ts';
+} from '../../page/play/grid.ts';
+import { heightAt, heightStore } from '../../page/play/heights.ts';
 import { SAMPLES, slope, tileHeights } from './fixture.ts';
 
 const GRID = { size: 50_000, tile: 1_000 };

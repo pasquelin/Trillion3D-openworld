@@ -1,5 +1,5 @@
 /**
- * What colour the ground has at a point (#332). The shared rules come first — sea bed, beach,
+ * What colour the ground has at a point (Trillion3D#332). The shared rules come first — sea bed, beach,
  * snow above the snowline — then the ground layers of every region that blends there, mixed by
  * their biome weights, so a transition band fades from one ground to the other. A slope beyond
  * what a layer claims is bare rock. Then what the erosion left: rock where running water cut

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { movingWorld, posed } from '../../../../../site/examples/kit/openworld/play/movers.ts';
+import { movingWorld, posed } from '../../page/play/movers.ts';
 import {
   nearestRoad,
   onAsphalt,
@@ -8,16 +8,10 @@ import {
   roadIndex,
   sampleAt,
   travel,
-} from '../../../../../site/examples/kit/openworld/play/roads.ts';
-import {
-  crowd,
-  stepCrowd,
-} from '../../../../../site/examples/kit/openworld/play/sim/pedestrians.ts';
-import { roadGraph } from '../../../../../site/examples/kit/openworld/play/sim/roadGraph.ts';
-import {
-  stepTraffic,
-  traffic,
-} from '../../../../../site/examples/kit/openworld/play/sim/traffic.ts';
+} from '../../page/play/roads.ts';
+import { crowd, stepCrowd } from '../../page/play/sim/pedestrians.ts';
+import { roadGraph } from '../../page/play/sim/roadGraph.ts';
+import { stepTraffic, traffic } from '../../page/play/sim/traffic.ts';
 import { fixtureWorld, ROADS } from './fixture.ts';
 
 const STEP = 1 / 60;

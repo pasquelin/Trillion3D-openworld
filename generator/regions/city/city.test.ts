@@ -15,7 +15,7 @@ import { groundUnder, inBounds } from './site.ts';
 const plan = createPlan(undefined, [...REGIONS.filter((r) => r.name !== 'city'), cityRegion]);
 const { output, kept, site } = buildCity(plan);
 
-/** The lead's triangle share for the city (#332); `plan/budget.ts` still demands 200 000. */
+/** The lead's triangle share for the city (Trillion3D#332); `plan/budget.ts` still demands 200 000. */
 const TRIANGLES = 400_000;
 
 /** The same plan with another node budget for the city. */

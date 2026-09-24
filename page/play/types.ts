@@ -11,7 +11,7 @@ import type {
   Surface,
   Vec3,
   WorldRuntimeData,
-} from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+} from '../../generator/plan/contract.ts';
 
 export type { Marker, Mover, Road, Settlement, Surface, Vec3 };
 

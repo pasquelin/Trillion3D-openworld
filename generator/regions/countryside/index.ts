@@ -1,5 +1,5 @@
 /**
- * Countryside and forest (#332): the centre of the map, its largest land, where a visitor walks
+ * Countryside and forest (Trillion3D#332): the centre of the map, its largest land, where a visitor walks
  * most. Rolling hills over the plan's relief; a patchwork of fields — wheat, rapeseed, lavender,
  * pasture, ploughed earth — draped over the ground round each farm, hedged and walled; farms with
  * a farmhouse, a gambrel barn, silos, a tractor and hay bales, joined to the road network by dirt
@@ -51,7 +51,7 @@ import { bridgeSpan, jetty, placeBridge, placeJetty } from './water.ts';
 import { EYE } from '../../build/markers.ts';
 
 /**
- * Unique triangles of the region's own props: the lead's target for #332 (dense meshes shared
+ * Unique triangles of the region's own props: the lead's target for Trillion3D#332 (dense meshes shared
  * by many nodes), which the plan's cache share for the countryside does not yet reflect.
  */
 export const TRIANGLES = 400_000;

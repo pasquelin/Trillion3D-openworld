@@ -1,5 +1,5 @@
 /**
- * The height samples of one terrain tile (#332): a (2^k + 1)² grid from the tile's −X, −Z
+ * The height samples of one terrain tile (Trillion3D#332): a (2^k + 1)² grid from the tile's −X, −Z
  * corner, plus a one-sample apron so every vertex's normal is a central difference. Two tiles
  * sample their shared border at the same world coordinates through the same function, so they
  * hold the same heights and the same normals there. Heights are stored as Float32, the precision

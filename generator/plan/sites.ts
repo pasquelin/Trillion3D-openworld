@@ -1,5 +1,5 @@
 /**
- * Where things stand (#332): lakes in basins, the airport platform on flat ground, the city at
+ * Where things stand (Trillion3D#332): lakes in basins, the airport platform on flat ground, the city at
  * the main river's mouth, towns and villages on the flattest land around a seeded spot. Every
  * site is found by searching the relief, so a new seed or a new region refinement moves it to
  * ground that suits it.

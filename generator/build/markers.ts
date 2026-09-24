@@ -1,5 +1,5 @@
 /**
- * Where a teleport or a spawn may stand (#332): its footprint (`footprint.ts`) crosses no solid
+ * Where a teleport or a spawn may stand (Trillion3D#332): its footprint (`footprint.ts`) crosses no solid
  * triangle of the physics (`solids.ts`) above what a foot steps up, and its feet rest on the
  * ground (or a solid a step above it), a boat on the sea, or a marker that declares a `deck` on
  * the solid surface under it. `settle` moves a marker that fails to the nearest spot that
@@ -12,7 +12,7 @@ import {
   type PropMesh,
   type WorldPlan,
 } from '../plan/contract.ts';
-import { FOOT } from '../../../../../site/examples/kit/openworld/play/sim/foot.ts';
+import { FOOT } from '../../page/play/sim/foot.ts';
 import { solidColliders, type SolidColliders } from './colliders.ts';
 import { crosses, footprintOf } from './footprint.ts';
 import { solidIndex } from './solids.ts';

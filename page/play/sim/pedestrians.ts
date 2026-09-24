@@ -8,7 +8,7 @@ import {
   type RoadIndex,
 } from '../roads.ts';
 import type { Road, Settlement } from '../types.ts';
-import { mulberry32 } from '../../../random.ts';
+import { mulberry32 } from '../../kit/random.ts';
 
 /**
  * Pedestrians in the towns and the city: a fixed pool walking the pavements beside the roads,

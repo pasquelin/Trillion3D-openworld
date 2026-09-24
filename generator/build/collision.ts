@@ -1,16 +1,13 @@
 /**
- * One collision mesh per solid prop (#332), simplified to the walker's scale: every triangle but
+ * One collision mesh per solid prop (Trillion3D#332), simplified to the walker's scale: every triangle but
  * the `card/` sheets (leaves, sails) welded where positions coincide and cut into pieces (the
  * triangles that share vertices); a piece smaller than the walker's capsule radius is dropped,
  * the others collapsed by edge (meshoptimizer) within that same radius. Collapses keep the
  * surviving vertices where they were, so a floor keeps its height.
  */
 import { MeshoptSimplifier } from 'meshoptimizer';
-import {
-  scaleOf,
-  type CollisionMesh,
-} from '../../../../../site/examples/kit/openworld/play/collision.ts';
-import { FOOT } from '../../../../../site/examples/kit/openworld/play/sim/foot.ts';
+import { scaleOf, type CollisionMesh } from '../../page/play/collision.ts';
+import { FOOT } from '../../page/play/sim/foot.ts';
 import type { Instance, PropMesh } from '../plan/contract.ts';
 
 await MeshoptSimplifier.ready;

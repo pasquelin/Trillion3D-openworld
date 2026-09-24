@@ -1,5 +1,5 @@
 import type { MeshLike, NodeLike, SkyEngine } from './engine.ts';
-import { mulberry32 } from '../../random.ts';
+import { mulberry32 } from '../kit/random.ts';
 
 /** Illuminance of a magnitude-0 star over the sun's, both outside the air (2.54 µlx / 128 klx). */
 const MAGNITUDE_ZERO = 2.54e-6 / 128_000;
@@ -68,8 +68,11 @@ export function createStars(
   return {
     node,
     update(latitude, siderealTurn, visibility) {
-      node.rotation.x = (latitude * Math.PI) / 180 - Math.PI / 2;
-      spin.rotation.y = -siderealTurn * TWO_PI;
+      // A turn written only when it moves: every write asks the world for another frame.
+      const tilt = (latitude * Math.PI) / 180 - Math.PI / 2,
+        turn = -siderealTurn * TWO_PI;
+      if (node.rotation.x !== tilt) node.rotation.x = tilt;
+      if (spin.rotation.y !== turn) spin.rotation.y = turn;
       // An opacity written only when it moves by a visible step: a material rewritten every
       // frame reopens the engine's session.
       const step = Math.round(visibility * 32) / 32;

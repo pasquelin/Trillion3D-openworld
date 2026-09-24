@@ -1,5 +1,5 @@
 /**
- * Where the plan's water goes (#332), found on a height grid: the airport platform first (rivers
+ * Where the plan's water goes (Trillion3D#332), found on a height grid: the airport platform first (rivers
  * keep clear of it), the three rivers down to their mouths on the south shore, and two lakes in basins, one in the
  * countryside and one in the mountains, clear of the rivers.
  */

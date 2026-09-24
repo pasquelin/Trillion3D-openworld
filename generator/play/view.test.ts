@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { headBob, strideAt } from '../../../../../site/examples/kit/openworld/play/camera.ts';
-import { readings } from '../../../../../site/examples/kit/openworld/play/hud.ts';
-import { HINTS, KEYS } from '../../../../../site/examples/kit/openworld/play/keys.ts';
+import { headBob, strideAt } from '../../page/play/camera.ts';
+import { readings } from '../../page/play/hud.ts';
+import { HINTS, KEYS } from '../../page/play/keys.ts';
 
 test('the head bobs twice a stride cycle, a few centimetres, and not at all standing still', () => {
   assert.deepEqual(headBob(1.3, 0, false), [0, 0]);

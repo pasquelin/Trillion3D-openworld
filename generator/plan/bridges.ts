@@ -1,5 +1,5 @@
 /**
- * A bridge's deck, for the region that models it (#332): the road's own centreline between the
+ * A bridge's deck, for the region that models it (Trillion3D#332): the road's own centreline between the
  * bridge's two ends, surface heights included, so a deck built on it meets the road at both
  * abutments and never steps. The ground under the span is left to the river.
  */

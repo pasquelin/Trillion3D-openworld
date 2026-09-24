@@ -1,5 +1,5 @@
 /**
- * One step of grid-based hydraulic erosion (#332), after Mei, Decaudin & Hu, "Fast Hydraulic
+ * One step of grid-based hydraulic erosion (Trillion3D#332), after Mei, Decaudin & Hu, "Fast Hydraulic
  * Erosion Simulation and Visualization on GPU" (Pacific Graphics 2007), run on the CPU over typed
  * arrays. Each cell holds ground `b`, water `d` and suspended sediment `s`; virtual pipes carry
  * water to the four neighbours (the shallow-water pipe model), the flow's speed sets how much

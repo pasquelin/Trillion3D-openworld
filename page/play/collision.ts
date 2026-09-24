@@ -1,5 +1,5 @@
 /**
- * The static colliders the physics streams beside the cache (#332). Each solid prop has one
+ * The static colliders the physics streams beside the cache (Trillion3D#332). Each solid prop has one
  * collision mesh, `colliders/props/<id>.bin`, shared by all its placements; each tile lists its
  * placements, `colliders/<tx>_<tz>.json` as `ColliderInstance[]`. A mesh file is a 16-byte
  * header (magic `WGCM`, format version, vertex count, index count, little-endian Uint32), the

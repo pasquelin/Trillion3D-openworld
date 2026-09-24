@@ -1,9 +1,9 @@
 /**
- * What a marker occupies (#332): the walker's capsule, or a vehicle's own measured bounds turned
+ * What a marker occupies (Trillion3D#332): the walker's capsule, or a vehicle's own measured bounds turned
  * by the marker's yaw, and the solid triangles (`solids.ts`) it would cross or stand on. A
  * triangle is cut to the height span the footprint fills, then compared on the ground plane.
  */
-import { FOOT } from '../../../../../site/examples/kit/openworld/play/sim/foot.ts';
+import { FOOT } from '../../page/play/sim/foot.ts';
 import type { Marker, Vec3 } from '../plan/contract.ts';
 import { partBounds, VEHICLE_SPECS } from '../props/index.ts';
 import { sailboat } from '../props/sailboat.ts';

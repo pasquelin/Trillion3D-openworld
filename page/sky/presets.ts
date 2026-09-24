@@ -1,4 +1,4 @@
-import type { EffectKind } from '../../../../../scripts/docs/examples/openworld/plan/contract.ts';
+import type { EffectKind } from '../../generator/plan/contract.ts';
 import type { Motion } from './pool.ts';
 
 const G = 9.81;

@@ -80,7 +80,9 @@ export async function writeWorldGltf(directory: string, fileName: string, piece:
   };
 
   const gltf = await fileSink(resolve(directory, `${fileName}.gltf`));
-  await gltf.write('{"asset":{"version":"2.0","generator":"Trillion3D open world (#332)"},');
+  await gltf.write(
+    '{"asset":{"version":"2.0","generator":"Trillion3D open world (Trillion3D#332)"},',
+  );
   await gltf.write('"scene":0,"nodes":[');
   await writeArray(gltf, nodeCount, node);
   await gltf.write('],"scenes":[{"nodes":[');

@@ -1,5 +1,5 @@
 /**
- * How one road is laid (#332): routed over the ground under a grade limit, rounded, resampled,
+ * How one road is laid (Trillion3D#332): routed over the ground under a grade limit, rounded, resampled,
  * given a surface profile smoother than the land, lifted onto bridges where it crosses a river
  * and bored through ridges where the ground stands high over it.
  */

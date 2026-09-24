@@ -1,13 +1,10 @@
 /**
- * The world's solid triangles as the physics has them (#332): every placement of a prop's
+ * The world's solid triangles as the physics has them (Trillion3D#332): every placement of a prop's
  * collision mesh (`colliders.ts`), searchable by where it stands. Placements are filed by their
  * ground rectangle; a placement's own triangles are turned into the world, and filed, the first
  * time a search reaches it, so a check over a few markers only pays for what they stand near.
  */
-import {
-  placePoint,
-  type ColliderInstance,
-} from '../../../../../site/examples/kit/openworld/play/collision.ts';
+import { placePoint, type ColliderInstance } from '../../page/play/collision.ts';
 import type { SolidColliders } from './colliders.ts';
 import { bounds } from './collision.ts';
 
