@@ -80,15 +80,35 @@ On every push to `main`, `.github/workflows/site.yml` cooks the world (or restor
 cache under its key), builds the page, and transfers `dist/` with rsync. The cooked world is
 published under `assets/<key>/`, a folder whose content never changes: it is served as immutable.
 The page declares its own canonical address, https://www.trillion3d.com/openworld/, which the
-workflow checks once the transfer is done. No cross-origin isolation is needed.
+workflow checks once the transfer is done. The page is served cross-origin isolated
+(`Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: credentialless`), like
+the portal: the page does not require it, it is a choice of consistency, and since
+`crossOriginIsolated` is true there the engine uses its shared decoding.
 
-What the maintainer sets by hand, once:
+What the server holds, installed once by an idempotent script that lives on the server,
+`ssh -t gosecure 'sudo bash /data/pasquelin/setup/deploy-setup-trillion3d-openworld.sh'`:
 
-- **The server folder**, `/srv/trillion3d-openworld/`, apart from the portal's web root, so that
-  neither deploy ever deletes the other's files.
-- **A deploy key restricted to that folder**, in the deploy user's `authorized_keys`:
-  `command="rrsync /srv/trillion3d-openworld",restrict ssh-ed25519 AAAA… trillion3d-openworld`.
-- **The nginx block**, in the `www.trillion3d.com` server, with its `map` in the `http` block:
+- **The server folder**, `/data/pasquelin/trillion3d-openworld/`, next to the portal's web root
+  `/data/pasquelin/trillion3d/` and apart from it, so that neither deploy ever deletes the
+  other's files.
+- **A deploy key restricted to that folder**, write-only, in the deploy user's `authorized_keys`:
+  `command="/usr/bin/rrsync -wo /data/pasquelin/trillion3d-openworld",restrict ssh-ed25519 AAAA… github-actions-trillion3d-openworld`.
+- **The nginx snippet** `/etc/nginx/snippets/trillion3d-openworld.conf`, picked up by the
+  `www.trillion3d.com` server through `include /etc/nginx/snippets/trillion3d-*.conf;`:
+
+  ```nginx
+  location = /openworld { return 301 /openworld/; }
+
+  location ^~ /openworld/ {
+    alias /data/pasquelin/trillion3d-openworld/;
+    index index.html;
+    add_header Cross-Origin-Opener-Policy same-origin;
+    add_header Cross-Origin-Embedder-Policy credentialless;
+    add_header Cache-Control $openworld_cache;
+  }
+  ```
+
+- **The cache map** `/etc/nginx/conf.d/trillion3d-openworld-cache.conf`, in the `http` block:
   the cooked world under `assets/` is immutable, the rest (html, json, runtime) is revalidated.
 
   ```nginx
@@ -96,22 +116,13 @@ What the maintainer sets by hand, once:
     ~^/openworld/assets/ "public, max-age=31536000, immutable";
     default              "no-cache";
   }
-
-  location /openworld/ {
-    alias /srv/trillion3d-openworld/;
-    types {
-      text/html html; text/css css; text/javascript js; application/json json;
-      application/wasm wasm; model/gltf+json gltf; image/png png;
-      application/octet-stream bin bc7;
-    }
-    gzip_static on;
-    add_header Cache-Control $openworld_cache;
-  }
   ```
 
-- **Four repository secrets**: `DEPLOY_SSH_KEY` (the private key), `DEPLOY_KNOWN_HOSTS` (the
-  server's host key line), `DEPLOY_TARGET` (`user@host`) and `DEPLOY_SSH_PORT`. Until they are
-  set, the deploy job fails with the list of those missing; the checks and the build stay green.
+- **Four repository secrets**, whose `gh secret set` commands the setup script prints:
+  `DEPLOY_SSH_KEY` (the private key), `DEPLOY_KNOWN_HOSTS` (the server's host key line),
+  `DEPLOY_TARGET` (`user@host`) and `DEPLOY_SSH_PORT`. Until they are set, the deploy job fails
+  with the list of those missing; the checks and the build stay green. A run started before the
+  secrets were set does not see them: rerun only its deploy job, `gh run rerun <id> --failed`.
 
 ## Contributing
 
