@@ -50,7 +50,14 @@
           if (percent !== last) step(`${text} · ${(last = percent)} %`);
         };
       };
-      const drawn = (text) => world.awaitPages({ onProgress: progress(text, 'pages') });
+      // A page that failed to load rejects the wait, but the world streams on and retries it: the
+      // screen lifts all the same rather than hang on the loading step.
+      const drawn = (text) => {
+        step(text);
+        return world
+          .awaitPages({ onProgress: progress(text, 'pages') })
+          .catch((error) => console.warn('Pages still missing:', error));
+      };
       const data = await (await fetch(`${assets}world.json`)).json();
 
       // One compiled world, under fixed memory pools the panel can change.
