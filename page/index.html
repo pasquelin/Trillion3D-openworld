@@ -28,7 +28,7 @@
        * seam. The simulation (Jolt physics,
        * traffic, pedestrians) runs in a worker; this page only draws what the worker reports.
        *
-       * Waiting on the engine: fog and aerial perspective, environment lighting, post-processing
+       * Waiting on the engine: fog that spares the sky on WebGPU, environment lighting, post-processing
        * (bloom, heat haze), skinning, and moving hand-built meshes beside a compiled cache.
        */
       import { createWorld, geometry, material, object, light, math, buffer, blending, side, texture, metric } from './runtime/engine.js';
@@ -38,27 +38,27 @@
       // The cooked world, under its key (`scripts/cook-key.ts`), written in by `pnpm build`.
       const assets = './assets/';
       const engine = { geometry, material, object, light, math, buffer, blending, side, texture };
-      // The world builds in steps; the screen says which one it is on, and lifts when the first
-      // frame around you is ready. Waiting on the engine: load progress for `scene.load`.
+      // The world builds in steps; the screen says which one it is on, with how far the engine
+      // says it has got, and lifts when the pages around you are resident.
       const step = (text) => (document.getElementById('step').textContent = text);
-      // Resolves once the engine has drawn a frame. Waiting on the engine: `awaitPages()` never
-      // settles on a world this size.
-      const drawn = () =>
-        new Promise((done) => {
-          const check = () => (typeof metric.frame(world) === 'object' ? done() : requestAnimationFrame(check));
-          check();
-        });
+      const progress = (text, phase) => (event) => {
+        if (event.phase === phase && event.total > 0)
+          step(`${text} · ${Math.floor((100 * event.completed) / event.total)} %`);
+      };
+      const drawn = (text) => world.awaitPages({ onProgress: progress(text, 'pages') });
       const data = await (await fetch(`${assets}world.json`)).json();
 
       // One compiled world, under fixed memory pools the panel can change.
       const world = createWorld('view');
       world.budget.geometryPool = 512 * 2 ** 20;
       world.budget.texturePool = 256 * 2 ** 20;
-      const model = await world.scene.load(`${assets}cache/native/full/manifest.json`);
+      const model = await world.scene.load(`${assets}cache/native/full/manifest.json`, {
+        onProgress: progress('Reading the world', 'bytes'),
+      });
       // The world draws and settles before anything built in code joins it. Waiting on the engine
       // (Trillion3D#358): a hand-built mesh added while a compiled world's session is still opening loses
-      // the device (WEBGPU_LOST); three seconds after the first frame, it draws.
-      await drawn();
+      // the device (WEBGPU_LOST); three seconds after the first pages, it draws.
+      await drawn('Drawing the first pages');
       await new Promise((settled) => setTimeout(settled, 3000));
       step('Starting the physics');
 
@@ -78,8 +78,7 @@
       await play.ready;
       // You arrive at street level downtown: the frame reads only what stands around you.
       play.teleport(play.teleports.includes('Airport — terminal') ? 'Airport — terminal' : play.teleports[0]);
-      step('Streaming what stands around you');
-      await drawn();
+      await drawn('Streaming what stands around you');
       document.getElementById('loading').remove();
 
       // Lamps the regions declared on their fixtures light up with the night.
@@ -145,7 +144,6 @@
             `geometry pool ${shown(frame.geometryPoolBytes / 2 ** 20, ' MB')}`,
             `texture pool ${shown(frame.texturePoolBytes / 2 ** 20, ' MB')}`,
             `budget-limited ${frame.coverageBudgetLimited ? 'yes' : 'no'}`,
-            `budget pixel error ${frame.budgetPixelError == null ? '—' : frame.budgetPixelError.toFixed(2)}`,
             `simulation ${play.state.stepMs == null ? '—' : play.state.stepMs.toFixed(2)} ms`,
             `mode ${play.mode} · ${Math.round(sky.time)}h`,
           ].join('\n'),
