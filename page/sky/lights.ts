@@ -15,7 +15,8 @@ export type SkyLights = {
   /**
    * The sky's fog, painted and widened by the rain, held off `scene.fog`. Waiting on the engine:
    * a material's `fog: false` read on WebGPU (WebGL2 alone reads it); until then the fog would
-   * wash the dome, the sun and the stars into the horizon. `scene.fog = fog` is the change left.
+   * wash the dome, the sun and the stars into the horizon. The change left: `scene.fog = fog`,
+   * set again after each write of `far` (the engine hears the colour's writes, not `far`'s).
    */
   fog: FogLike;
   /** Writes one moment into the lights, the background, the fog and the environment. */
