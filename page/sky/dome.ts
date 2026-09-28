@@ -63,7 +63,7 @@ export function createDome(engine: SkyEngine, radius: number, unit: number): Dom
     color: colours,
     index: engine.buffer.uint32(domeIndices(), 1),
   });
-  // Waiting on the engine: `fog: false` (the dome must not fade into its own fog).
+  // `fog: false`: the dome must not fade into its own fog (WebGPU waits, `SkyLights.fog`).
   const shell = engine.object.mesh(
     geometry,
     engine.material.meshBasic({
@@ -74,10 +74,13 @@ export function createDome(engine: SkyEngine, radius: number, unit: number): Dom
     }),
   );
   shell.renderOrder = -2;
+  // A mesh casts by default: the sky around the camera would shade the whole world.
+  shell.castShadow = false;
   const disc = (at: number) => {
     const glow = engine.material.meshBasic({ color: 0xffffff, depthWrite: false, fog: false });
     const body = engine.object.mesh(engine.geometry.sphere(at * Math.tan(DISC), 16, 8), glow);
     body.renderOrder = -1;
+    body.castShadow = false;
     return { body, glow };
   };
   const sun = disc(radius * 0.98);

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { createDome } from './dome.ts';
 import { fakeEngine } from './engine.fixture.ts';
 import { createSky } from './sky.ts';
 
@@ -49,6 +50,7 @@ describe('sky', () => {
     }
     assert.deepEqual([...seen].sort(), [false, true]);
     assert.ok(moving.rain.node.visible);
+    assert.equal(world.scene.fog, null, 'the fog is held off the scene: it would wash the sky');
     assert.equal(moving.lampIntensity({ night: false, intensity: 5 } as never), 5);
   });
 
@@ -66,5 +68,11 @@ describe('sky', () => {
     assert.equal(world.hooks.size, 0, 'unhooked from the frames');
     assert.deepEqual(world.scene.children, [], 'nothing left in the scene');
     assert.equal(world.scene.environment, null);
+  });
+
+  it('keeps the dome, the sun and the moon out of the shadow maps', () => {
+    const dome = createDome(fakeEngine(), 1_000, 1);
+    assert.equal(dome.node.children.length, 3);
+    for (const part of dome.node.children) assert.equal(part.castShadow, false);
   });
 });
