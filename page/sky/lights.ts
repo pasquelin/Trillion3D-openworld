@@ -1,7 +1,7 @@
 import { normalise, scale } from './atmosphere.ts';
 import type { Daylight } from './daylight.ts';
 import { unitAt } from './dome.ts';
-import type { ColorLike, LightLike, Rgb, SkyEngine, SkyWorld } from './engine.ts';
+import type { ColorLike, FogLike, LightLike, Rgb, SkyEngine, SkyWorld } from './engine.ts';
 
 /** The environment picture's size: one texel every 11.25°, enough for a diffuse sky. */
 const ENV_WIDTH = 32;
@@ -13,12 +13,11 @@ export type SkyLights = {
   key: LightLike;
   fill: LightLike;
   /**
-   * The sky's fog, painted and widened by the rain like the rest, held off `scene.fog`. Waiting
-   * on the engine: a material's `fog: false` read on WebGPU (WebGL2 alone reads it); until then,
-   * the scene's fog would wash the dome, the sun and the stars into the horizon's colour. Read by
-   * nothing until then; kept so that `scene.fog = fog` is the one change left.
+   * The sky's fog, painted and widened by the rain, held off `scene.fog`. Waiting on the engine:
+   * a material's `fog: false` read on WebGPU (WebGL2 alone reads it); until then the fog would
+   * wash the dome, the sun and the stars into the horizon. `scene.fog = fog` is the change left.
    */
-  fog: { color: ColorLike; near: number; far: number };
+  fog: FogLike;
   /** Writes one moment into the lights, the background, the fog and the environment. */
   apply(day: Daylight, horizon: Rgb): void;
   /** Keeps the key light's shadow frustum on the camera. */
@@ -48,7 +47,7 @@ export function createSkyLights(
   scene.add(key, fill, key.target);
   const background = engine.math.color();
   scene.background = background;
-  const fog = { color: engine.math.color(), near: options.fogNear, far: options.fogFar };
+  const fog: FogLike = { color: engine.math.color(), near: options.fogNear, far: options.fogFar };
   const pixels = new Float32Array(ENV_WIDTH * ENV_HEIGHT * 4);
   const environment = engine.texture.data(pixels, ENV_WIDTH, ENV_HEIGHT, 'rgba');
   // Waiting on the engine: environment lighting (IBL) from `scene.environment`.

@@ -41,6 +41,8 @@ export type LightLike = Engine.Light & {
   shadow?: { cascades: number; distance: number };
 };
 export type ColorLike = Engine.Color;
+/** The scene's linear fog, as `scene.fog` takes it. */
+export type FogLike = Extract<NonNullable<SkyWorld['scene']['fog']>, { far: number }>;
 
 /** Linear RGB, each channel ≥ 0. */
 export type Rgb = readonly [number, number, number];
