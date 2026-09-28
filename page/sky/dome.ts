@@ -63,7 +63,7 @@ export function createDome(engine: SkyEngine, radius: number, unit: number): Dom
     color: colours,
     index: engine.buffer.uint32(domeIndices(), 1),
   });
-  // Waiting on the engine: `fog: false` (the dome must not fade into its own fog).
+  // `fog: false`: the dome must not fade into its own fog (WebGPU waits, `SkyLights.fog`).
   const shell = engine.object.mesh(
     geometry,
     engine.material.meshBasic({
