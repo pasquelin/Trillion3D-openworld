@@ -74,10 +74,13 @@ export function createDome(engine: SkyEngine, radius: number, unit: number): Dom
     }),
   );
   shell.renderOrder = -2;
+  // A mesh casts by default: the sky around the camera would shade the whole world.
+  shell.castShadow = false;
   const disc = (at: number) => {
     const glow = engine.material.meshBasic({ color: 0xffffff, depthWrite: false, fog: false });
     const body = engine.object.mesh(engine.geometry.sphere(at * Math.tan(DISC), 16, 8), glow);
     body.renderOrder = -1;
+    body.castShadow = false;
     return { body, glow };
   };
   const sun = disc(radius * 0.98);

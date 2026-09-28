@@ -12,11 +12,17 @@ const CASCADES = 4;
 export type SkyLights = {
   key: LightLike;
   fill: LightLike;
+  /**
+   * The sky's fog, painted and widened by the rain like the rest, held off `scene.fog`. Waiting
+   * on the engine: a material's `fog: false` read on WebGPU (WebGL2 alone reads it); until then,
+   * the scene's fog would wash the dome, the sun and the stars into the horizon's colour.
+   */
+  fog: { color: ColorLike; near: number; far: number };
   /** Writes one moment into the lights, the background, the fog and the environment. */
   apply(day: Daylight, horizon: Rgb): void;
   /** Keeps the key light's shadow frustum on the camera. */
   follow(camera: { x: number; y: number; z: number }): void;
-  /** Takes the lights, the background, the fog and the environment back out of the scene. */
+  /** Takes the lights, the background and the environment back out of the scene. */
   dispose(): void;
 };
 
@@ -25,7 +31,7 @@ const set = (colour: ColorLike, c: Rgb) => colour.setRGB(c[0], c[1], c[2]);
 /**
  * The lights the sky gives the scene, in the page's light `unit` (the key light's intensity for
  * a zenith sun): one shadow-casting directional light for the sun or the moon, a hemisphere
- * light for the sky above and the ground below, and the scene's background, fog and
+ * light for the sky above and the ground below, and the scene's background, the fog and the
  * environment kept on the same colours.
  */
 export function createSkyLights(
@@ -41,8 +47,7 @@ export function createSkyLights(
   scene.add(key, fill, key.target);
   const background = engine.math.color();
   scene.background = background;
-  // Waiting on the engine: `scene.fog` (aerial perspective over the world's distances).
-  scene.fog = { color: engine.math.color(), near: options.fogNear, far: options.fogFar };
+  const fog = { color: engine.math.color(), near: options.fogNear, far: options.fogFar };
   const pixels = new Float32Array(ENV_WIDTH * ENV_HEIGHT * 4);
   const environment = engine.texture.data(pixels, ENV_WIDTH, ENV_HEIGHT, 'rgba');
   // Waiting on the engine: environment lighting (IBL) from `scene.environment`.
@@ -53,6 +58,7 @@ export function createSkyLights(
   return {
     key,
     fill,
+    fog,
     apply(day, horizon) {
       direction = day.key.direction;
       set(key.color, day.key.colour);
@@ -62,7 +68,7 @@ export function createSkyLights(
       fill.intensity = options.unit * sky.peak;
       set(fill.groundColor, scale(day.fill.ground, sky.peak > 0 ? 1 / sky.peak : 0));
       set(background, horizon);
-      if (scene.fog) set(scene.fog.color, horizon);
+      set(fog.color, horizon);
       for (let row = 0; row < ENV_HEIGHT; row++)
         for (let column = 0; column < ENV_WIDTH; column++) {
           const view = unitAt((row + 0.5) / ENV_HEIGHT, (column + 0.5) / ENV_WIDTH);
@@ -83,7 +89,7 @@ export function createSkyLights(
     },
     dispose() {
       scene.remove(key, fill, key.target);
-      scene.background = scene.fog = scene.environment = null;
+      scene.background = scene.environment = null;
     },
   };
 }

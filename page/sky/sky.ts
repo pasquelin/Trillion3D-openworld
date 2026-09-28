@@ -178,8 +178,7 @@ export function createSky(options: SkyOptions): Sky {
       clouds.update(seconds, eye, wind);
       rain.update(seconds, at, wind);
       effects.update(seconds, at, wind, day.nightFactor);
-      if (world.scene.fog)
-        world.scene.fog.far = size + (RAIN_VISIBILITY - size) * Math.min(1, rain.amount);
+      lights.fog.far = size + (RAIN_VISIBILITY - size) * Math.min(1, rain.amount);
       if (world.exposure !== day.exposure) world.exposure = day.exposure;
     },
     dispose() {
