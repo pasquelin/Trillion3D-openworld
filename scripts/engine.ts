@@ -1,8 +1,10 @@
 /**
  * The Trillion3D engine at the commit `package.json` pins (`trillion3d.commit`), checked out under
- * `.engine/` (ignored by git). Only its `packages/` are fetched: the page bundles the browser
- * engine from its public entry point (`packages/sdk-browser/src/index.ts`) and the cook runs its
- * native compiler, built here with `--compiler`. Nothing of the engine is copied into this
+ * `.engine/` (ignored by git). Only its `packages/` and `.cargo/` are fetched: the page bundles the
+ * browser engine from its public entry point (`packages/sdk-browser/src/index.ts`) and the cook
+ * runs its native compiler, built here with `--compiler` from inside the checkout, so cargo reads
+ * the engine's own configuration (the C++ flags that keep the cook's bytes the same everywhere),
+ * with the Jolt submodule its physics cook links. Nothing of the engine is copied into this
  * repository, and nothing outside it is read.
  *
  * A pnpm git dependency cannot carry it: pnpm packs a git dependency by its `files` field, which
@@ -48,7 +50,7 @@ export async function checkoutEngine() {
   await rm(ENGINE, { recursive: true, force: true });
   execFileSync('git', ['init', '--quiet', ENGINE]);
   git('remote', 'add', 'origin', repository);
-  git('sparse-checkout', 'set', '--cone', 'packages');
+  git('sparse-checkout', 'set', '--cone', 'packages', '.cargo');
   git('fetch', '--quiet', '--depth', '1', '--filter=blob:none', 'origin', commit);
   git('checkout', '--quiet', '--detach', 'FETCH_HEAD');
 }
@@ -57,8 +59,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   await checkoutEngine();
   console.log(`engine: ${pinnedEngine().commit} in ${ENGINE}`);
   if (process.argv.includes('--compiler')) {
+    git('submodule', 'update', '--init', '--depth', '1', 'packages/physics-jolt-wasm/JoltPhysics');
     const manifest = resolve(ENGINE, 'packages/asset-compiler-rust/Cargo.toml');
     execFileSync('cargo', ['build', '--release', '--locked', '--manifest-path', manifest], {
+      cwd: ENGINE,
       stdio: 'inherit',
     });
     console.log(`compiler: ${compilerExecutable()}`);
