@@ -7,7 +7,7 @@
   "license": "PolyForm-Noncommercial-1.0.0",
   "trillion3d": {
     "repository": "https://github.com/pasquelin/Trillion3D.git",
-    "commit": "77df51383083e01fb5d07abea7c2d59b2848f4de"
+    "commit": "a89833659e68db662b8fbc5b74a12b8b3ea6190b"
   },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
