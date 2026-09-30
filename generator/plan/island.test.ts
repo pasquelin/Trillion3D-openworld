@@ -66,6 +66,22 @@ for (const seed of [332, 333]) {
         assert.ok(plan.height(marker.position[0], marker.position[2]) > 0, marker.name);
       }
     });
+    it('joins the airport platform boundary continuously within the secondary-road grade', () => {
+      const course = plan.courses.find((c) => c.road.id === 'airport-access')!,
+        points = course.road.points,
+        boundary = points.at(-2)!,
+        terminal = points.at(-1)!;
+      assert.equal(boundary[2], plan.platform.maxZ);
+      assert.equal(boundary[1], plan.platform.level);
+      assert.equal(terminal[1], plan.platform.level);
+      assert.equal(course.bridge.length, points.length - 1);
+      assert.equal(course.tunnel.length, points.length - 1);
+      for (let k = 1; k < points.length; k++) {
+        const a = points[k - 1],
+          b = points[k];
+        assert.ok(Math.abs(a[1] - b[1]) / Math.hypot(a[0] - b[0], a[2] - b[2]) <= 0.080001);
+      }
+    });
     it('retains required road connections and no smoothed road segment crosses sea', () => {
       for (const id of [
         ...Array.from({ length: 6 }, (_, k) => `highway-${k}`),

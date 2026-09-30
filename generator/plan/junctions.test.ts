@@ -8,6 +8,20 @@ const course = (id: string, points: Vec3[]): RoadCourse => ({
   bridge: points.slice(1).map(() => false),
   tunnel: points.slice(1).map(() => false),
 });
+test('a connector sharing an existing target endpoint never inserts a zero-length segment', () => {
+  const main = course('main', [
+      [0, 5, 0],
+      [100, 5, 0],
+    ]),
+    spur = course('port/road', [
+      [100, 5, -100],
+      [100, 5, -10],
+    ]);
+  joinRoadProfiles([main, spur], [], () => 3);
+  assert.equal(main.road.points.length, 2);
+  assert.deepEqual(spur.road.points.at(-1), main.road.points.at(-1));
+  assert.equal(main.bridge.length, main.road.points.length - 1);
+});
 test('junctions alter authored geometry to one height and preserve road grade across approach', () => {
   const a = course('a', [
       [0, 2, 0],

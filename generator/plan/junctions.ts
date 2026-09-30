@@ -60,6 +60,8 @@ export function joinRoadProfiles(
     course.tunnel = [...course.tunnel, false];
     // The target's exact junction vertex makes the connector part of its centreline too.
     const targetPoints = [...target.course.road.points];
+    // Projection onto an existing endpoint already has a junction; a duplicate makes a zero-length edge.
+    if (targetPoints.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 0.0001)) continue;
     const at = targetPoints.findIndex((q, i) => {
       const r = targetPoints[i + 1];
       return (

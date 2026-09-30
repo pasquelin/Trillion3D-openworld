@@ -52,7 +52,7 @@ export function planNetwork(
     from: Point2,
     to: Point2 | 'network',
     joins = true,
-    destination?: Vec3,
+    destination?: readonly Vec3[],
   ) => {
     if (to === 'network' && onNetwork.has(node(from[0], from[1]))) return;
     const built = buildRoad(
@@ -74,7 +74,9 @@ export function planNetwork(
     if (!built) failedConnections.push(id);
     if (built && destination) {
       // Preserve the exact landmark beyond the terrain router's rounded grid endpoint.
-      built.course.road.points = [...built.course.road.points.slice(0, -1), destination];
+      built.course.road.points = [...built.course.road.points.slice(0, -1), ...destination];
+      built.course.bridge = [...built.course.bridge, ...destination.slice(1).map(() => false)];
+      built.course.tunnel = [...built.course.tunnel, ...destination.slice(1).map(() => false)];
     }
     keep(built, joins);
   };
@@ -100,9 +102,8 @@ export function planNetwork(
     FIELD.curbside,
   );
   road('airport-access', 'secondary', interchange, [centreX, platform.maxZ + 100], true, [
-    terminal[0],
-    ground.height(...terminal),
-    terminal[1],
+    [centreX, platform.level, platform.maxZ],
+    [terminal[0], platform.level, terminal[1]],
   ]);
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
@@ -119,7 +120,7 @@ export function planNetwork(
       z < mountainBounds.maxZ - margin,
   )[0];
   if (summit && (resort || mountainTown))
-    road('summit-trail', 'dirt', xz((resort || mountainTown)!), xz(summit), false, summit);
+    road('summit-trail', 'dirt', xz((resort || mountainTown)!), xz(summit), false, [summit]);
   for (const s of settlements)
     if (s.kind === 'village' || (s.kind === 'port' && s.region === 'city'))
       road(`${s.id}/road`, 'secondary', xz(s), 'network');
