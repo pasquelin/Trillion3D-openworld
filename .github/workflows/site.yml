@@ -30,7 +30,9 @@ jobs:
       - id: cook
         uses: actions/cache@v4
         with:
-          path: dist/assets
+          path: |
+            dist/assets
+            dist/workloads
           key: cook-${{ steps.key.outputs.key }}
       - if: steps.cook.outputs.cache-hit != 'true'
         uses: dtolnay/rust-toolchain@stable
@@ -54,6 +56,12 @@ jobs:
           free -h; df -h /
       - if: steps.cook.outputs.cache-hit != 'true'
         run: pnpm run cook
+      - name: Cook the separate street block workloads
+        if: steps.cook.outputs.cache-hit != 'true'
+        run: |
+          pnpm workload one-block
+          pnpm workload four-blocks
+          pnpm workload sixteen-blocks
       - name: Runner memory and disk after the cook
         if: always() && steps.cook.outputs.cache-hit != 'true'
         run: free -h; df -h /
@@ -67,6 +75,12 @@ jobs:
           for file in index.html runtime/engine.js runtime/openworld.js "assets/$KEY/world.json" \
             "assets/$KEY/cache/native/full/manifest.json"; do
             test -s "dist/$file" || { echo "::error::dist/$file is missing"; exit 1; }
+          done
+          test -s dist/workload.html
+          for preset in one-block four-blocks sixteen-blocks; do
+            for file in report.json cache/native/full/manifest.json; do
+              test -s "dist/workloads/$preset/$file" || { echo "::error::workload $preset/$file missing"; exit 1; }
+            done
           done
           tiles=$(node -p "const w = require('./dist/assets/$KEY/world.json'); (w.size / w.tile) ** 2")
           floor=$(( $(git ls-files page/i18n | wc -l) + 13 + 2 * tiles ))

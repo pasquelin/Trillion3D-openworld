@@ -15,24 +15,27 @@ import { pinnedEngine } from './engine.ts';
 const root = resolve(import.meta.dirname, '..');
 const INPUTS = [
   'generator',
+  'assets/buildings',
   'page/play',
   'scripts/cook.ts',
   'scripts/cook-key.ts',
   'scripts/compiler.ts',
+  'scripts/workload.ts',
   'scripts/engine.ts',
   'pnpm-lock.yaml',
 ];
 
-export function cookKey(): string {
+export function cookKey(directory: string = root): string {
   const hash = createHash('sha256').update(pinnedEngine().commit);
   const files = execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z', ...INPUTS], {
-    cwd: root,
+    cwd: directory,
     encoding: 'utf8',
   })
     .split('\0')
     .filter(Boolean)
     .sort();
-  for (const file of files) hash.update(`\0${file}\0`).update(readFileSync(resolve(root, file)));
+  for (const file of files)
+    hash.update(`\0${file}\0`).update(readFileSync(resolve(directory, file)));
   return hash.digest('hex').slice(0, 16);
 }
 

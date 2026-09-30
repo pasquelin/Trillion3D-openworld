@@ -1,0 +1,105 @@
+[
+  {
+    "id": "kenney-small-b",
+    "file": "kenney/building-small-b.glb",
+    "repository": "https://github.com/KenneyNL/Starter-Kit-City-Builder",
+    "revision": "4535092b740b378b700efd9df9e27a631815b84a",
+    "license": "CC0-1.0",
+    "licenseFile": "kenney/LICENSE.md",
+    "licenseSource": "https://github.com/KenneyNL/Starter-Kit-City-Builder/blob/4535092b740b378b700efd9df9e27a631815b84a/README.md",
+    "nativeUnits": "glTF 2 coordinate units (specified as metres); the pack does not document a full-size architectural scale",
+    "metresPerSourceUnit": 8,
+    "bounds": {
+      "min": [-0.5, 0.0, -0.5],
+      "max": [0.5, 1.626499891281128, 0.5]
+    },
+    "indexedTriangles": 600,
+    "materials": 1,
+    "collision": "static mesh from engine cooked cache; fixture ground and procedural buildings use same cache",
+    "files": [
+      {
+        "path": "kenney/building-small-b.glb",
+        "source": "https://github.com/KenneyNL/Starter-Kit-City-Builder/blob/4535092b740b378b700efd9df9e27a631815b84a/models/building-small-b.glb",
+        "bytes": 49764,
+        "sha256": "0bc8459045975158524753d6b648ff77e5f91fe8c033bc4886930b6d55543a2b",
+        "license": "CC0-1.0"
+      },
+      {
+        "path": "kenney/Textures/colormap.png",
+        "source": "https://github.com/KenneyNL/Starter-Kit-City-Builder/blob/4535092b740b378b700efd9df9e27a631815b84a/models/Textures/colormap.png",
+        "bytes": 10108,
+        "sha256": "106cf02e0d6dccded6d9f90c2ae6a51eb94c6301645fea159e834c44ed4708a3",
+        "license": "CC0-1.0",
+        "dimensions": [512, 512],
+        "units": "texels",
+        "colorSpace": "sRGB base color, as referenced by glTF pbrMetallicRoughness.baseColorTexture"
+      }
+    ],
+    "buildingClass": "low",
+    "normalization": "Original bytes and node transform retained. Chosen application instance scale 8 gives a representative building silhouette; not an inferred real-world source scale.",
+    "authoredNodeTransform": {
+      "translation": [0, 0, 0],
+      "rotation": [0, 0, 0, 1],
+      "scale": [1, 1, 1]
+    },
+    "normalizedBoundsMetres": {
+      "min": [-4.0, 0.0, -4.0],
+      "max": [4.0, 13.011999130249023, 4.0]
+    }
+  },
+  {
+    "id": "kaykit-h",
+    "file": "kaykit/building_H.gltf",
+    "repository": "https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0",
+    "revision": "63976910ca04d16f0fc531b9c614244be8128713",
+    "license": "CC0-1.0",
+    "licenseFile": "kaykit/LICENSE.txt",
+    "licenseSource": "https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0/blob/63976910ca04d16f0fc531b9c614244be8128713/addons/kaykit_city_builder_bits/Assets/LICENSE.txt",
+    "nativeUnits": "glTF 2 coordinate units (specified as metres); the pack does not document a full-size architectural scale",
+    "metresPerSourceUnit": 8,
+    "bounds": {
+      "min": [-1.0033698081970215, 0, -1],
+      "max": [1.0033698081970215, 3.049999952316284, 1]
+    },
+    "indexedTriangles": 1885,
+    "materials": 1,
+    "collision": "static mesh from engine cooked cache; fixture ground and procedural buildings use same cache",
+    "files": [
+      {
+        "path": "kaykit/building_H.gltf",
+        "source": "https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0/blob/63976910ca04d16f0fc531b9c614244be8128713/addons/kaykit_city_builder_bits/Assets/gltf/building_H.gltf",
+        "bytes": 3016,
+        "sha256": "319d8392ba3b1662ca8506cfda7dbecc694a7d60268e20a136cdeecbe472d6d2",
+        "license": "CC0-1.0"
+      },
+      {
+        "path": "kaykit/building_H.bin",
+        "source": "https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0/blob/63976910ca04d16f0fc531b9c614244be8128713/addons/kaykit_city_builder_bits/Assets/gltf/building_H.bin",
+        "bytes": 118064,
+        "sha256": "fbee968ad467c244087d0694febfcbb32300f803ac56e434e485f6ce47577e29",
+        "license": "CC0-1.0"
+      },
+      {
+        "path": "kaykit/citybits_texture.png",
+        "source": "https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0/blob/63976910ca04d16f0fc531b9c614244be8128713/addons/kaykit_city_builder_bits/Assets/gltf/citybits_texture.png",
+        "bytes": 19885,
+        "sha256": "6d2d9a5a13bce32209cd8c04572ab170504d68f34b1519165c9b0c41871e235b",
+        "license": "CC0-1.0",
+        "dimensions": [1024, 1024],
+        "units": "texels",
+        "colorSpace": "sRGB base color, as referenced by glTF pbrMetallicRoughness.baseColorTexture"
+      }
+    ],
+    "buildingClass": "mid",
+    "normalization": "Original bytes and node transform retained. Chosen application instance scale 8 gives a representative building silhouette; not an inferred real-world source scale.",
+    "authoredNodeTransform": {
+      "translation": [0, 0, 0],
+      "rotation": [0, 0, 0, 1],
+      "scale": [1, 1, 1]
+    },
+    "normalizedBoundsMetres": {
+      "min": [-8.026958465576172, 0, -8],
+      "max": [8.026958465576172, 24.399999618530273, 8]
+    }
+  }
+]

@@ -14,6 +14,7 @@
     "engine": "node scripts/engine.ts",
     "engine:compiler": "node scripts/engine.ts --compiler",
     "cook": "node scripts/cook.ts",
+    "workload": "node scripts/workload.ts",
     "build": "node scripts/build.ts",
     "serve": "node scripts/serve.ts",
     "test": "node --test \"generator/**/*.test.ts\" \"page/**/*.test.ts\"",

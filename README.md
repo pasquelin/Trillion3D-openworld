@@ -155,6 +155,12 @@ the tracked git hooks; `.github/ruleset.json` is the ruleset applied to `main`.
 
 ## Licence
 
+The original CC0 building models and atlases under `assets/buildings/` retain their own
+[asset-specific licenses and pinned provenance](docs/ASSETS.md). The application license below
+does not replace their CC0 terms. Separate [street block workloads](docs/ASSETS.md#street-block-workloads)
+can be cooked with `pnpm workload one-block`, `four-blocks` or `sixteen-blocks` and viewed at
+`workload.html` after `pnpm build` and `pnpm serve`.
+
 Trillion3D Open World is published under the [PolyForm Noncommercial License 1.0.0](LICENSE):
 free for noncommercial use, study, research and personal projects. **Commercial use requires a
 separate licence** from the copyright holder — open an issue or contact the author.

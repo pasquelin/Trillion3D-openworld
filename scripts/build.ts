@@ -54,6 +54,7 @@ await cp(resolve(root, 'page/i18n'), resolve(out, 'i18n'), { recursive: true });
 const key = cookKey(),
   page = await readFile(resolve(root, 'page/index.html'), 'utf8');
 await writeFile(resolve(out, 'index.html'), page.replace("'./assets/'", `'./assets/${key}/'`));
+await cp(resolve(root, 'page/workload.html'), resolve(out, 'workload.html'));
 if (!existsSync(resolve(out, 'assets', key, 'world.json')))
   console.warn(`no cooked world for key ${key}: run \`pnpm cook\` to play the page`);
 console.log(`built ${out}`);
