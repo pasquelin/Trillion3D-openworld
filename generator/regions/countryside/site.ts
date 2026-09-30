@@ -4,6 +4,7 @@
  * the bounds, on a road or in water, over another prop, or on ground too uneven for it — so the
  * output never overlaps, floats or sinks by construction, and the test checks it again.
  */
+import { dryFootprint } from '../../plan/dry.ts';
 import type { Bounds, Instance, PropMesh, Road, WorldPlan } from '../../plan/contract.ts';
 import {
   corners,
@@ -111,6 +112,7 @@ export class Site {
   /** True when `r` lies inside the bounds, off roads and water (unless allowed), over no prop. */
   free(r: Rect, { onRoad = false, inWater = false } = {}): boolean {
     const b = this.bounds;
+    if (!inWater && !dryFootprint(this.plan.height, r.x, r.z, r.hx, r.hz, r.yaw)) return false;
     for (const [x, z] of corners(r))
       if (x < b.minX + EDGE || x > b.maxX - EDGE || z < b.minZ + EDGE || z > b.maxZ - EDGE)
         return false;

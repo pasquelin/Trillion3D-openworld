@@ -107,7 +107,7 @@ export function plantStands(options: StandOptions): { patches: number; trees: nu
             ...samples.map(([dx, dz, h]) => Math.abs(h - centre) / (Math.hypot(dx, dz) || 1)),
           ),
           biome = biomeAt(x, z, centre, Math.atan(rise) / (Math.PI / 2));
-        if (!biome) continue;
+        if (!biome || centre <= 0 || samples.some(([, , h]) => h <= 0)) continue;
         const spot = fitStand(
           samples,
           variants.filter((v) => v.biome === biome),

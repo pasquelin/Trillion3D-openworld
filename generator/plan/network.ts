@@ -20,6 +20,7 @@ export type Network = {
   bridges: Bridge[];
   tunnels: Tunnel[];
   viewpoints: Vec3[];
+  failedConnections: string[];
 };
 
 export function planNetwork(
@@ -33,6 +34,7 @@ export function planNetwork(
     bridges: Bridge[] = [],
     tunnels: Tunnel[] = [],
     viewpoints: Vec3[] = [],
+    failedConnections: string[] = [],
     onNetwork = new Set<number>(),
     find = (id: string) => settlements.find((s) => s.id === id),
     xz = (s: Settlement | Vec3): Point2 =>
@@ -44,18 +46,27 @@ export function planNetwork(
     tunnels.push(...built.tunnels);
     if (joinsNetwork) for (const [x, , z] of built.course.road.points) onNetwork.add(node(x, z));
   };
-  const road = (id: string, cls: RoadClass, from: Point2, to: Point2 | 'network', joins = true) =>
-    keep(
-      buildRoad(
-        id,
-        cls,
-        from,
-        to === 'network' ? (index) => onNetwork.has(index) : to,
-        ground,
-        overRiver,
-      ),
-      joins,
+  const road = (id: string, cls: RoadClass, from: Point2, to: Point2 | 'network', joins = true) => {
+    if (to === 'network' && onNetwork.has(node(from[0], from[1]))) return;
+    const built = buildRoad(
+      id,
+      cls,
+      from,
+      to === 'network' ? (index) => onNetwork.has(index) : to,
+      {
+        ...ground,
+        wet: (x, z) =>
+          ground.wet(x, z) ||
+          (x > platform.minX - 60 &&
+            x < platform.maxX + 60 &&
+            z > platform.minZ - 60 &&
+            z < platform.maxZ + 60),
+      },
+      overRiver,
     );
+    if (!built) failedConnections.push(id);
+    keep(built, joins);
+  };
 
   // The airport interchange sits south of the platform, facing the city.
   const centreX = (platform.minX + platform.maxX) / 2,
@@ -73,7 +84,7 @@ export function planNetwork(
   ring.forEach((stop, index) =>
     road(`highway-${index}`, 'highway', stop, ring[(index + 1) % ring.length]),
   );
-  road('airport-access', 'secondary', interchange, [centreX, platform.maxZ - 300]);
+  road('airport-access', 'secondary', interchange, [centreX, platform.maxZ + 100]);
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
   if (resort && mountainTown) road('pass', 'pass', xz(mountainTown), xz(resort));
@@ -128,7 +139,7 @@ export function planNetwork(
       shore: Point2 = [lake.x + lake.radius + ROAD_STEP, lake.z];
     if (village) road(`trail/${lake.id}`, 'dirt', xz(village), shore, false);
   }
-  return { courses, bridges, tunnels, viewpoints };
+  return { courses, bridges, tunnels, viewpoints, failedConnections };
 }
 
 const dist = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[2] - b[2]);

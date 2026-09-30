@@ -1,16 +1,15 @@
 /**
  * The global, low-frequency relief of the world (Trillion3D#332), packed into the map's layout: the coast
- * runs along the south edge with islands offshore, a compact range rises along the north edge, a
+ * encloses the island with offshore islets, a compact range rises in the north interior, a
  * low desert plateau lies to the west, rolling land fills the rest. Regions refine it; rivers and
  * roads cut it later.
  */
 import { WORLD } from './contract.ts';
 import { fbm, hash2, nameSeed, ridged, smoothstep } from './noise.ts';
+import { enclosingCoast, preserveShore } from './shore.ts';
 
 /** Depth scale of the continental shelf, metres: the sea a swimmer or a boat sees near shore. */
 const SHELF = 80;
-/** Mean shoreline, metres south of the centre: the sea keeps a 1.5 km strip along the south edge. */
-const COAST_Z = WORLD.size / 2 - 1_500;
 
 export type Island = { x: number; z: number; top: number; radius: number };
 
@@ -33,9 +32,17 @@ export function createRelief(seed: number): Relief {
       'roll',
       'islands',
     ].map(s),
-    southCoastZ = (x: number) =>
-      COAST_Z + 180 * fbm(southSeed, x / 2_500, 0.5, 3) + 50 * fbm(southSeed + 7, x / 500, 0, 2),
-    coast = (x: number, z: number) => southCoastZ(x) - z;
+    coast = enclosingCoast(southSeed),
+    southCoastZ = (x: number) => {
+      let low = -500,
+        high = WORLD.size / 2;
+      for (let k = 0; k < 32; k++) {
+        const middle = (low + high) / 2;
+        if (coast(x, middle) > 0) low = middle;
+        else high = middle;
+      }
+      return (low + high) / 2;
+    };
   // Three islands in the sea strip, one per third of the shore, the last off the coast region.
   const islands: Island[] = Array.from({ length: 3 }, (_, index) => {
     const draw = (salt: number) => hash2(islandSeed, index, salt),
@@ -57,12 +64,12 @@ export function createRelief(seed: number): Relief {
     let height = shore;
     // Each layer is evaluated only where its envelope is non-zero: the sea skips them all.
     if (inland > 0) {
-      const envelope = smoothstep(-2_100, -2_700, z),
+      const envelope = smoothstep(-1_000, -2_200, z),
         plateau = smoothstep(-1_600, -2_200, x) * smoothstep(1_000, 0, z);
       let land = 25 * fbm(rollSeed, x / 1_500, z / 1_500, 4) * (1 + 2 * plateau) + 120 * plateau;
       if (envelope > 0) {
-        const axis = -3_400 + 300 * fbm(axisSeed, x / 3_000, 0.3, 2),
-          range = Math.exp(-(((z - axis) / 900) ** 2)) * envelope;
+        const axis = -2_700 + 100 * fbm(axisSeed, x / 3_000, 0.3, 2),
+          range = Math.exp(-(((z - axis) / 1_100) ** 2)) * envelope;
         land += 2_000 * range * (0.35 + 0.65 * ridged(rangeSeed, x / 2_000, z / 2_000, 6));
       }
       height += inland * land;
@@ -74,7 +81,7 @@ export function createRelief(seed: number): Relief {
         (island.top + SHELF) * Math.exp(-d2) * (1 + 0.15 * fbm(rollSeed + 3, x / 500, z / 500, 3));
       if (bump - SHELF > height) height = bump - SHELF;
     }
-    return height;
+    return preserveShore(-SHELF, height, Math.min(3_750 - Math.abs(x), 3_750 - Math.abs(z)), 200);
   };
   // Scale the land so the highest point of the map, found on a 100 m grid, is exactly the peak.
   let highest = 0;
