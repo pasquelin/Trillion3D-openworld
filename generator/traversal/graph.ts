@@ -36,7 +36,27 @@ export function travelGraph(roads: readonly Road[], walking = false): TravelGrap
         v = [other.b[0] - other.a[0], other.b[2] - other.a[2]],
         d = [other.a[0] - s.a[0], other.a[2] - s.a[2]],
         cross = u[0] * v[1] - u[1] * v[0];
-      if (Math.abs(cross) < 1e-8) continue;
+      if (Math.abs(cross) < 1e-8) {
+        if (Math.abs(d[0] * u[1] - d[1] * u[0]) > 1e-6) continue;
+        for (const p of [s.a, s.b, other.a, other.b]) {
+          const project = (a: Vec3, b: Vec3) =>
+            ((p[0] - a[0]) * (b[0] - a[0]) + (p[2] - a[2]) * (b[2] - a[2])) /
+            ((b[0] - a[0]) ** 2 + (b[2] - a[2]) ** 2);
+          const t = project(s.a, s.b),
+            q = project(other.a, other.b);
+          if (
+            t >= 0 &&
+            t <= 1 &&
+            q >= 0 &&
+            q <= 1 &&
+            Math.abs(mix(s.a, s.b, t)[1] - mix(other.a, other.b, q)[1]) <= 0.2
+          ) {
+            s.cuts.push(t);
+            other.cuts.push(q);
+          }
+        }
+        continue;
+      }
       const t = (d[0] * v[1] - d[1] * v[0]) / cross,
         q = (d[0] * u[1] - d[1] * u[0]) / cross;
       if (t < 0 || t > 1 || q < 0 || q > 1) continue;
@@ -47,13 +67,15 @@ export function travelGraph(roads: readonly Road[], walking = false): TravelGrap
   });
   const points: Vec3[] = [],
     edges: Edge[][] = [],
-    ids = new Map<string, number>();
+    ids = new Map<string, number[]>();
   const node = (p: Vec3) => {
-    const key = p.map((v) => Math.round(v * 100)).join('/');
-    let id = ids.get(key);
+    const key = [p[0], p[2]].map((v) => Math.round(v * 100)).join('/');
+    const bucket = ids.get(key) ?? [];
+    let id = bucket.find((i) => Math.abs(points[i][1] - p[1]) <= 0.2);
     if (id === undefined) {
       id = points.length;
-      ids.set(key, id);
+      bucket.push(id);
+      ids.set(key, bucket);
       points.push(p);
       edges.push([]);
     }

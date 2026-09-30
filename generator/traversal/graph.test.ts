@@ -58,3 +58,16 @@ test('near endpoints, steep segments and runways never fabricate a public juncti
   assert.equal(graphPath(g, node(g, 0, 0), node(g, 200, 0)), null);
   assert.deepEqual(g.rejected, ['steep/0: grade']);
 });
+test('same-level collinear overlap splits at shared geometric endpoints', () => {
+  const g = travelGraph([
+    road('a', [
+      [0, 2, 0],
+      [100, 2, 0],
+    ]),
+    road('b', [
+      [50, 2.05, 0],
+      [150, 2.05, 0],
+    ]),
+  ]);
+  assert.ok(graphPath(g, node(g, 0, 0), node(g, 150, 0)));
+});
