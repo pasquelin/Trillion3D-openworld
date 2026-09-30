@@ -9,7 +9,8 @@ const nearest = (graph: TravelGraph, p: Vec3, radius: number, highway = false) =
     distance = radius;
   graph.points.forEach((v, k) => {
     if (highway && !graph.edges[k].some((edge) => edge.road.startsWith('highway-'))) return;
-    const d = Math.hypot(v[0] - p[0], v[1] - p[1], v[2] - p[2]);
+    // Settlement centres precede earthworks; their road checkpoint uses the authored deck height.
+    const d = Math.hypot(v[0] - p[0], highway ? 0 : v[1] - p[1], v[2] - p[2]);
     if (d < distance) {
       best = k;
       distance = d;
