@@ -69,11 +69,25 @@ function nearestArterial(plan: WorldPlan, x: number, z: number) {
 export function siteOf(plan: WorldPlan): Site {
   const { bounds } = plan.regions.airport,
     { area, margin } = areaOf(plan);
+  return siteFrame(
+    bounds,
+    area,
+    margin,
+    nearestArterial(plan, (area.minX + area.maxX) / 2, (area.minZ + area.maxZ) / 2),
+  );
+}
+
+/** The shared airport frame is available while the plan authors its terminal approach. */
+export function siteFrame(
+  bounds: Bounds,
+  area: Bounds,
+  margin: number,
+  road?: readonly [number, number],
+): Site {
   const alongX = area.maxX - area.minX >= area.maxZ - area.minZ,
     ax = (area.minX + area.maxX) / 2,
     az = (area.minZ + area.maxZ) / 2;
   const u: [number, number] = alongX ? [1, 0] : [0, 1],
-    road = nearestArterial(plan, ax, az),
     side = road && (road[0] - ax) * -u[1] + (road[1] - az) * u[0] < 0 ? -1 : 1,
     v: [number, number] = [-u[1] * side, u[0] * side];
   const spanS = alongX ? area.maxX - area.minX : area.maxZ - area.minZ,

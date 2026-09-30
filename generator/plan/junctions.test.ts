@@ -56,3 +56,16 @@ test('grade conditioning raises bridge approaches without lowering clearance', (
   assert.ok(bridge.road.points[0][1] >= 8);
   assert.deepEqual(spans[0].from, bridge.road.points[0]);
 });
+test('a port endpoint half a routing grid cell from the highway gains an authored dry junction', () => {
+  const main = course('highway-0', [
+      [0, 6, 0],
+      [200, 6, 0],
+    ]),
+    spur = course('port/road', [
+      [100, 4, -100],
+      [100, 4, -50],
+    ]);
+  joinRoadProfiles([main, spur], [], () => 3);
+  assert.deepEqual(spur.road.points.at(-1), [100, 6, 0]);
+  assert.deepEqual(main.road.points[1], [100, 6, 0]);
+});

@@ -2,6 +2,7 @@ import type { Bridge, Vec3 } from './contract.ts';
 import type { RoadCourse } from './carve.ts';
 import { SegmentIndex } from './segments.ts';
 import { boreTunnels } from './tunnels.ts';
+import { STEP } from './route.ts';
 
 const GRADE = {
   highway: 0.06,
@@ -25,7 +26,8 @@ export function joinRoadProfiles(
     course.road.points.slice(1).forEach((b, k) => {
       if (course.road.class === 'dirt' || course.bridge[k] || course.tunnel[k]) return;
       const a = course.road.points[k];
-      index.add(a[0], a[2], b[0], b[2], 35);
+      // A routed endpoint shares a grid cell with the centreline, rather than an exact vertex.
+      index.add(a[0], a[2], b[0], b[2], STEP);
       segments.push({ course, at: k, a, b });
     });
   // Routed-to-network grid cells may end beside a rounded centreline. Add a real dry connector.

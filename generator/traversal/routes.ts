@@ -4,10 +4,11 @@ import { graphPath, travelGraph, type TravelGraph } from './graph.ts';
 import { sampleRoute } from './samples.ts';
 import type { ReplayRoute } from './types.ts';
 
-const nearest = (graph: TravelGraph, p: Vec3, radius: number) => {
+const nearest = (graph: TravelGraph, p: Vec3, radius: number, highway = false) => {
   let best = -1,
     distance = radius;
   graph.points.forEach((v, k) => {
+    if (highway && !graph.edges[k].some((edge) => edge.road.startsWith('highway-'))) return;
     const d = Math.hypot(v[0] - p[0], v[1] - p[1], v[2] - p[2]);
     if (d < distance) {
       best = k;
@@ -33,8 +34,8 @@ export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
   stops.push(interchange, stops[0]);
   for (let k = 1; k < stops.length; k++) {
     if (!stops[k - 1] || !stops[k]) continue;
-    const from = nearest(graph, stops[k - 1]!, 150),
-      to = nearest(graph, stops[k]!, 150);
+    const from = nearest(graph, stops[k - 1]!, 150, true),
+      to = nearest(graph, stops[k]!, 150, true);
     const path = from >= 0 && to >= 0 ? graphPath(graph, from, to) : null;
     if (!path) {
       failures.push(`D1: disconnected ${k - 1} → ${k}`);
@@ -55,7 +56,14 @@ export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
   const routes: ReplayRoute[] = [];
   if (!failures.some((f) => f.startsWith('D1:'))) {
     const raised = points.map(([x, y, z]): Vec3 => [x, y + 1.7, z]);
-    routes.push(sampleRoute('D1', 'Island drive', 'drive', raised, speeds));
+    const drive = sampleRoute('D1', 'Island drive', 'drive', raised, speeds);
+    // The fixed 0 km/h start belongs to the workload alongside road-class 30/60/90 km/h.
+    drive.samples = [
+      { ...drive.samples[0], seconds: 0 },
+      ...drive.samples.map((pose) => ({ ...pose, seconds: pose.seconds + 10 })),
+    ];
+    drive.duration += 10;
+    routes.push(drive);
     routes.push({ ...routes[0], id: 'N1-D1', name: 'Island drive at night', night: true });
   }
   for (const id of ['port', 'airport']) {
@@ -66,7 +74,7 @@ export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
       failures.push(`D1: missing ${id} spur`);
       continue;
     }
-    const from = nearest(graph, stops[0]!, 150),
+    const from = nearest(graph, stops[0]!, 150, true),
       to = nearest(graph, targetRoad.points.at(-1)!, 1);
     const path = from >= 0 && to >= 0 ? graphPath(graph, from, to) : null;
     if (!path) failures.push(`D1: disconnected ${id} spur`);

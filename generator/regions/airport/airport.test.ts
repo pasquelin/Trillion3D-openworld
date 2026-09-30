@@ -154,9 +154,9 @@ test('props are sound, placed by known ids, and the region reads as an airport',
   assert.deepEqual([...new Set(output.roads.map((r) => r.class))].sort(), [
     'avenue',
     'runway',
-    'secondary',
     'taxiway',
   ]);
+  assert.ok(plan.roads.some((road) => road.id === 'airport-access' && road.class === 'secondary'));
   assert.ok(airportRegion.ground.length > 0);
   assert.ok(Math.abs(airportRegion.refine!(1234, 5678, 100)) <= 1.2);
 });

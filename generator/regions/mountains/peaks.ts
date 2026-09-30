@@ -47,7 +47,7 @@ export function groundSummits(
       let top = true;
       for (let di = -1; di <= 1 && top; di++)
         for (let dj = -1; dj <= 1; dj++)
-          if ((di || dj) && (grid[i + di]?.[j + dj] ?? plan.height(...at(i + di, j + dj))) >= h)
+          if ((di || dj) && (grid[i + di]?.[j + dj] ?? height(...at(i + di, j + dj))) >= h)
             top = false;
       if (!top) continue;
       const peak = climb(height, ...at(i, j));
