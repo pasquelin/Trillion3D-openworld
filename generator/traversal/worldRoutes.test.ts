@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { auditRoadWater } from '../build/road-water.ts';
 import { placeWorld } from '../build/world.ts';
 import { solidIndex } from '../build/solids.ts';
 import { buildTraversal } from './build.ts';
@@ -11,7 +12,6 @@ import { civicRouteObservations } from './observations.ts';
 const world = placeWorld(),
   roads = [...world.plan.roads, ...world.placed.flatMap((o) => o.roads)],
   manifest = buildTraversal(world.plan, roads, world.markers, world.city);
-
 test('placeWorld retains actual geometry, roads and settled landmarks for all five urban centres', () => {
   assert.equal(world.centres?.length, 5);
   const output = world.placed.find((o) => o.instances.some((i) => i.name?.startsWith('city/')))!;
@@ -35,7 +35,6 @@ test('placeWorld retains actual geometry, roads and settled landmarks for all fi
   assert.equal(world.city?.id, 'city');
   assert.ok(manifest.routes.some((r) => r.id === 'W1'));
 });
-
 test('the generated island exposes every required traversal with no missing connection or landmark', () => {
   assert.deepEqual(manifest.failures, []);
   const required = [
@@ -162,7 +161,6 @@ test('the full W1 body clearance includes actual cooked-world solids and both CC
       JSON.stringify(sample),
     );
 });
-
 test('F2 reaches the distinct northeast field with exact source endpoint poses and baked clearance', () => {
   const transfer = manifest.routes.find((r) => r.id === 'F2')!,
     departure = world.markers.find(
@@ -193,4 +191,7 @@ test('F2 reaches the distinct northeast field with exact source endpoint poses a
     manifest.routes.find((r) => r.id === 'F1')!.samples[0].position,
     manifest.routes.find((r) => r.id === 'F1')!.samples.at(-1)!.position,
   );
+});
+test('composed road decks clear actual visible aquatic surfaces', () => {
+  assert.deepEqual(auditRoadWater(world.plan, roads).submerged, []);
 });

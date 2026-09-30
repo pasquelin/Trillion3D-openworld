@@ -9,8 +9,7 @@ import { chaikin, limitGrade, resample, smooth, type Point2 } from './polyline.t
 import type { RiverCourse } from './rivers.ts';
 import { boreTunnels, type Tunnel } from './tunnels.ts';
 import { nodeX, nodeZ, route, type HeightGrid } from './route.ts';
-import { SegmentIndex, type Hit } from './segments.ts';
-
+import { ribbonSides } from './water.ts';
 /**
  * Width (metres), steepest grade and profile smoothing (samples each side) per class: the
  * geometry road standards give each kind of road (two lanes each way for a highway, a single
@@ -38,37 +37,6 @@ export type Ground = {
   wet(x: number, z: number): boolean;
   rivers: readonly RiverCourse[];
 };
-
-/** Sheds the ground's rivers into an index a road asks "am I over water here?". */
-export function riverIndex(rivers: readonly RiverCourse[]) {
-  const index = new SegmentIndex(),
-    owner: [RiverCourse, number][] = [];
-  for (const course of rivers) {
-    const { points, widths } = course.river;
-    for (let at = 0; at < points.length - 1; at++) {
-      index.add(
-        points[at][0],
-        points[at][2],
-        points[at + 1][0],
-        points[at + 1][2],
-        widths[at] / 2 + 25,
-      );
-      owner.push([course, at]);
-    }
-  }
-  const hits: Hit[] = [];
-  /** The water level of a river under (x, z), or `null` on dry land. */
-  return (x: number, z: number): number | null => {
-    const [hit] = index.near(x, z, hits);
-    if (!hit) return null;
-    const [course, at] = owner[hit.segment];
-    return (
-      course.river.points[at][1] +
-      (course.river.points[at + 1][1] - course.river.points[at][1]) * hit.t
-    );
-  };
-}
-
 /**
  * The cost of one move for a road class. A `strict` road never climbs a move steeper than its
  * grade, so on a mountainside the cheapest path is the one real roads take: long traverses
@@ -131,12 +99,26 @@ export function layRoad(
     profile = (cls === 'dirt' ? land : limitGrade(land, points, style.grade)).map((y) =>
       Math.max(y, 1),
     ),
-    // A river above the road's grade runs over a cut, not under a deck: no bridge there.
-    water = points.map(([x, z], k) => {
-      const level = overRiver(x, z);
-      return level !== null && level < profile[k] ? level : null;
+    water = points.map(([x, z]) => overRiver(x, z)),
+    sides = ribbonSides(points.map(([x, z]) => [x, 0, z])),
+    // Narrow channels between dry routing vertices still require real bridge geometry.
+    bridge = points.slice(1).map((b, at) => {
+      const a = points[at],
+        steps = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 10));
+      return Array.from({ length: steps + 1 }, (_, k) => k / steps).some((t) =>
+        [-1, 0, 1].some(
+          (side) =>
+            overRiver(
+              a[0] +
+                t * (b[0] - a[0]) +
+                ((((1 - t) * sides[at][0] + t * sides[at + 1][0]) * style.width) / 2) * side,
+              a[1] +
+                t * (b[1] - a[1]) +
+                ((((1 - t) * sides[at][1] + t * sides[at + 1][1]) * style.width) / 2) * side,
+            ) !== null,
+        ),
+      );
     }),
-    bridge = points.slice(1).map((_, at) => water[at] !== null || water[at + 1] !== null),
     bridges: Bridge[] = [];
   for (let at = 0; at < bridge.length; at++) {
     if (!bridge[at] || (at > 0 && bridge[at - 1])) continue;

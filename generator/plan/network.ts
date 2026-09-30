@@ -1,20 +1,18 @@
+/** Shared highway, settlement, airport, mountain and walking connections. */
 import { CITY_CORES } from './geography.ts';
-/**
- * The road network (Trillion3D#332): the regional highway ring, village links, city avenues,
- * airport access, mountain pass, and walking trails between named landmarks.
- */
 import type { Bridge, RoadClass, Settlement, Vec3 } from './contract.ts';
 import type { Lake, Platform, RoadCourse } from './carve.ts';
 import { REGION_BOUNDS } from './layout.ts';
 import type { Point2 } from './polyline.ts';
 import { onAirfield, onOperationalAirfield, type AirfieldPlatforms } from './airfields.ts';
 import type { Tunnel } from './tunnels.ts';
-import { layRoad, buildRoad, riverIndex, ROAD_STEP, type Ground } from './roads.ts';
+import { layRoad, buildRoad, ROAD_STEP, type Ground } from './roads.ts';
 import { node, STEP } from './route.ts';
 import { around, best, slopeAt } from './sites.ts';
 import { joinRoadProfiles } from './junctions.ts';
 import { groundSummits } from '../regions/mountains/peaks.ts';
 import { FIELD, siteFrame } from '../regions/airport/site.ts';
+import { waterSurface, waterFloor } from './water-surface.ts';
 import { avenues } from './avenues.ts';
 export type Network = {
   courses: RoadCourse[];
@@ -30,7 +28,10 @@ export function planNetwork(
   platform: Platform,
   airfields?: AirfieldPlatforms,
 ): Network {
-  const overRiver = riverIndex(ground.rivers),
+  const overRiver = waterSurface(
+      ground.rivers.map((c) => c.river),
+      lakes,
+    ),
     courses: RoadCourse[] = [],
     bridges: Bridge[] = [],
     tunnels: Tunnel[] = [],
@@ -75,14 +76,12 @@ export function planNetwork(
     );
     if (!built) failedConnections.push(id);
     if (built && destination) {
-      // Preserve the exact landmark beyond the terrain router's rounded grid endpoint.
       built.course.road.points = [...built.course.road.points.slice(0, -1), ...destination];
       built.course.bridge = [...built.course.bridge, ...destination.slice(1).map(() => false)];
       built.course.tunnel = [...built.course.tunnel, ...destination.slice(1).map(() => false)];
     }
     keep(built, joins);
   };
-  // The western field's terminal faces east; the interchange keeps clear of both approaches.
   const centreZ = (platform.minZ + platform.maxZ) / 2,
     interchange: Point2 = [platform.maxX + 300, centreZ];
   const ring: Point2[] = [
@@ -129,12 +128,16 @@ export function planNetwork(
     road('summit-trail', 'dirt', xz((resort || mountainTown)!), xz(summit), false, [summit]);
   for (const s of settlements)
     if (s.kind === 'village' || (s.region === 'city' && (s.kind === 'port' || s.kind === 'town')))
-      road(`${s.id}/road`, 'secondary', xz(s), 'network');
+      road(
+        `${s.id}/road`,
+        'secondary',
+        xz(s),
+        s.id === 'city-east' ? xz(find('city')!) : 'network',
+      );
   for (const city of settlements.filter(
     (s) => s.region === 'city' && (s.kind === 'city' || s.kind === 'town'),
   ))
     avenues(city, ground, (id, path) => keep(layRoad(id, 'avenue', path, ground, overRiver)));
-
   const villages = settlements.filter((s) => s.kind === 'village' || s.kind === 'resort'),
     linked = new Set<string>();
   for (const v of villages) {
@@ -189,12 +192,8 @@ export function planNetwork(
       )
         ? ground.height(x, z)
         : undefined,
-    (x, z) => {
-      const water = overRiver(x, z);
-      return water !== null && ground.height(x, z) <= water + 1 ? water + 6 : 0.5;
-    },
+    waterFloor(overRiver),
   );
   return { courses, bridges, tunnels: joinedTunnels, viewpoints, failedConnections };
 }
-
 const dist = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[2] - b[2]);

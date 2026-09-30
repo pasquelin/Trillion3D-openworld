@@ -62,6 +62,13 @@ for road in world['roads']:
         ax.add_patch(Polygon(np.array([a+normal, b+normal, b-normal, a-normal]) / 1000,
             color='#272b2e'))
 
+for key, colour, style, label in [('bridges', '#f7d358', '-', 'Physical bridges'),
+        ('tunnels', '#6b3fa0', '--', 'Covered tunnels')]:
+    for i, span in enumerate(world.get(key, [])):
+        p = np.array([span['from'], span['to']])
+        ax.plot(p[:, 0]/1000, p[:, 2]/1000, color=colour, linestyle=style,
+            lw=1.5, label=label if i == 0 else None)
+
 for building in world['buildings']:
     box = building.get('footprint')
     if not box:

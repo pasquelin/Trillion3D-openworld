@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { auditRoadWater } from '../generator/build/road-water.ts';
 import { placeWorld } from '../generator/build/world.ts';
 import { landCoverage } from '../generator/build/coverage.ts';
 import { triangleCount } from '../generator/props/index.ts';
@@ -39,6 +40,7 @@ const sourceKey = cookKey(),
     sourceHead: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     engineCommit: pkg.trillion3d.commit,
     traversalFailures: traversal.failures,
+    roadWater: auditRoadWater(world.plan, [...world.plan.roads, ...roads]),
     flights: traversal.routes
       .filter((r) => r.kind === 'flight')
       .map((r) => ({
@@ -115,6 +117,8 @@ await writeFile(
   JSON.stringify({
     heights,
     roads: [...world.plan.roads, ...roads],
+    bridges: world.plan.bridges,
+    tunnels: world.plan.tunnels,
     rivers: world.plan.rivers,
     lakes: world.plan.lakes,
     lakeOutlines: world.plan.lakes.map((lake) =>

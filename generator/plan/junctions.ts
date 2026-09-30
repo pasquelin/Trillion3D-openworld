@@ -3,6 +3,7 @@ import type { Bridge, Vec3 } from './contract.ts';
 import type { RoadCourse } from './carve.ts';
 import { SegmentIndex } from './segments.ts';
 import { boreTunnels } from './tunnels.ts';
+import { ribbonSides } from './water.ts';
 import { STEP } from './route.ts';
 
 const GRADE = {
@@ -113,6 +114,7 @@ export function joinRoadProfiles(
     ),
   );
   courses.forEach((c, k) => {
+    const sides = ribbonSides(c.road.points);
     for (let i = 1; i < nodes[k].length; i++) {
       const a = nodes[k][i - 1],
         b = nodes[k][i],
@@ -121,12 +123,20 @@ export function joinRoadProfiles(
         rise = GRADE[c.road.class] * Math.hypot(p[0] - q[0], p[2] - q[2]);
       if (bridgeFloor && c.bridge[i - 1]) {
         const count = Math.max(1, Math.ceil(Math.hypot(p[0] - q[0], p[2] - q[2]) / 10));
-        for (let k = 0; k <= count; k++) {
-          const t = k / count,
-            floor = bridgeFloor(p[0] + t * (q[0] - p[0]), p[2] + t * (q[2] - p[2]));
-          floors[a] = Math.max(floors[a], floor);
-          floors[b] = Math.max(floors[b], floor);
-        }
+        for (let k = 0; k <= count; k++)
+          for (const side of [-1, 0, 1]) {
+            const t = k / count,
+              floor = bridgeFloor(
+                p[0] +
+                  t * (q[0] - p[0]) +
+                  ((((1 - t) * sides[i - 1][0] + t * sides[i][0]) * c.road.width) / 2) * side,
+                p[2] +
+                  t * (q[2] - p[2]) +
+                  ((((1 - t) * sides[i - 1][1] + t * sides[i][1]) * c.road.width) / 2) * side,
+              );
+            floors[a] = Math.max(floors[a], floor);
+            floors[b] = Math.max(floors[b], floor);
+          }
       }
       links[a].push({ to: b, rise });
       links[b].push({ to: a, rise });
