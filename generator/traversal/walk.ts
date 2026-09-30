@@ -3,10 +3,30 @@ import { Occupancy, segmentBox, turn, type Obb } from '../regions/city/frame.ts'
 import type { Vec3 } from '../plan/contract.ts';
 import { crossingPath, crossingRamp } from './crossings.ts';
 import { sampleRoute } from './samples.ts';
+import { solidColliders } from '../build/colliders.ts';
+import { solidIndex } from '../build/solids.ts';
 
 type City = ReturnType<typeof buildCity>;
 /** Outer perimeter of three contiguous blocks. Internal boundaries never cut through buildings. */
 export function walkingRoutes(city: City) {
+  const pavement = solidIndex(
+    solidColliders(
+      city.output.props.filter((p) => p.id.startsWith('city/block-')),
+      city.output.instances.filter((p) => p.prop.startsWith('city/block-')),
+    ),
+  );
+  const support = (x: number, z: number) =>
+    Math.max(
+      city.site.plan.height(x, z),
+      ...[-0.6, 0, 0.6].flatMap((dx) =>
+        [-0.6, 0, 0.6].flatMap((dz) =>
+          pavement
+            .over(x + dx, z + dz)
+            .filter((p) => p.up)
+            .map((p) => p.y),
+        ),
+      ),
+    );
   const loops = new Map(
     city.report.districts.flatMap((d) =>
       d.sidewalkLoops.map((loop) => [loop.cellId, { ...loop, district: d.id }] as const),
@@ -84,9 +104,9 @@ export function walkingRoutes(city: City) {
             const crossing: Vec3[] = [];
             for (let j = 1; j < joins.length; j++)
               crossing.push(
-                ...crossingPath(joins[j - 1], joins[j], (x, z) =>
-                  city.site.plan.height(x, z),
-                ).slice(j === 1 ? 0 : 1),
+                ...crossingPath(joins[j - 1], joins[j], (x, z) => support(x, z)).slice(
+                  j === 1 ? 0 : 1,
+                ),
               );
             if (
               crossing.some(

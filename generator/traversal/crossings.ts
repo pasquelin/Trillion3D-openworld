@@ -48,7 +48,10 @@ export function crossingPath(a: Vec3, b: Vec3, height: (x: number, z: number) =>
     const ramp = Math.max(a[1] - t * length * 0.25, b[1] - (1 - t) * length * 0.25);
     points.push([x, Math.max(height(x, z), ramp), z]);
   }
-  points[0] = a;
-  points[n] = b;
+  // Carry actual pavement support across the approach at the same physical ramp grade.
+  for (let k = 1; k <= n; k++)
+    points[k][1] = Math.max(points[k][1], points[k - 1][1] - (length / n) * 0.25);
+  for (let k = n - 1; k >= 0; k--)
+    points[k][1] = Math.max(points[k][1], points[k + 1][1] - (length / n) * 0.25);
   return points;
 }
