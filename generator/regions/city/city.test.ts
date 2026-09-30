@@ -8,7 +8,7 @@ import { SAMPLE } from './grid.ts';
 import { REGIONS } from '../index.ts';
 import { outputBytes, outputPoints, standProblems } from '../testing.ts';
 import { buildCity, cityRegion } from './index.ts';
-import { TOUCH, type Item } from './placement.ts';
+import { RANK, TOUCH, type Item } from './placement.ts';
 import { groundUnder, inBounds } from './site.ts';
 
 // The world as the lead composes it, with the city in it.
@@ -61,10 +61,12 @@ test('the budget holds: own triangles, and nodes trimmed from the least importan
   const triangles = output.props.reduce((sum, p) => sum + triangleCount(p), 0);
   assert.ok(triangles <= Math.max(budget.triangles, TRIANGLES), `${triangles} triangles`);
   assert.ok(output.instances.length + output.movers.length <= budget.nodes);
-  const tight = buildCity(withNodes(4_000)).output;
-  assert.ok(tight.instances.length + tight.movers.length <= 4_000);
-  assert.ok(tight.instances.some((i) => i.prop === 'city/tower-round-310'));
-  assert.ok(!tight.instances.some((i) => i.prop === 'city/garden-fence'));
+  const essential = kept.filter((i) => i.rank < RANK.garden).length;
+  const tightNodes = essential + output.movers.length - 1;
+  const tight = buildCity(withNodes(tightNodes));
+  assert.ok(tight.output.instances.length + tight.output.movers.length <= tightNodes);
+  assert.ok(tight.output.instances.some((i) => i.prop === 'city/tower-round-310'));
+  assert.ok(!tight.kept.some((i) => i.rank === RANK.garden));
 });
 
 test('rectangles overlap only when they share area', () => {
