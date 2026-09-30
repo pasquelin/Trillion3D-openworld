@@ -114,7 +114,15 @@ export function levelAirfields(airfields: AirfieldPlatforms) {
   return (x: number, z: number, height: number) => {
     const main = outside(airfields.main, x, z, 550)
       ? height
-      : lerp(height, airfields.main.level, union(mainDistances(airfields.main, x, z), 450));
+      : lerp(
+          height,
+          airfields.main.level,
+          union(
+            // Small remote aprons have 300 m shoulders; the runway/campus blend stays 450 m.
+            mainDistances(airfields.main, x, z).map((d, i) => (i === 5 || i === 6 ? d * 1.5 : d)),
+            450,
+          ),
+        );
     return lerp(
       main,
       airfields.general.level,

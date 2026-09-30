@@ -128,6 +128,7 @@ export function placeCableway(placer: Placer, from: Vec3, summit: Vec3): Cablewa
           });
         });
       });
+  if (missing) throw new Error(`Cable refused ${missing} physical supports`);
   for (let round = 0; round <= spans * PYLON_HEIGHTS.length; round++) {
     const failing = failingSpan();
     if (failing === undefined) break;
