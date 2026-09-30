@@ -28,6 +28,7 @@ export function landCoverage(
   meshes: readonly PropMesh[],
   localRoads: readonly Road[] = [],
   sample = 20,
+  observe?: (cell: { x: number; z: number; distanceM: number; owner: string }) => void,
 ) {
   const geometry = new Map(meshes.map((mesh) => [mesh.id, witnesses(mesh)])),
     points = new Map<string, [number, number][]>(),
@@ -102,6 +103,7 @@ export function landCoverage(
       distances.push(nearest);
       const owner = plan.biome(x, z).owner,
         row = regions[owner] ?? { cells: 0, within10m: 0 };
+      observe?.({ x, z, distanceM: nearest, owner });
       row.cells++;
       if (nearest <= 10) row.within10m++;
       regions[owner] = row;

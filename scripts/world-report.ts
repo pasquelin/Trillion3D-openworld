@@ -15,11 +15,14 @@ import { forestStands } from '../generator/props/stands.ts';
 const seed = Number(process.argv.find((a) => a.startsWith('--seed='))?.slice(7) ?? 332),
   out = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? 'dist/world-report');
 if (!Number.isSafeInteger(seed)) throw new Error('Expected an integer --seed');
+const coverageSamples: { x: number; z: number; distanceM: number; owner: string }[] = [];
 const sourceKey = cookKey(),
   started = performance.now(),
   world = placeWorld(seed),
   roads = world.placed.flatMap((region) => region.roads),
-  coverage = landCoverage(world.plan, world.instances, world.meshes, roads),
+  coverage = landCoverage(world.plan, world.instances, world.meshes, roads, 20, (cell) =>
+    coverageSamples.push(cell),
+  ),
   traversal = buildTraversal(
     world.plan,
     [...world.plan.roads, ...roads],
@@ -125,6 +128,14 @@ await writeFile(
     settlements: world.plan.settlements,
     markers: world.markers,
     instances: world.instances,
+    coverageSamples,
+    urbanCells: world.centres?.flatMap((core) =>
+      [...core.cells.values()].map((cell) => ({
+        core: core.id,
+        district: cell.district,
+        footprint: cell.box,
+      })),
+    ),
     buildings: world.centres?.flatMap((c) => c.report.buildings),
     stands: forestStands(world.plan.subSeed('props')).variants.map((s) => ({
       id: s.id,

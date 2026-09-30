@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createPlan } from './plan.ts';
+import { lakeRadiusAt } from './lake-shore.ts';
 import { CITY_CORES } from './geography.ts';
 import { REGIONS } from '../regions/index.ts';
 import { layout } from '../regions/airport/index.ts';
@@ -46,6 +47,11 @@ for (const seed of [332, 333])
           Math.abs(p[1] - plan.beforeRoads(p[0], p[2])) < 0.01,
           `${core.id}: anchored urban altitude ${p[1]}`,
         );
+    }
+    for (const lake of plan.lakes) {
+      assert.ok(lake.shore, `${lake.id}: composed organic outline retained after erosion`);
+      const radii = Array.from({ length: 36 }, (_, n) => lakeRadiusAt(lake, (n * Math.PI) / 18));
+      assert.ok(Math.max(...radii) - Math.min(...radii) > lake.radius * 0.15);
     }
     const strips = airport.output.roads.filter((r) => r.class === 'runway');
     assert.equal(strips.length, 3);

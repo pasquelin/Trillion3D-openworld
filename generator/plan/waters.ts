@@ -71,11 +71,13 @@ export function planWaters(
 }
 
 /** `lake` in its place, its level read again on `grid`: the lowest point of its rim. */
-export const relevel = (grid: HeightGrid, lake: Lake): Lake =>
-  basinLake(
+export const relevel = (grid: HeightGrid, lake: Lake): Lake => ({
+  ...basinLake(
     grid,
     lake.id,
     { minX: lake.x, maxX: lake.x, minZ: lake.z, maxZ: lake.z },
     lake.radius,
     () => true,
-  );
+  ),
+  shore: lake.shore,
+});
