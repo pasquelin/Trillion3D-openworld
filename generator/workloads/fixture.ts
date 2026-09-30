@@ -14,7 +14,7 @@ type BuildingPlacement = {
   height: number;
   footprint: Bounds;
   source: 'original' | 'CC0';
-  collision: 'cooked-static-mesh';
+  collision: 'render-only-fixture';
 };
 
 export function buildWorkload(name: WorkloadName) {
@@ -65,7 +65,7 @@ export function buildWorkload(name: WorkloadName) {
               : (BUILDING_ASSETS.find((a) => a.id === id)!.buildingClass as 'low' | 'mid'),
           height: (max[1] - min[1]) * scale,
           source,
-          collision: 'cooked-static-mesh',
+          collision: 'render-only-fixture',
           footprint: {
             minX: instance.position[0] + (yaw ? min[2] : min[0]) * scale,
             maxX: instance.position[0] + (yaw ? max[2] : max[0]) * scale,

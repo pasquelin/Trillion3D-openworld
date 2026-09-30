@@ -32,9 +32,10 @@ The existing world glTF writer emits procedural geometry. `generator/assets/asse
 appends the two narrow, vetted source documents by rebasing glTF table indices and copying binary
 and texture dependencies. It does not convert or simplify their geometry, resample textures or
 implement an engine importer. The existing public native compiler cooks this one assembled source.
-Collision choice is the engine's static mesh from its compiled cache, shared with the ground and
-procedural buildings. Physical behavior awaits the engine acceptance campaign; metadata is not
-proof of collision performance.
+Gameplay physics streams explicit static-mesh sidecars beside the rendering cache. Imported
+models use their original indexed triangles in metres, and foundations use the existing
+procedural collider helper. Physical behavior awaits native engine acceptance; metadata and
+source-sidecar tests are not proof of collision performance.
 
 ## Street block workloads
 
@@ -108,3 +109,11 @@ is inferred from these small cooks.
 Near-facade and skyline captures, backend readiness, frame timing, GPU residency and hardware
 performance are the measurement campaign's evidence. Software browser failures are reported as
 capability/functional observations; no desktop-game performance is asserted here.
+
+The normal-world cook writes gameplay collision sidecars for both imported buildings and both
+foundations. Building colliders decode the original glTF indexed triangles (600 and 1,885),
+normalize coordinates to metres once, and preserve the exact geometry. Foundations reuse the
+existing procedural collider helper. All four placements join the normal per-tile collision
+lists consumed by gameplay; the rendering cache alone does not register these physics bodies.
+
+The separate workload viewer measures rendering only; it does not activate gameplay physics.

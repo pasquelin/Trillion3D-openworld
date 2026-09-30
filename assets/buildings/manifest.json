@@ -15,7 +15,7 @@
     },
     "indexedTriangles": 600,
     "materials": 1,
-    "collision": "static mesh from engine cooked cache; fixture ground and procedural buildings use same cache",
+    "collision": "Gameplay sidecar uses original indexed triangles normalized to metres; foundations use the existing procedural collision helper. The rendering cache is separate.",
     "files": [
       {
         "path": "kenney/building-small-b.glb",
@@ -63,7 +63,7 @@
     },
     "indexedTriangles": 1885,
     "materials": 1,
-    "collision": "static mesh from engine cooked cache; fixture ground and procedural buildings use same cache",
+    "collision": "Gameplay sidecar uses original indexed triangles normalized to metres; foundations use the existing procedural collision helper. The rendering cache is separate.",
     "files": [
       {
         "path": "kaykit/building_H.gltf",

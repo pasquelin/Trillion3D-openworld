@@ -14,6 +14,7 @@ import { writeWorldGltf } from '../generator/gltf/write.ts';
 import { writeHeights } from '../generator/plan/heights.ts';
 import { VEHICLE_SPECS } from '../generator/props/vehicles.ts';
 import { compileFullCache } from './compiler.ts';
+import { withBuildingColliders } from '../generator/assets/colliders.ts';
 import { islandBuildings } from '../generator/assets/island.ts';
 import { appendBuildings } from '../generator/assets/assemble.ts';
 import { BUILDING_ASSETS } from '../generator/assets/source.ts';
@@ -29,7 +30,8 @@ const started = performance.now(),
 // One cook at a time: an older key's folder goes with the rest.
 await rm(assets, { recursive: true, force: true });
 const { plan, terrain, objects, solids, data } = buildWorld();
-const imported = islandBuildings(plan, objects.meshes, objects.instances, data.roads);
+const imported = islandBuildings(plan, objects.meshes, objects.instances, data.roads),
+  physics = await withBuildingColliders(solids, imported.foundations, imported.instances);
 lap('world built');
 const source = resolve(out, 'source');
 // One glTF: the compiler reads exactly one per source folder.
@@ -54,10 +56,10 @@ const sourceBytes = (
     written.triangles + BUILDING_ASSETS.reduce((sum, asset) => sum + asset.indexedTriangles, 0);
 lap('sources written');
 await writeHeights(out, plan, data.heightSamples);
-const colliders = tileColliders(solids.placed, data.size, data.tile);
+const colliders = tileColliders(physics.placed, data.size, data.tile);
 await mkdir(resolve(out, 'colliders'), { recursive: true });
 let [triangles, bytes] = [0, 0];
-for (const [id, mesh] of solids.shapes) {
+for (const [id, mesh] of physics.shapes) {
   const file = resolve(out, 'colliders', collisionMeshPath(id)),
     encoded = encodeCollisionMesh(mesh);
   await mkdir(dirname(file), { recursive: true });
@@ -66,7 +68,7 @@ for (const [id, mesh] of solids.shapes) {
   bytes += encoded.byteLength;
 }
 console.log(
-  `collision meshes: ${solids.shapes.size} props, ${triangles} triangles, ${bytes} bytes`,
+  `collision meshes: ${physics.shapes.size} props, ${triangles} triangles, ${bytes} bytes`,
 );
 // Every tile gets its file, empty or not: the physics worker asks for each one it streams.
 const tiles = data.size / data.tile;
