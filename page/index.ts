@@ -1,11 +1,11 @@
 /**
  * The open world's play layer, served as `runtime/openworld.js`: walking, driving and flying
- * over the world with Jolt physics, in a worker (`runtime/openworldSim.js`) that loads Jolt
- * (`runtime/jolt-physics.wasm.js` and its `.wasm`) on demand. It never imports the engine: the
- * page passes its families in.
+ * through the engine's public World physics. A separate bounded worker
+ * (`runtime/openworldSim.js`) advances traffic and pedestrians. The page passes
+ * its engine families in, so the bundle contains no second engine instance.
  *
  * ```js
- * const play = createPlay({ world, engine: { geometry, material, object, light }, data, heights: '…/heights/{tx}_{tz}.bin' });
+ * const play = createPlay({ world, engine: { geometry, material, object, light, math, vehicle }, data });
  * await play.ready;
  * ```
  */

@@ -7,7 +7,7 @@
  */
 import { MeshoptSimplifier } from 'meshoptimizer';
 import { scaleOf, type CollisionMesh } from '../../page/play/collision.ts';
-import { FOOT } from '../../page/play/sim/foot.ts';
+import { PERSON_CLEARANCE } from './clearance.ts';
 import type { Instance, PropMesh } from '../plan/contract.ts';
 
 await MeshoptSimplifier.ready;
@@ -122,7 +122,7 @@ const speck = ([low, high]: Box, cell: number) =>
  */
 export function collisionMesh(mesh: PropMesh, grown = 1): CollisionMesh | undefined {
   if (walkedThrough(mesh.id)) return undefined;
-  const cell = FOOT.radius / grown,
+  const cell = PERSON_CLEARANCE.radius / grown,
     { positions, indices } = welded(mesh),
     out: number[] = [],
     triangles: number[] = [];

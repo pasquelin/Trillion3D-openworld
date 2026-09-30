@@ -5,7 +5,6 @@ import type { Marker, Mover, Road, Settlement, Wheel } from './types.ts';
  * the worker sends after every step. Positions in the snapshot are relative to the physics
  * origin it carries (a multiple of the tile, exact in float32), so centimetres survive ±25 km.
  */
-export const MODES = ['foot', 'car', 'plane'] as const;
 export const STEP = 1 / 60;
 
 /** What the simulation needs of the world, cloned once into the worker. */
@@ -29,7 +28,6 @@ export type Inputs = {
   forward: number;
   right: number;
   run: boolean;
-  crouch: boolean;
   jump: number;
   use: number;
   brake: boolean;
@@ -45,7 +43,6 @@ export const idleInputs = (): Inputs => ({
   forward: 0,
   right: 0,
   run: false,
-  crouch: false,
   jump: 0,
   use: 0,
   brake: false,
@@ -62,13 +59,9 @@ export type ToWorker =
       type: 'start';
       world: SimWorld;
       limits: SimLimits;
-      heights: string;
-      colliders: string | null;
-      jolt: string;
       buffers: ArrayBuffer[];
     }
-  | { type: 'inputs'; inputs: Inputs }
-  | { type: 'teleport'; name: string }
+  | { type: 'focus'; x: number; z: number; vx: number; vz: number }
   | { type: 'buffer'; buffer: ArrayBuffer };
 
 export type FromWorker =
@@ -104,15 +97,6 @@ export const H = {
   pedestrians: 22,
   propeller: 23,
   size: 24,
-} as const;
-
-export const FLAG = {
-  grounded: 1,
-  loading: 2,
-  stalled: 4,
-  asphalt: 8,
-  crouched: 16,
-  running: 32,
 } as const;
 
 /** Floats per entry of each block after the header. */

@@ -1,4 +1,4 @@
-import { parseKey, tileCorner, tileIndex, tileKey, type Grid, type TileKey } from './grid.ts';
+import { tileCorner, tileIndex, tileKey, type Grid, type TileKey } from './grid.ts';
 
 /**
  * The heights the page fetches per tile, kept in memory by key. A fetch never blocks a frame: it
@@ -16,29 +16,6 @@ export type HeightStore = {
 
 export function heightStore(grid: Grid, samples: number): HeightStore {
   return { grid, samples, tiles: new Map(), fetching: new Set(), failed: new Set() };
-}
-
-/** Starts the fetch of one tile; the result lands in the store whenever it arrives. */
-export function fetchTile(
-  store: HeightStore,
-  key: TileKey,
-  load: (tx: number, tz: number) => Promise<Float32Array>,
-) {
-  const [tx, tz] = parseKey(key);
-  store.fetching.add(key);
-  load(tx, tz)
-    .then((heights) => {
-      if (heights.length !== (store.samples + 1) ** 2)
-        throw new Error(
-          `heights ${key}: ${heights.length} values, not ${(store.samples + 1) ** 2}`,
-        );
-      store.tiles.set(key, heights);
-    })
-    .catch((error: unknown) => {
-      store.failed.add(key);
-      console.warn(error);
-    })
-    .finally(() => store.fetching.delete(key));
 }
 
 /** The ground height at (x, z), bilinear inside its tile's samples; `null` until it arrived. */

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { decodeCollisionMesh, encodeCollisionMesh } from '../../page/play/collision.ts';
-import { FOOT } from '../../page/play/sim/foot.ts';
+import { PERSON_CLEARANCE } from './clearance.ts';
 import { box, prop, sharedProps, SURFACES, transform, triangleCount } from '../props/index.ts';
 import { churchSquare } from '../regions/countryside/church.ts';
 import { collisionMesh } from './collision.ts';
@@ -32,7 +32,7 @@ test('no prop collides with more triangles than it draws; plants and specks do n
     solid += count;
   }
   t.diagnostic(`${solid} collision triangles for ${drawn} drawn`);
-  const speck = FOOT.radius * 0.9,
+  const speck = PERSON_CLEARANCE.radius * 0.9,
     pebble = prop('pebble', [box(SURFACES.concrete, [speck, speck, speck])]),
     wall = prop('wall', [
       box(SURFACES.concrete, [4, 2, 0.2]),

@@ -14,7 +14,10 @@ export type Built = {
   lamps: SpotNode[];
 };
 
-export type Builder = (spec: ModelSpec, options?: { lamps?: boolean }) => Built;
+export type Builder = (
+  spec: ModelSpec,
+  options?: { lamps?: boolean; rideHeight?: number },
+) => Built;
 
 export function builder(engine: Engine): Builder {
   const shapes = new Map<string, unknown>();
@@ -80,9 +83,9 @@ export function builder(engine: Engine): Builder {
         ),
       );
     const wheels = (spec.anchors?.wheels ?? []).map((wheel) => {
-      const node = engine.object.group();
       const size = wheel.radius * 2;
-      node.add(engine.object.mesh(shape('cylinder', [size, wheel.width, size]), matter(tyre)));
+      const node = engine.object.mesh(shape('cylinder', [size, wheel.width, size]), matter(tyre));
+      node.quaternion.set(...euler(0, 0, Math.PI / 2));
       // A hub cap off centre, so a turning wheel is seen to turn.
       node.add(
         place(
@@ -90,7 +93,9 @@ export function builder(engine: Engine): Builder {
           [0, 0, 0],
         ),
       );
-      root.add(place(node, wheel.position));
+      const at = [...wheel.position] as [number, number, number];
+      if (options.rideHeight !== undefined) at[1] = wheel.radius - options.rideHeight;
+      root.add(place(node, at));
       return node;
     });
     const anchor = spec.anchors?.propeller;

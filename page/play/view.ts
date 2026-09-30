@@ -2,7 +2,7 @@ import { angleBetween, between, turnBetween, type Client } from './client.ts';
 import { axisAngle, headingOf, rotate, type Q } from './math3.ts';
 import type { Moving } from './movers.ts';
 import { builder, type Built } from './models.ts';
-import { BLOCK, H, spawnsOf, type Layout, type SimLimits } from './protocol.ts';
+import { BLOCK, spawnsOf, type Layout, type SimLimits } from './protocol.ts';
 import type { Engine, Marker, ModelSpec, Node3, SpotNode } from './types.ts';
 import { figures, stride } from './walkers.ts';
 
@@ -13,6 +13,10 @@ import { figures, stride } from './walkers.ts';
  * Waiting on the engine: hand-built meshes moved every frame beside a compiled cache.
  */
 export type View = {
+  car: Built;
+  plane: Built;
+  traffic: Built[];
+  spawns(car: number, plane: number): void;
   update(c: Client, t: number, delta: number): void;
   /** Lamps on (headlights, beacons) or off. */
   night(on: boolean): void;
@@ -50,9 +54,11 @@ export function view(
 ): View {
   const build = builder(engine);
   const [carSpec, planeSpec] = [models.car, models.plane];
-  const car = build(carSpec, { lamps: true });
+  const car = build(carSpec, { lamps: true, rideHeight: 0.9 });
   const plane = build(planeSpec);
-  const parkedCars = spawnsOf(markers, 'car').map((m) => parked(build(carSpec), m, 0.9));
+  const parkedCars = spawnsOf(markers, 'car').map((m) =>
+    parked(build(carSpec, { rideHeight: 0.9 }), m, 0.9),
+  );
   const parkedPlanes = spawnsOf(markers, 'plane').map((m) => parked(build(planeSpec), m, 1.6));
   const traffic = Array.from({ length: limits.traffic }, () => build(models.traffic ?? carSpec));
   const people = figures(engine, limits.pedestrians);
@@ -90,15 +96,14 @@ export function view(
   scene.add(...roots);
   car.root.visible = plane.root.visible = false;
   let spin = 0;
-  const wheelsOf = (built: Built, c: Client, at: number, t: number) =>
-    built.wheels.forEach((wheel, i) =>
-      pose(
-        wheel,
-        [0, 1, 2].map((k) => c.next[at + 7 + i * 7 + k]),
-        turnBetween(c, at + 10 + i * 7, t),
-      ),
-    );
   return {
+    car,
+    plane,
+    traffic,
+    spawns(carSpawn, planeSpawn) {
+      parkedCars.forEach((built, i) => (built.root.visible = i !== carSpawn));
+      parkedPlanes.forEach((built, i) => (built.root.visible = i !== planeSpawn));
+    },
     missing,
     dispose: () => scene.remove(...roots),
     night(on) {
@@ -107,24 +112,14 @@ export function view(
     },
     update(c, t, delta) {
       const { next } = c;
-      const [carSpawn, planeSpawn] = [next[H.carSpawn], next[H.planeSpawn]];
-      parkedCars.forEach((built, i) => (built.root.visible = i !== carSpawn));
-      parkedPlanes.forEach((built, i) => (built.root.visible = i !== planeSpawn));
-      car.root.visible = carSpawn >= 0;
-      if (car.root.visible) {
-        pose(car.root, between(c, layout.car, t), turnBetween(c, layout.car + 3, t));
-        wheelsOf(car, c, layout.car, t);
-      }
-      plane.root.visible = planeSpawn >= 0;
-      if (plane.root.visible)
-        pose(plane.root, between(c, layout.plane, t), turnBetween(c, layout.plane + 3, t));
-      spin += next[H.propeller] * 40 * delta + (planeSpawn >= 0 ? 2 * delta : 0);
+      spin += delta * 40;
       plane.propeller?.quaternion.set(...axisAngle([0, 0, 1], spin));
       traffic.forEach((built, i) => {
         const at = layout.traffic + i * BLOCK.traffic;
         built.root.visible = next[at + 4] >= 0;
         if (!built.root.visible) return;
-        const blend = c.prev[at + 4] >= 0 ? t : 1;
+        const recycled = Math.hypot(next[at] - c.prev[at], next[at + 2] - c.prev[at + 2]) > 20;
+        const blend = c.prev[at + 4] >= 0 && !recycled ? t : 1;
         pose(
           built.root,
           between(c, at, blend),

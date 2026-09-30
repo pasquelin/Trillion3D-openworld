@@ -3,7 +3,7 @@
  * by the marker's yaw, and the solid triangles (`solids.ts`) it would cross or stand on. A
  * triangle is cut to the height span the footprint fills, then compared on the ground plane.
  */
-import { FOOT } from '../../page/play/sim/foot.ts';
+import { PERSON_CLEARANCE } from './clearance.ts';
 import type { Marker, Vec3 } from '../plan/contract.ts';
 import { partBounds, VEHICLE_SPECS } from '../props/index.ts';
 import { sailboat } from '../props/sailboat.ts';
@@ -30,7 +30,11 @@ const fromBounds = (list: readonly (readonly [Vec3, Vec3])[]): Footprint => {
 const specBounds = (kind: string) =>
   VEHICLE_SPECS.filter((spec) => spec.kind === kind).map((spec) => spec.bounds);
 
-const PERSON: Footprint = { radius: FOOT.radius, low: 0, high: FOOT.height };
+const PERSON: Footprint = {
+  radius: PERSON_CLEARANCE.radius,
+  low: 0,
+  high: PERSON_CLEARANCE.height,
+};
 const VEHICLES = {
   car: fromBounds(specBounds('car')),
   plane: fromBounds(specBounds('plane')),
