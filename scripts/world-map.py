@@ -85,7 +85,7 @@ if rural:
     ax.scatter(v[:, 0], v[:, 1], s=3, c='#93452c', marker='s',
         label=f'{len(rural)} actual rural homes')
 cores = {core['id']: core for core in census['centres']}
-label_positions = {'city':(-2.9,3.5), 'city-west':(-3.9,-.65),
+label_positions = {'city':(-.9,3.45), 'city-west':(-3.9,-.65),
     'city-interior':(-.9,-3.7), 'city-northeast':(1.5,-3.65), 'city-east':(2.3,3.45)}
 for settlement in world['settlements']:
     if settlement['id'] not in cores:
