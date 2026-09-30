@@ -14,6 +14,7 @@ import { RANK, type Placer } from './placement.ts';
 import { findCoasts, groundUnder } from './site.ts';
 import { boats, moor, shore } from './waterfront.ts';
 import { EYE } from '../../build/markers.ts';
+import { boatSpawn } from './boat-spawn.ts';
 
 const PIERS = [-80, 80] as const;
 const CONTAINER: Xz = [6.2, 1.3];
@@ -149,23 +150,16 @@ function harbourAt(placer: Placer, seed: number, point: Xz, out: Xz, root: numbe
     }
   shore(placer, world, at, along, across);
   boats(placer, world, ROOT, seed);
-  placer.markers.push(
-    {
-      kind: 'teleport',
-      name: 'city/harbour',
-      position: at(root + QUAY.length - 10, quays[0], deck + EYE),
-      deck: true,
-      yaw: facing([-out[0], -out[1]]),
-      pitch: 0.05,
-    },
-    {
-      kind: 'spawn',
-      vehicle: 'boat',
-      name: 'city/harbour-boat',
-      position: at(root + 150, 0, 0),
-      yaw: facing(out),
-    },
-  );
+  placer.markers.push({
+    kind: 'teleport',
+    name: 'city/harbour',
+    position: at(root + QUAY.length - 10, quays[0], deck + EYE),
+    deck: true,
+    yaw: facing([-out[0], -out[1]]),
+    pitch: 0.05,
+  });
+  const spawn = boatSpawn(placer, world, out);
+  if (spawn) placer.markers.push(spawn);
   return { out };
 }
 
