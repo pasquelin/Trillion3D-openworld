@@ -42,8 +42,8 @@ function ring(size: number, inner?: Surface): MeshPart[] {
 /** A fully paved block (downtown and mid-rise), `size` metres square. */
 export const pavedBlock = (id: string, size: number): PropMesh => prop(id, ring(size, CITY.paving));
 
-/** A sidewalk ring around the terrain's own ground (suburbs). */
-export const sidewalkRing = (id: string, size: number): PropMesh => prop(id, ring(size));
+/** Supported garden lawn surrounded by a kerbed sidewalk, level with house foundations. */
+export const gardenBlock = (id: string, size: number): PropMesh => prop(id, ring(size, CITY.lawn));
 
 /** A park block: sidewalks, lawn, a cross of gravel paths and a round plaza for the fountain. */
 export function parkBlock(id: string, size: number): PropMesh {

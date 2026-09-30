@@ -1,30 +1,9 @@
 /**
- * **Big city.** The region the aerial hero shot looks at: a coastal city at a river mouth.
- *
- * - **Downtown**: towers of seven archetypes (setback slabs, tapering round towers with spires,
- *   Art Deco stepped towers with lanterns, twisting towers, diagrid drums, plain office blocks,
- *   residential towers with balconies) from 45 to 316 m, their curtain walls dressed in mullions and spandrels, a share of office cells
- *   lit (emissive, dimmed by day). The supertall stands on the central block; beside it a slab
- *   carries the helipad and the rooftop viewpoint. Flat roofs carry water tanks, condensers and
- *   masts.
- * - **Streets**: a grid that shares the plan's avenue lines (its pitch divides their spacing),
- *   local avenues between blocks where the plan has none, 5 m kerbed sidewalks the play layer's
- *   pedestrians walk, street lamps about every 30 m that light at night, street trees, and
- *   traffic lights with zebra crossings at busy junctions.
- * - **Mid-rise ring**: apartment blocks around courtyards, with balconies, lit rooms and neon
- *   blade signs (emissive, with a `neon-glow` emitter and a night light each).
- * - **Suburbs**: fenced garden lots with six kinds of houses and garden trees; parks with a
- *   fountain (`fountain` emitter), paths, benches and big trees; a 200 m stadium with four
- *   floodlight masts.
- * - **Harbour** on the open coast at the plan's port: two 300 m quays, container stacks, gantry cranes over
- *   a moored cargo ship, slewing cranes whose jibs turn, warehouses, smoking chimneys, boats
- *   looping the basin and sailing offshore; the plan's bridges over the river.
- *
- * Teleports: `city/rooftop`, `city/downtown`, `city/harbour`, `city/stadium`. Spawns: six cars
- * on the central avenues, a boat in the harbour. Everything is derived from the plan (the city
- * settlement and port, its avenues, rivers, bridges, coast and ground), and every building
- * reaches 4 m into the ground so no slope shows a gap. Nodes beyond the plan's budget are
- * dropped least important and farthest first (garden, then furniture, then street lamps).
+ * Road-facing neighborhoods on the city's dry coastal plain: Garden Reach's sixteen-lot
+ * residential blocks, Market Ward's apartment courtyards, and Bay Center's podium towers and
+ * service plazas. Existing detailed shared catalogues, street furniture, civic parks, stadium,
+ * bridges and harbor remain. Bounds, water, foundation depth, occupied footprints, road access
+ * and the region node budget constrain placement. The report counts buildings explicitly.
  */
 import type { RegionModule, WorldPlan } from '../../plan/contract.ts';
 import { surface, SURFACES } from '../../props/index.ts';
@@ -39,23 +18,43 @@ import { readSite } from './site.ts';
 import { layStreets } from './streets.ts';
 import { CITY } from './surfaces.ts';
 import { EYE } from '../../build/markers.ts';
+import { cityReport } from './report.ts';
+import { segments } from './segments.ts';
+import { segmentId, streetAccessGraph } from './access-graph.ts';
 
 /**
  * Share of the global relief the city keeps above the sea: a coastal plain, so 100 m blocks sit
  * on plinths. The coastline (height 0) does not move. A design value, not a measured one.
  */
-const RELIEF = 0.4;
+const RELIEF = 0.15;
 
 /** Everything the city builds from the plan, with what the tests check besides the output. */
 export function buildCity(plan: WorldPlan) {
   const { budget } = plan.regions.city,
     site = readSite(plan),
     catalog = cityCatalog(plan.subSeed('city/props'), site),
-    placer = new Placer(site);
+    placer = new Placer(site, catalog.buildings);
   const harbour = layHarbour(placer, plan.subSeed('city/harbour'));
   layBridges(placer);
-  const cells = layCells(site, plan.subSeed('city/grid'));
-  for (const [key, cell] of cells) if (placer.occupied(cell.box)) cells.delete(key);
+  const cellRejections: Record<string, number> = {};
+  const cells = layCells(site, plan.subSeed('city/grid'), cellRejections);
+  for (const [key, cell] of cells)
+    if (placer.occupied(cell.box)) {
+      cells.delete(key);
+      cellRejections.occupied = (cellRejections.occupied ?? 0) + 1;
+    }
+  const fronts = segments(placer, cells),
+    network = streetAccessGraph(site, fronts);
+  const reachable = new Set(
+    fronts
+      .filter((s) => network.roadComponents.get(segmentId(s))?.has(network.main!))
+      .flatMap((s) => s.sides.filter((c): c is NonNullable<typeof c> => !!c)),
+  );
+  for (const [id, cell] of cells)
+    if (!reachable.has(cell)) {
+      cells.delete(id);
+      cellRejections.disconnected = (cellRejections.disconnected ?? 0) + 1;
+    }
   const street = layStreets(placer, cells),
     deck = fillCells(placer, cells, catalog, plan.subSeed('city/blocks')),
     towardSea = facing(harbour ? harbour.out : turn([1, 0], site.yaw));
@@ -68,15 +67,31 @@ export function buildCity(plan: WorldPlan) {
       yaw: towardSea,
       pitch: -0.25,
     });
-  if (street)
+  if (street.point)
     placer.markers.push({
       kind: 'teleport',
       name: 'city/downtown',
-      position: [street[0], street[1] + EYE, street[2]],
+      position: [street.point[0], street.point[1] + EYE, street.point[2]],
       yaw: facing(turn([1, 0], site.yaw)),
     });
-  const { output, kept } = placer.finish(budget);
-  return { output: { ...output, props: catalog.props }, kept, site };
+  const { output, kept } = placer.finish(budget),
+    retained = new Set(kept);
+  const rejected = [
+    ...placer.rejected,
+    ...placer.items
+      .filter((i) => i.building && !retained.has(i))
+      .map((i) => ({ prop: i.instance.prop, reason: 'budget' })),
+  ];
+  return {
+    output: { ...output, props: catalog.props },
+    kept,
+    site,
+    cells,
+    report: {
+      ...cityReport(site, cells, kept, catalog, rejected, street.segments),
+      cellRejections,
+    },
+  };
 }
 
 export const cityRegion: RegionModule = {

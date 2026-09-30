@@ -5,7 +5,7 @@
  */
 import type { PropMesh } from '../../plan/contract.ts';
 import { bridgePier, bridgeSpan } from './bridge-props.ts';
-import { crossing, fountain, parkBlock, pavedBlock, sidewalkRing } from './ground-props.ts';
+import { crossing, fountain, parkBlock, pavedBlock, gardenBlock } from './ground-props.ts';
 import { floodMast } from './floodlight.ts';
 import { cranePortal, craneJib, quay, warehouse } from './harbour-props.ts';
 import { gardenFence } from './house-parts.ts';
@@ -15,6 +15,7 @@ import { rooftopProps } from './rooftop.ts';
 import { chimney, neonSigns } from './signs.ts';
 import { stadium } from './stadium.ts';
 import { towers } from './towers.ts';
+import { buildingMetadata } from './metadata.ts';
 
 /** A superblock (the stadium's) spans two blocks and the street between them. */
 export const superblockSize = ({ block, street }: { block: number; street: number }) =>
@@ -43,7 +44,7 @@ export function cityCatalog(seed: number, grid: { block: number; street: number 
     arena.prop,
     gardenFence(),
     pavedBlock(IDS.paved, grid.block),
-    sidewalkRing(IDS.suburb, grid.block),
+    gardenBlock(IDS.suburb, grid.block),
     parkBlock(IDS.park, grid.block),
     pavedBlock(IDS.superblock, superblockSize(grid)),
     crossing(IDS.crossing, grid.street),
@@ -59,5 +60,11 @@ export function cityCatalog(seed: number, grid: { block: number; street: number 
     bridgeSpan(),
     bridgePier(),
   ];
-  return { props, tower, midrise, house, stadium: arena };
+  const buildings = buildingMetadata([
+    ...house.map((h) => ({ ...h, class: 'low' as const })),
+    ...midrise.map((m) => ({ ...m, class: 'mid' as const })),
+    ...tower.map((t) => ({ ...t, class: 'high' as const })),
+    { ...arena, class: 'civic' as const },
+  ]);
+  return { props, tower, midrise, house, stadium: arena, buildings };
 }

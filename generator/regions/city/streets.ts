@@ -35,7 +35,7 @@ export function layStreets(placer: Placer, cells: Map<string, Cell>) {
     );
   }
   carSpawns(placer, all);
-  return junctions(placer, cells, all);
+  return { point: junctions(placer, cells, all), segments: all };
 }
 
 /** Lamps about every 30 m (staggered on suburban streets), and street trees downtown. */

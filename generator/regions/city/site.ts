@@ -1,10 +1,6 @@
-/**
- * What the city reads of the world plan before it builds: its bounds and footprint, the roads it
- * must keep clear, where the water is (sea below 0 m, rivers by their polylines), the grid's
- * heading, and where the coast is closest. Everything is derived from the plan; nothing assumes
- * a map.
- */
+/** Derived city bounds, avenues, coast and dry terrain from the composed world plan. */
 import type { Bounds, Road, Settlement, Vec3, WorldPlan } from '../../plan/contract.ts';
+import { isTerrainPlan } from '../../plan/plan.ts';
 import {
   Occupancy,
   polylineDistance,
@@ -22,7 +18,6 @@ export type Site = {
   city: Settlement;
   /** Where the harbour looks for the sea from: the port, else the city centre. */
   port: Xz;
-  /** The grid's yaw: its +X runs along the city's avenues. */
   yaw: number;
   /** A grid line crossing, the distance between lines, the street width and the block between. */
   origin: Xz;
@@ -132,9 +127,14 @@ function gridYaw(roads: readonly Road[], city: Settlement): number {
   return yaw - Math.round(yaw / (Math.PI / 2)) * (Math.PI / 2);
 }
 
-/** True where the ground is dry land: above the sea and clear of every river's banks. */
+/** Dry land clears the sea, inland lakes and river banks. */
 export function dry(site: Site, [x, z]: Xz): boolean {
   if (site.plan.height(x, z) <= 0.5) return false;
+  if (
+    isTerrainPlan(site.plan) &&
+    site.plan.lakes.some((l) => Math.hypot(x - l.x, z - l.z) <= l.radius)
+  )
+    return false;
   for (const river of site.plan.rivers) {
     const widest = Math.max(...river.widths);
     if (polylineDistance([x, z], river.points) < widest / 2 + RIVER_BANK) return false;
@@ -163,7 +163,6 @@ export function groundUnder(site: Site, box: Obb, step = Infinity): number[] {
   return samples;
 }
 
-/** How far apart the coast's slope is sampled, metres: the scale of a harbour, not of a ripple. */
 const SHORE_SCALE = 250;
 
 const HEADINGS = 16;

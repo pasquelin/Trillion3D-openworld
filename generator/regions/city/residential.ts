@@ -24,37 +24,42 @@ function midrise({ id, size: [w, d], floors, body, bay, seed }: Midrise): Block 
     edges = edgesOf(outline),
     // The long faces (street and courtyard) carry the balconies.
     long = (i: number) => edges[i].length > Math.min(w, d) + 0.1;
-  const walls = edges.flatMap((edge, i) => [
-    ...punchedWall(edge, GROUND, floors, {
-      window: 1.4,
-      floor: FLOOR,
-      bay,
-      lit: 0.3,
-      seed: seed + i,
-      ...(long(i) ? { balcony: CITY.railing } : {}),
-    }),
-  ]);
-  const shopfronts = edgesOf(rectangle(w + 0.3, d + 0.3)).flatMap((edge, i) =>
-    punchedWall(edge, 0.4, 1, {
-      window: bay - 0.9,
-      floor: GROUND,
-      bay,
-      lit: 0.55,
-      seed: seed + 9 + i,
-    }),
+  const walls = edges.flatMap((edge, i) =>
+    long(i)
+      ? punchedWall(edge, GROUND, floors, {
+          window: 1.4,
+          floor: FLOOR,
+          bay,
+          lit: 0.3,
+          seed: seed + i,
+          balcony: CITY.railing,
+        })
+      : [],
   );
+  // Party walls stay flush: facade details belong only to the two long exposed faces.
+  const shopfronts = edgesOf(rectangle(w, d + 0.3))
+    .filter((edge) => edge.length === w)
+    .flatMap((edge, i) =>
+      punchedWall(edge, 0.4, 1, {
+        window: bay - 0.9,
+        floor: GROUND,
+        bay,
+        lit: 0.55,
+        seed: seed + 9 + i,
+      }),
+    );
   return {
     prop: prop(id, [
-      transform(box(CITY.stone, [w + 0.3, FOUNDATION + GROUND, d + 0.3]), {
+      transform(box(CITY.stone, [w, FOUNDATION + GROUND, d + 0.3]), {
         at: [0, -FOUNDATION, 0],
       }),
       transform(box(body, [w, top - GROUND, d]), { at: [0, GROUND, 0] }),
-      transform(box(CITY.stone, [w + 0.6, 0.35, d + 0.6]), { at: [0, GROUND - 0.2, 0] }),
+      transform(box(CITY.stone, [w, 0.35, d + 0.6]), { at: [0, GROUND - 0.2, 0] }),
       ...walls,
       ...shopfronts,
       ...flatRoof(w, d, CITY.stone).map((part) => transform(part, { at: [0, top, 0] })),
     ]),
-    half: [w / 2 + 0.3, d / 2 + 0.3],
+    half: [w / 2, d / 2 + 0.3],
     roof: top,
   };
 }
