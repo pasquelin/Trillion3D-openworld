@@ -12,16 +12,16 @@ District density divides buildings by the disjoint full-pitch block catchments, 
 
 ## Area feasibility
 
-The original 8 km² urban target remains in the report alongside its absolute and relative errors. With the enclosing island and the gentler city plain, seed 332 has only 4.744375 km² of dry region land: 8 km² cannot fit in this ownership rectangle. Water, slopes deeper than the existing 4 m foundations, roads, harbor occupation and disconnected frontage further constrain the built area. This implementation visibly revises the current chosen catchments to **2.2 km²** while retaining density and coverage targets. Expanding the ownership boundary or reclaiming ocean was not used to disguise this constraint.
+The original 8 km² urban target remains in the report alongside its absolute and relative errors. With the finalized enclosing island and the gentler city plain, seed 332 has only 4.745 km² of dry region land: 8 km² cannot fit in this ownership rectangle. Water, slopes deeper than the existing 4 m foundations, roads, harbor occupation and disconnected frontage further constrain the built area. This implementation visibly revises the current chosen catchments to **2.2 km²** while retaining density and coverage targets. Expanding the ownership boundary or reclaiming ocean was not used to disguise this constraint.
 
 | District | Initial chosen area | Revised chosen area | Measured area | Explicit buildings | Density / km² | Footprint coverage |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Garden Reach | 4.0 km² | 1.00 km² | 0.984375 km² | 1,008 | 1,024 | 12.77% |
-| Market Ward | 2.5 km² | 0.80 km² | 0.812500 km² | 208 | 256 | 15.66% |
-| Bay Center | 0.8 km² | 0.25 km² | 0.250000 km² | 20 | 80 | 13.35% |
+| Garden Reach | 4.0 km² | 1.00 km² | 1.015625 km² | 1,040 | 1,024 | 12.76% |
+| Market Ward | 2.5 km² | 0.80 km² | 0.703125 km² | 180 | 256 | 15.65% |
+| Bay Center | 0.8 km² | 0.25 km² | 0.234375 km² | 19 | 81.07 | 13.30% |
 | Civic Green | 0.7 km² | 0.15 km² | 0.156250 km² | 1 stadium | 6.4 | 22.31% |
-| Total | 8.0 km² | 2.20 km² | 2.203125 km² | 1,237 | — | — |
+| Total | 8.0 km² | 2.20 km² | 2.109375 km² | 1,240 | — | — |
 
-These are generated source observations for seed 332 after the enclosing-island composition, not GTA measurements or hardware results. The three required building districts reach their original density and coverage envelopes. Civic coverage is reported separately and has no residential/tower coverage target. The city has 6,092 total prop instances and 360,876 unique catalogue triangles within the existing budgets; accessories and repeated placements do not inflate unique geometry counts.
+These are generated source observations for seed 332 after the finalized enclosing-island composition, not GTA measurements or hardware results. The three required building districts reach their original density and coverage envelopes. Civic coverage is reported separately and has no residential/tower coverage target. The city has 5,807 total prop instances and 360,876 unique catalogue triangles within the existing budgets; accessories and repeated placements do not inflate unique geometry counts.
 
 No city-wide hardware frame-time, memory or collision-capacity conclusion follows from these source counts. Renderer pools and base populations stay unchanged. Sidewalk circuits are within each supported block; crossing between different block floor levels requires the route task's explicit pedestrian crossing ramps rather than interpolated floating paths.
