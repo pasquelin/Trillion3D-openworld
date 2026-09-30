@@ -23,7 +23,7 @@ const TOWNS: Partial<Record<RegionName, [number, number]>> = {
   countryside: [1_000, 500],
   desert: [-3_000, -1_200],
   coast: [2_800, 2_000],
-  mountains: [-1_000, -1_400],
+  mountains: [-2_500, -2_100],
 };
 
 export function planSettlements(
@@ -85,7 +85,11 @@ export function planSettlements(
       1_200,
       REGION_BOUNDS[region],
       RADIUS.town,
-      (x, z, h) => spaced(x, z, h) && owner(x, z) === region && h < WORLD.peak * 0.75,
+      (x, z, h) =>
+        spaced(x, z, h) &&
+        owner(x, z) === region &&
+        (region !== 'mountains' || h > 350) &&
+        h < (region === 'mountains' ? 700 : WORLD.peak * 0.75),
     );
     if (centre) add(`${region}-town`, 'town', region, centre);
   }

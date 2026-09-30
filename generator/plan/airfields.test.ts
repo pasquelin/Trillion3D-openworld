@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createPlan } from './plan.ts';
 import { lakeRadiusAt } from './lake-shore.ts';
+import { urbanPlateau } from './urban-ground.ts';
+import { ribbonSides } from './water.ts';
 import { CITY_CORES } from './geography.ts';
 import { REGIONS } from '../regions/index.ts';
 import { layout } from '../regions/airport/index.ts';
@@ -53,6 +55,33 @@ for (const seed of [332, 333])
       const radii = Array.from({ length: 36 }, (_, n) => lakeRadiusAt(lake, (n * Math.PI) / 18));
       assert.ok(Math.max(...radii) - Math.min(...radii) > lake.radius * 0.15);
     }
+    for (const river of plan.rivers) {
+      const sides = ribbonSides(river.points);
+      assert.ok(
+        plan.natural(river.points[0][0], river.points[0][2]) > 3,
+        `${river.id}: dry spring`,
+      );
+      river.points.forEach((p, k) => {
+        if (k) assert.ok(p[1] <= river.points[k - 1][1] + 1e-8, `${river.id}: downhill water`);
+        for (const side of [-1, 0, 1])
+          assert.ok(
+            !urbanPlateau(
+              p[0] + sides[k][0] * (river.widths[k] / 2 + 2) * side,
+              p[2] + sides[k][1] * (river.widths[k] / 2 + 2) * side,
+              145,
+            ),
+            `${river.id}: urban bank clearance`,
+          );
+      });
+      if (river.id !== 'river-west')
+        assert.ok(river.points.at(-1)![1] <= 0, `${river.id}: submerged sea exit`);
+    }
+    const end = plan.rivers.find((r) => r.id === 'river-west')!.points.at(-1)!,
+      joined = plan.rivers
+        .find((r) => r.id === 'river-main')!
+        .points.find((p) => Math.hypot(p[0] - end[0], p[2] - end[2]) < 1e-5);
+    assert.ok(joined, 'tributary physically joins the main channel');
+    assert.ok(Math.abs(joined[1] - end[1]) < 1e-7, 'confluence shares its water level');
     const strips = airport.output.roads.filter((r) => r.class === 'runway');
     assert.equal(strips.length, 3);
     for (const strip of strips) {

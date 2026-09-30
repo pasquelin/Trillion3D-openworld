@@ -22,6 +22,7 @@ import { preserveShore } from './shore.ts';
 import { planSettlements } from './settlements.ts';
 import type { Tunnel } from './tunnels.ts';
 import { levelAirfields, type AirfieldPlatforms } from './airfields.ts';
+import { urbanRivers } from './urban-rivers.ts';
 import { urbanGround } from './urban-ground.ts';
 
 /**
@@ -84,13 +85,14 @@ export function createPlan(
   // erosion, which drains into them as its base level: sediment settles at their banks and
   // never fills them. A lake reads its level again on its eroded rim.
   const waters = planWaters(heightGrid(uneroded), uneroded, relief),
-    { platform, airfields, mouth, rivers } = waters,
+    { platform, airfields, mouth } = waters,
     { natural, erosion } = erodedGround(seed, refiners, uneroded, waters),
     naturalGrid = heightGrid(natural),
     lakes = waters.lakes.map((lake) => relevel(naturalGrid, lake));
-  const water = waterCarver(rivers, lakes, naturalGrid),
+  const urban = urbanGround(natural),
     level = levelAirfields(airfields),
-    urban = urbanGround(natural),
+    rivers = urbanRivers(waters.rivers, natural, (x, z, h) => level(x, z, urban(x, z, h))),
+    water = waterCarver(rivers, lakes, naturalGrid),
     carvedAt = (x: number, z: number, base: number) =>
       preserveShore(base, level(x, z, water(x, z, urban(x, z, base))), base, 0.5),
     carved = (x: number, z: number) => carvedAt(x, z, natural(x, z)),

@@ -21,14 +21,19 @@ export type RiverCourse = { river: River; beds: readonly number[]; depths: reado
 type Window = { minX: number; maxX: number; minZ: number; maxZ: number };
 
 /** The highest grid node in a window that lies below the crests: where a spring rises. */
-function spring(grid: HeightGrid, window: Window): Point2 {
+function spring(
+  grid: HeightGrid,
+  window: Window,
+  allowed: (x: number, z: number) => boolean = () => true,
+): Point2 {
   let best: Point2 = [window.minX, window.minZ],
     top = -Infinity;
   for (let z = window.minZ; z <= window.maxZ; z += STEP)
     for (let x = window.minX; x <= window.maxX; x += STEP) {
       const h = grid.at(x, z);
-      if (h <= WORLD.peak * 0.65 && h > top) [best, top] = [[x, z], h];
+      if (allowed(x, z) && h <= WORLD.peak * 0.65 && h > top) [best, top] = [[x, z], h];
     }
+  if (top <= 3) throw new Error('River spring has no dry upland');
   return best;
 }
 
@@ -70,12 +75,32 @@ export function planRivers(
   mouths: { south: Point2; east: Point2 },
   avoid: (x: number, z: number) => boolean,
 ): RiverCourse[] {
-  const cost = (_: number, to: number, length: number, rise: number) =>
-    avoid(nodeX(to), nodeZ(to)) ? Infinity : length + 40 * Math.max(0, rise);
+  const clear = (x: number, z: number) =>
+    [-22, 0, 22].every((dx) => [-22, 0, 22].every((dz) => !avoid(x + dx, z + dz)));
+  const clearSegment = (a: Point2, b: Point2) => {
+    const steps = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 10));
+    return Array.from({ length: steps + 1 }, (_, k) => k / steps).every((t) =>
+      clear(a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])),
+    );
+  };
+  const cost = (from: number, to: number, length: number, rise: number) =>
+    clearSegment([nodeX(from), nodeZ(from)], [nodeX(to), nodeZ(to)])
+      ? length + 40 * Math.max(0, rise)
+      : Infinity;
   const trace = (source: Point2, goal: Point2 | ((index: number) => boolean)) => {
-    const path = route(grid, source, goal, cost);
+    const path = route(grid, source, goal, (from, to, length, rise) =>
+      typeof goal === 'function' && grid.heights[to] < 0 && !goal(to)
+        ? Infinity
+        : cost(from, to, length, rise),
+    );
     if (!path) throw new Error(`No river course from ${source.join(', ')}`);
-    return resample(chaikin(path, 3), RIVER_STEP);
+    const rounded = resample(chaikin(path, 3), RIVER_STEP),
+      valid = (points: readonly Point2[]) =>
+        points.every((p, k) => clear(p[0], p[1]) && (!k || clearSegment(points[k - 1], p)));
+    if (valid(rounded)) return rounded;
+    const raw = resample(path, RIVER_STEP);
+    if (!valid(raw)) throw new Error('River footprint intersects a protected plateau');
+    return raw;
   };
   const main = trace(spring(grid, { minX: -2_500, maxX: -1_000, minZ: -3_200, maxZ: -2_500 }), [
       mouths.south[0],
@@ -85,14 +110,30 @@ export function planRivers(
       mouths.east[0],
       mouths.east[1],
     ]),
-    mainNodes = new Set(main.map(([x, z]) => node(x, z))),
+    mainProfile = profile('river-main', main, height, [8, 40]),
+    mainNodes = new Set(mainProfile.river.points.map(([x, , z]) => node(x, z))),
     joins = (index: number) => mainNodes.has(index),
     tributary = trace(
-      spring(grid, { minX: -3_800, maxX: -3_000, minZ: -3_200, maxZ: -2_500 }),
+      spring(
+        grid,
+        { minX: -3_000, maxX: -2_000, minZ: -2_800, maxZ: -1_800 },
+        (x, z) =>
+          clear(x, z) &&
+          mainProfile.river.points.every((p) => Math.hypot(x - p[0], z - p[2]) >= 250),
+      ),
       joins,
     );
+  const end = tributary.at(-1)!;
+  const junction = mainProfile.river.points
+    .map(([x, , z]): Point2 => [x, z])
+    .filter((p) => clearSegment(tributary.at(-2)!, p))
+    .sort(
+      (a, b) => Math.hypot(a[0] - end[0], a[1] - end[1]) - Math.hypot(b[0] - end[0], b[1] - end[1]),
+    )[0];
+  if (!junction) throw new Error('No protected tributary junction');
+  tributary[tributary.length - 1] = junction;
   return [
-    profile('river-main', main, height, [8, 40]),
+    mainProfile,
     profile('river-east', east, height, [6, 25]),
     profile('river-west', tributary, height, [5, 15]),
   ];

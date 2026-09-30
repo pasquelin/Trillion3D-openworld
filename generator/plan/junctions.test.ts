@@ -152,3 +152,30 @@ test('dry bridge endpoints retain clearance over a wet channel between vertices'
   assert.ok(road.road.points[1][1] >= 16);
   assert.equal(road.road.points.at(-1)![1], 12);
 });
+test('a routed spur joins a real bridge deck with its own physical clearance-bearing span', () => {
+  const main = course('main', [
+      [-100, 16, 0],
+      [100, 16, 0],
+    ]),
+    spur = course('village/road', [
+      [0, 16, -100],
+      [0, 16, -10],
+    ]);
+  main.bridge = [true];
+  const spans: Bridge[] = [
+    { id: 'main-span', road: 'main', from: main.road.points[0], to: main.road.points[1], width: 8 },
+  ];
+  joinRoadProfiles(
+    [main, spur],
+    spans,
+    () => -1,
+    undefined,
+    () => 16,
+  );
+  assert.deepEqual(spur.road.points.at(-1), main.road.points[1]);
+  assert.equal(spur.bridge.at(-1), true);
+  assert.equal(main.bridge.length, 2);
+  assert.ok(main.bridge.every(Boolean));
+  assert.ok(spans.some((s) => s.road === spur.road.id && s.to[0] === 0 && s.to[2] === 0));
+  assert.ok([...main.road.points, ...spur.road.points].every((p) => p[1] >= 16));
+});

@@ -24,11 +24,13 @@ export function joinRoadProfiles(
   anchor?: (x: number, z: number) => number | undefined,
   bridgeFloor?: (x: number, z: number) => number,
 ) {
-  const index = new SegmentIndex(),
+  const junctions = new Set<string>(),
+    xy = (p: Vec3) => `${p[0].toFixed(5)}/${p[2].toFixed(5)}`,
+    index = new SegmentIndex(),
     segments: { course: RoadCourse; at: number; a: Vec3; b: Vec3 }[] = [];
   for (const course of courses)
     course.road.points.slice(1).forEach((b, k) => {
-      if (course.road.class === 'dirt' || course.bridge[k] || course.tunnel[k]) return;
+      if (course.road.class === 'dirt' || course.tunnel[k]) return;
       const a = course.road.points[k];
       // A routed endpoint shares a grid cell with the centreline, rather than an exact vertex.
       index.add(a[0], a[2], b[0], b[2], STEP);
@@ -43,7 +45,11 @@ export function joinRoadProfiles(
       .near(end[0], end[2])
       .filter((h) => segments[h.segment].course !== course)
       .sort((a, b) => a.distance - b.distance)[0];
-    if (!hit || hit.distance < 0.01) continue;
+    if (!hit) continue;
+    if (hit.distance < 0.01) {
+      junctions.add(xy(end));
+      continue;
+    }
     const target = segments[hit.segment],
       a = target.a,
       b = target.b,
@@ -51,37 +57,44 @@ export function joinRoadProfiles(
         a[0] + (b[0] - a[0]) * hit.t,
         a[1] + (b[1] - a[1]) * hit.t,
         a[2] + (b[2] - a[2]) * hit.t,
-      ];
-    if (
-      Array.from({ length: 8 }, (_, k) =>
+      ],
+      targetPoints = [...target.course.road.points],
+      at = targetPoints.findIndex((q, i) => {
+        const r = targetPoints[i + 1];
+        return (
+          r &&
+          Math.abs(
+            Math.hypot(q[0] - p[0], q[2] - p[2]) +
+              Math.hypot(r[0] - p[0], r[2] - p[2]) -
+              Math.hypot(r[0] - q[0], r[2] - q[2]),
+          ) < 0.0001
+        );
+      });
+    if (at < 0) throw new Error('Connector target lost its authored segment');
+    const wetConnector = Array.from({ length: 8 }, (_, k) =>
         ground(end[0] + ((p[0] - end[0]) * k) / 7, end[2] + ((p[2] - end[2]) * k) / 7),
-      ).some((y) => y < 0.5)
-    )
-      continue;
+      ).some((y) => y < 0.5),
+      deckJoin = !!target.course.bridge[at] || wetConnector;
+    junctions.add(xy(p));
     points.push(p);
     course.road.points = points;
-    course.bridge = [...course.bridge, false];
+    course.bridge = [...course.bridge, deckJoin];
+    if (deckJoin)
+      bridges.push({
+        id: `${course.road.id}/junction-bridge`,
+        road: course.road.id,
+        from: end,
+        to: p,
+        width: course.road.width,
+      });
     course.tunnel = [...course.tunnel, false];
     // The target's exact junction vertex makes the connector part of its centreline too.
-    const targetPoints = [...target.course.road.points];
     // Projection onto an existing endpoint already has a junction; a duplicate makes a zero-length edge.
     if (targetPoints.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 0.0001)) continue;
-    const at = targetPoints.findIndex((q, i) => {
-      const r = targetPoints[i + 1];
-      return (
-        r &&
-        Math.abs(
-          Math.hypot(q[0] - p[0], q[2] - p[2]) +
-            Math.hypot(r[0] - p[0], r[2] - p[2]) -
-            Math.hypot(r[0] - q[0], r[2] - q[2]),
-        ) < 0.0001
-      );
-    });
-    if (at < 0) throw new Error('Connector target lost its authored segment');
     targetPoints.splice(at + 1, 0, p);
     target.course.road.points = targetPoints;
     const flags = [...target.course.bridge];
-    flags.splice(at, 0, false);
+    flags.splice(at, 0, flags[at]);
     target.course.bridge = flags;
     const tunnels = [...target.course.tunnel];
     tunnels.splice(at, 0, false);
@@ -93,7 +106,8 @@ export function joinRoadProfiles(
     anchors: (number | undefined)[] = [],
     links: { to: number; rise: number }[][] = [];
   const node = (p: Vec3, bridge = '') => {
-    const key = `${p[0].toFixed(5)}/${p[2].toFixed(5)}/${bridge}`;
+    const position = xy(p),
+      key = `${position}/${junctions.has(position) ? '' : bridge}`;
     let id = ids.get(key);
     if (id === undefined) {
       id = height.length;

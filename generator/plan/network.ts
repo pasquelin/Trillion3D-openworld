@@ -188,7 +188,7 @@ export function planNetwork(
       settlements.some(
         (site) =>
           CITY_CORES.some((core) => core.id === site.id) &&
-          Math.hypot(x - site.centre[0], z - site.centre[2]) < 0.1,
+          Math.hypot(x - site.centre[0], z - site.centre[2]) < 50,
       )
         ? ground.height(x, z)
         : undefined,

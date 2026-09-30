@@ -39,7 +39,7 @@ function archOutline(): Point2[] {
   ];
 }
 
-export function bridgeBay(): PropMesh {
+export function bridgeBay(openSide = 2): PropMesh {
   const w = BRIDGE.width,
     parts: MeshPart[] = [
       // The arched wall, turned so its side plane runs along Z and its thickness across X.
@@ -50,6 +50,7 @@ export function bridgeBay(): PropMesh {
       transform(roundedBox(COAST.quayStone, [w, 0.35, BRIDGE.bay], 0.08, 2), { at: [0, -0.65, 0] }),
     ];
   for (const side of [-1, 1]) {
+    if (openSide === 0 || side === openSide) continue;
     const x = side * (w / 2 - 0.35);
     parts.push(
       transform(roundedBox(COAST.granite, [0.5, 0.9, BRIDGE.bay], 0.08, 2), { at: [x, -0.3, 0] }),

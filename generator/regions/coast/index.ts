@@ -57,7 +57,7 @@ function generateCoast(plan: WorldPlan): RegionOutput {
       [...props, ...shared],
       plan.roads,
     );
-  bridges(layout, plan.bridges);
+  props.push(...bridges(layout, plan.bridges));
   const headland = raiseLighthouse(layout),
     resort = beachResort(layout, headland?.foot),
     port = islandPort(layout);

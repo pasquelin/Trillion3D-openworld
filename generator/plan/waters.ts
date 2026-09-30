@@ -4,6 +4,7 @@
  * countryside and one in the mountains, clear of the rivers.
  */
 import type { Lake } from './carve.ts';
+import { urbanPlateau } from './urban-ground.ts';
 import { WORLD } from './contract.ts';
 import { REGION_BOUNDS, REGIONS, landWeights } from './layout.ts';
 import type { Relief } from './relief.ts';
@@ -30,7 +31,7 @@ export function planWaters(
         south: [mouth[0], mouth[1] + 300],
         east: [eastMouth, relief.southCoastZ(eastMouth) + 300],
       },
-      onPlatform,
+      (x, z) => onPlatform(x, z) || urbanPlateau(x, z, 150),
     );
   const nearRiver = (x: number, z: number, margin: number) =>
     rivers.some(({ river }) => river.points.some((p) => Math.hypot(p[0] - x, p[2] - z) < margin));

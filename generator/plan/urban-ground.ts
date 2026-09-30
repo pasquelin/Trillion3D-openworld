@@ -30,3 +30,7 @@ export function urbanGround(height: Height) {
     return shaped;
   };
 }
+
+/** Keep routed water outside the fully levelled urban plateau and its bank clearance. */
+export const urbanPlateau = (x: number, z: number, margin = 0) =>
+  CITY_CORES.some((core) => Math.hypot(x - core.x, z - core.z) < core.radius * 1.1 + margin);

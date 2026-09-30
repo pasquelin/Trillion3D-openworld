@@ -45,7 +45,12 @@ const TARGET = 400_000;
 
 test('the coast stays within its budget, measured', () => {
   const triangles = output.props.reduce((sum, p) => sum + triangleCount(p), 0);
-  assert.equal(triangles, 369_147);
+  assert.equal(
+    output.props
+      .filter((p) => !p.id.startsWith('coast-bridge/'))
+      .reduce((sum, p) => sum + triangleCount(p), 0),
+    369_147,
+  );
   assert.ok(triangles <= TARGET * 1.1);
   assert.ok(output.instances.length <= budget.nodes);
   // Ocean cells need no vegetation nodes; retain the density target per sampled dry area.
@@ -86,6 +91,14 @@ test('no two props overlap and none stands on a road', () => {
           assert.ok(
             // Pieces of one building (the lighthouse and its lantern) share one origin.
             String(output.instances[index].position) === String(output.instances[other].position) ||
+              (output.instances[index].prop.startsWith('coast-bridge/') &&
+                output.instances[other].prop.startsWith('coast-bridge/') &&
+                output.instances[index].name?.replace(/\/\d+\/\d+$/, '') ===
+                  output.instances[other].name?.replace(/\/\d+\/\d+$/, '') &&
+                Math.abs(
+                  Number(output.instances[index].prop.split('/').at(-1)) -
+                    Number(output.instances[other].prop.split('/').at(-1)),
+                ) <= 1) ||
               !overlaps(r, rects[other]),
             `${output.instances[index].prop} × ${output.instances[other].prop}`,
           );

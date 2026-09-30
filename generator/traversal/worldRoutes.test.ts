@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { auditBridgeDecks } from '../build/bridge-decks.ts';
 import { auditRoadWater } from '../build/road-water.ts';
 import { placeWorld } from '../build/world.ts';
 import { solidIndex } from '../build/solids.ts';
@@ -8,7 +9,6 @@ import { nearestRoad, roadIndex } from '../../page/play/roads.ts';
 import { rotate, yawPitchRoll } from '../../page/play/math3.ts';
 import { markerSite } from '../build/markers.ts';
 import { civicRouteObservations } from './observations.ts';
-
 const world = placeWorld(),
   roads = [...world.plan.roads, ...world.placed.flatMap((o) => o.roads)],
   manifest = buildTraversal(world.plan, roads, world.markers, world.city);
@@ -194,4 +194,5 @@ test('F2 reaches the distinct northeast field with exact source endpoint poses a
 });
 test('composed road decks clear actual visible aquatic surfaces', () => {
   assert.deepEqual(auditRoadWater(world.plan, roads).submerged, []);
+  assert.deepEqual(auditBridgeDecks(world.plan, world.meshes, world.instances).mismatches, []);
 });

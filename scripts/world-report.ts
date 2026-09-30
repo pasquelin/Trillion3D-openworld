@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { auditBridgeDecks } from '../generator/build/bridge-decks.ts';
 import { auditRoadWater } from '../generator/build/road-water.ts';
 import { placeWorld } from '../generator/build/world.ts';
 import { landCoverage } from '../generator/build/coverage.ts';
@@ -40,6 +41,7 @@ const sourceKey = cookKey(),
     sourceHead: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     engineCommit: pkg.trillion3d.commit,
     traversalFailures: traversal.failures,
+    physicalBridgeDecks: auditBridgeDecks(world.plan, world.meshes, world.instances),
     roadWater: auditRoadWater(world.plan, [...world.plan.roads, ...roads]),
     flights: traversal.routes
       .filter((r) => r.kind === 'flight')

@@ -1,20 +1,24 @@
 /** Audit authored road decks against the exact aquatic triangles, not a coarse map raster. */
-import type { Road, Vec3 } from '../plan/contract.ts';
+import type { Road, Bridge, Vec3 } from '../plan/contract.ts';
 import type { TerrainPlan } from '../plan/plan.ts';
 import { ribbonSides } from '../plan/water.ts';
 import { waterSurface } from '../plan/water-surface.ts';
 
-const onSpan = (x: number, z: number, span: { from: Vec3; to: Vec3; width: number }) => {
-  const [a, b] = [span.from, span.to],
-    dx = b[0] - a[0],
-    dz = b[2] - a[2],
-    t = ((x - a[0]) * dx + (z - a[2]) * dz) / (dx * dx + dz * dz || 1);
-  return (
-    t >= -0.01 &&
-    t <= 1.01 &&
-    Math.hypot(x - a[0] - t * dx, z - a[2] - t * dz) <= span.width / 2 + 1
-  );
-};
+const intervals = (road: Road, spans: readonly Bridge[]) =>
+  spans
+    .filter((span) => span.road === road.id)
+    .map((span) => {
+      const nearest = (p: readonly number[]) =>
+        road.points.reduce(
+          (best, q, k) =>
+            Math.hypot(q[0] - p[0], q[2] - p[2]) <
+            Math.hypot(road.points[best][0] - p[0], road.points[best][2] - p[2])
+              ? k
+              : best,
+          0,
+        );
+      return [nearest(span.from), nearest(span.to)].sort((a, b) => a - b);
+    });
 
 export function auditRoadWater(plan: TerrainPlan, roads: readonly Road[]) {
   const level = waterSurface(plan.rivers, plan.lakes);
@@ -31,7 +35,9 @@ export function auditRoadWater(plan: TerrainPlan, roads: readonly Road[]) {
     }[] = [],
     crossings = new Set<string>();
   for (const road of roads) {
-    const sides = ribbonSides(road.points);
+    const sides = ribbonSides(road.points),
+      bridges = intervals(road, plan.bridges),
+      tunnels = intervals(road, plan.tunnels);
     for (let i = 1; i < road.points.length; i++) {
       const [a, b] = [road.points[i - 1], road.points[i]],
         dx = b[0] - a[0],
@@ -56,9 +62,8 @@ export function auditRoadWater(plan: TerrainPlan, roads: readonly Road[]) {
           if (ground >= water + 0.01) continue;
           wetSamples++;
           crossings.add(road.id);
-          const bridge = plan.bridges.some((s) => s.road === road.id && onSpan(x, z, s)),
-            tunnel =
-              plan.tunnels.some((s) => s.road === road.id && onSpan(x, z, s)) && ground - deck >= 8;
+          const bridge = bridges.some(([a, b]) => i - 1 >= a && i - 1 < b),
+            tunnel = tunnels.some(([a, b]) => i - 1 >= a && i - 1 < b) && ground - deck >= 8;
           if (bridge) bridgeSamples++;
           if (tunnel) coveredTunnelSamples++;
           if (!tunnel && deck < water + 6 - 1e-5)
