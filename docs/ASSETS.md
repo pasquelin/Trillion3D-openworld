@@ -82,22 +82,22 @@ table and input triangle count. No internal reader is copied into the applicatio
 | four-blocks | 64 | 72 | 34,287 | 578,028 | 13 |
 | sixteen-blocks | 256 | 288 | 34,287 | 2,312,112 | 13 |
 
-All three small native cooks at engine `7f810cbe344ee10fdcc910a8f5659e1536edbc2d` reloaded 12
+All three small native cooks at engine `7f810cbe344ee10fdcc910a8f5659e1536edbc2d` reloaded 28
 primitives and two texture previews. Their output directories were below the 800 MiB cooked-disk
 envelope per profile. The envelope is not a runtime memory budget or a combined world-plus-fixtures
 payload guarantee. Normal world capacity requires its own complete cook; these profiles are separate
 scenes, never simultaneously loaded.
 
-Observed final small-cook output on 2026-09-30 (directory sizes include compiler sidecars and source.bin):
+Observed dense-block small-cook output on 2026-09-30 (directory sizes include compiler sidecars and source.bin):
 
 | Profile | Assembled source bytes | Cooked directory bytes | Source SHA-256 |
 | --- | ---: | ---: | --- |
-| one-block | 1,266,505 | 15,715,872 | `85aaf98c66081121513c31d5a8c55f8972aef9b2c6ec97eb2a9165fccbd36182` |
-| four-blocks | 1,268,681 | 6,050,740 | `e116c9835fcbffa6a19d34cf098abf25b76a635178f80bce66b4e833cd0d47b2` |
-| sixteen-blocks | 1,277,753 | 11,534,229 | `b29fa8c3f621ba0eed9e7ff0da2f9477c4c9299290800cbb147541959c9d343c` |
+| one-block | 2,125,229 | 12,564,370 | `e74caad3b90c3de5950ddbd2936a52ea592d70f9dd2797c07574ddef76ba9b6c` |
+| four-blocks | 2,131,129 | 10,307,996 | `6fc7ec1d4ff4a3fc05752db48ff2f4feec879ff9df96a0643d7241b2f26c0583` |
+| sixteen-blocks | 2,155,757 | 11,710,104 | `e7d7c71258c2150bb106332249d5d384d51382e77f51282371e2c70a370c868f` |
 
 **Counting distinction:** native manifest `sourceTriangles` reports instance-expanded input for
-these fixtures (73,107 / 292,428 / 1,169,712), although the authored unique geometry is 20,151.
+these fixtures (144,507 / 578,028 / 2,312,112), although the authored unique geometry is 34,287.
 The fixture reload labels that raw field `compilerInstanceExpandedTriangles`. Native selected
 input/cache triangle counts are not camera-selected or rendered counts. The generation report keeps
 those null; the dedicated measurement campaign records observed camera counters separately.
