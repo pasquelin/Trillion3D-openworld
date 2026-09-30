@@ -133,8 +133,8 @@ export function buildWorkload(name: WorkloadName) {
       },
       cameras: {
         facade: {
-          position: [-(side - 1) * 64 - 18, 1.7, -(side - 1) * 64 - 49],
-          target: [-(side - 1) * 64 - 18, 10, -(side - 1) * 64 - 34],
+          position: [-(side - 1) * 64 - 55, 8, -(side - 1) * 64 - 62],
+          target: [-(side - 1) * 64, 10, -(side - 1) * 64 - 34],
         },
         alley: {
           position: [-(side - 1) * 64 - 49, 1.7, -(side - 1) * 64 - 20.65],
