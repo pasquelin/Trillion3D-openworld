@@ -71,3 +71,20 @@ test('same-level collinear overlap splits at shared geometric endpoints', () => 
   ]);
   assert.ok(graphPath(g, node(g, 0, 0), node(g, 150, 0)));
 });
+test('short crossings near a long segment endpoint survive broadphase in either input order', () => {
+  const long = road('long', [
+      [-500, 2, 0],
+      [500, 2, 0],
+    ]),
+    short = road('short', [
+      [-490, 2, -5],
+      [-490, 2, 5],
+    ]);
+  for (const roads of [
+    [long, short],
+    [short, long],
+  ]) {
+    const g = travelGraph(roads);
+    assert.ok(graphPath(g, node(g, 500, 0), node(g, -490, 5)));
+  }
+});

@@ -24,12 +24,21 @@ export function travelGraph(roads: readonly Road[], walking = false): TravelGrap
         return;
       }
       segments.push({ a, b, road: road.id, cuts: [0, 1] });
-      index.add(a[0], a[2], b[0], b[2], length + 1);
+      index.add(a[0], a[2], b[0], b[2], 50);
     });
   }
   segments.forEach((s, i) => {
-    const candidates = index.near((s.a[0] + s.b[0]) / 2, (s.a[2] + s.b[2]) / 2);
-    for (const { segment: j } of candidates) {
+    // Every crossing lies within 25 m of a query on this segment; candidates have 50 m reach.
+    // The conservative bound holds even when the candidate segment is much shorter.
+    const candidates = new Set<number>();
+    const count = Math.max(1, Math.ceil(Math.hypot(s.b[0] - s.a[0], s.b[2] - s.a[2]) / 50));
+    for (let k = 0; k <= count; k++)
+      for (const hit of index.near(
+        s.a[0] + ((s.b[0] - s.a[0]) * k) / count,
+        s.a[2] + ((s.b[2] - s.a[2]) * k) / count,
+      ))
+        candidates.add(hit.segment);
+    for (const j of candidates) {
       if (j <= i) continue;
       const other = segments[j],
         u = [s.b[0] - s.a[0], s.b[2] - s.a[2]],
