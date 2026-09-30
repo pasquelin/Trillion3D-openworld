@@ -1,4 +1,3 @@
-/** Shared highway, settlement, airport, mountain and walking connections. */
 import { CITY_CORES } from './geography.ts';
 import type { Bridge, RoadClass, Settlement, Vec3 } from './contract.ts';
 import type { Lake, Platform, RoadCourse } from './carve.ts';
@@ -14,13 +13,8 @@ import { groundSummits } from '../regions/mountains/peaks.ts';
 import { FIELD, siteFrame } from '../regions/airport/site.ts';
 import { waterSurface, waterFloor } from './water-surface.ts';
 import { avenues } from './avenues.ts';
-export type Network = {
-  courses: RoadCourse[];
-  bridges: Bridge[];
-  tunnels: Tunnel[];
-  viewpoints: Vec3[];
-  failedConnections: string[];
-};
+import type { Network } from './network-contract.ts';
+export type { Network } from './network-contract.ts';
 export function planNetwork(
   ground: Ground,
   settlements: readonly Settlement[],
@@ -28,11 +22,9 @@ export function planNetwork(
   platform: Platform,
   airfields?: AirfieldPlatforms,
 ): Network {
-  const overRiver = waterSurface(
-      ground.rivers.map((c) => c.river),
-      lakes,
-    ),
-    courses: RoadCourse[] = [],
+  const riverPaths = ground.rivers.map(({ river }) => river);
+  const overRiver = waterSurface(riverPaths, lakes);
+  const courses: RoadCourse[] = [],
     bridges: Bridge[] = [],
     tunnels: Tunnel[] = [],
     viewpoints: Vec3[] = [],
@@ -104,10 +96,8 @@ export function planNetwork(
   ring.forEach((stop, index) =>
     road(`highway-${index}`, 'highway', stop, ring[(index + 1) % ring.length]),
   );
-  const terminal = siteFrame(REGION_BOUNDS.airport, platform, 0, interchange, -1).world(
-    0,
-    FIELD.curbside,
-  );
+  const airport = REGION_BOUNDS.airport;
+  const terminal = siteFrame(airport, platform, 0, interchange, -1).world(0, FIELD.curbside);
   road('airport-access', 'secondary', interchange, [platform.maxX + 100, centreZ], true, [
     [platform.maxX, platform.level, centreZ],
     [terminal[0], platform.level, terminal[1]],
