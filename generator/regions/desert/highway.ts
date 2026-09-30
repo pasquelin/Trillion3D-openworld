@@ -90,7 +90,7 @@ function stationAt(b: Build, hw: number, run: readonly Vec3[]) {
       kind: 'spawn',
       vehicle: 'car',
       name: 'desert/station/car',
-      position: [cx, slab.position[1] + 0.3, cz],
+      position: [cx, Math.max(slab.position[1] + 0.3, b.plan.height(cx, cz)), cz],
       yaw: facing(s.tx, s.tz),
     });
     const [vx, vz] = offset(s, side * (hw + 4), -40);

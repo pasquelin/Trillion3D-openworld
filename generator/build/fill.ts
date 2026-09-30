@@ -7,7 +7,7 @@
  */
 import { WORLD, type Instance, type PropMesh, type RegionName } from '../plan/contract.ts';
 import type { TerrainPlan } from '../plan/plan.ts';
-import { hash01 } from '../props/index.ts';
+import { hash01, standExtent } from '../props/index.ts';
 import { dryFootprint } from '../plan/dry.ts';
 
 /** Side of a checked cell, metres, and the props one empty cell receives. */
@@ -102,12 +102,15 @@ export function fillEmptyLand(
         const px = x + (hash01(seed, i, k, n * 4) - 0.5) * FILL_CELL,
           pz = z + (hash01(seed, i, k, n * 4 + 1) - 0.5) * FILL_CELL;
         const prop = pool[Math.floor(hash01(seed, i, k, n * 4 + 2) * pool.length)],
-          radius = reach.get(prop) ?? 0;
+          radius = reach.get(prop) ?? 0,
+          yaw = hash01(seed, i, k, n * 4 + 3) * Math.PI * 2,
+          extent = standExtent(prop);
         if (!open(plan, px, pz) || !dryFootprint(plan.height, px, pz, radius, radius)) continue;
+        if (extent && !dryFootprint(plan.height, px, pz, extent[2], extent[3], yaw)) continue;
         out.push({
           prop,
           position: [px, plan.height(px, pz), pz],
-          yaw: hash01(seed, i, k, n * 4 + 3) * Math.PI * 2,
+          yaw,
         });
       }
     }
