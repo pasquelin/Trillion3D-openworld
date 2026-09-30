@@ -5,7 +5,7 @@ import { dryFootprint as drySeaFootprint } from '../../plan/dry.ts';
 import { isTerrainPlan } from '../../plan/plan.ts';
 
 const banks = new WeakMap<Site, Occupancy<boolean>>();
-export function dryFootprint(site: Site, box: Obb) {
+export function dryFootprint(site: Site, box: Obb, spacing = 25) {
   let rivers = banks.get(site);
   if (!rivers) {
     rivers = new Occupancy<boolean>(120);
@@ -31,5 +31,6 @@ export function dryFootprint(site: Site, box: Obb) {
     box.half[0],
     box.half[1],
     box.yaw,
+    spacing,
   );
 }
