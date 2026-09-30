@@ -7,7 +7,8 @@
  */
 import { WORLD, type Instance, type PropMesh, type RegionName } from '../plan/contract.ts';
 import type { TerrainPlan } from '../plan/plan.ts';
-import { hash01 } from '../props/index.ts';
+import { hash01, standExtent } from '../props/index.ts';
+import { dryFootprint } from '../plan/dry.ts';
 
 /** Side of a checked cell, metres, and the props one empty cell receives. */
 const FILL_CELL = 100;
@@ -51,7 +52,7 @@ function occupied(instances: readonly Instance[], reach: ReadonlyMap<string, num
 function open(plan: TerrainPlan, x: number, z: number) {
   const p = plan.platform;
   if (x > p.minX && x < p.maxX && z > p.minZ && z < p.maxZ) return false;
-  if (plan.natural(x, z) < 1) return false;
+  if (plan.natural(x, z) < 1 || plan.height(x, z) < 1) return false;
   if (plan.lakes.some((l) => Math.hypot(x - l.x, z - l.z) < l.radius + FILL_CELL)) return false;
   return !plan.roads.some((road) =>
     road.points.some(
@@ -100,10 +101,16 @@ export function fillEmptyLand(
       for (let n = 0; n < PER_CELL; n++) {
         const px = x + (hash01(seed, i, k, n * 4) - 0.5) * FILL_CELL,
           pz = z + (hash01(seed, i, k, n * 4 + 1) - 0.5) * FILL_CELL;
+        const prop = pool[Math.floor(hash01(seed, i, k, n * 4 + 2) * pool.length)],
+          radius = reach.get(prop) ?? 0,
+          yaw = hash01(seed, i, k, n * 4 + 3) * Math.PI * 2,
+          extent = standExtent(prop);
+        if (!open(plan, px, pz) || !dryFootprint(plan.height, px, pz, radius, radius)) continue;
+        if (extent && !dryFootprint(plan.height, px, pz, extent[2], extent[3], yaw)) continue;
         out.push({
-          prop: pool[Math.floor(hash01(seed, i, k, n * 4 + 2) * pool.length)],
+          prop,
           position: [px, plan.height(px, pz), pz],
-          yaw: hash01(seed, i, k, n * 4 + 3) * Math.PI * 2,
+          yaw,
         });
       }
     }

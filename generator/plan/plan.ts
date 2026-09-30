@@ -25,6 +25,7 @@ import { SHORE, type ErosionFields } from './erosion.ts';
 import { createRelief, type Relief } from './relief.ts';
 import type { Ground } from './roads.ts';
 import { heightGrid } from './route.ts';
+import { preserveShore } from './shore.ts';
 import { planSettlements } from './settlements.ts';
 import type { Tunnel } from './tunnels.ts';
 
@@ -49,6 +50,7 @@ export type TerrainPlan = WorldPlan & {
   /** Road runs bored through ridges: the ground over them is left whole, a portal at each end. */
   tunnels: readonly Tunnel[];
   viewpoints: readonly Vec3[];
+  failedConnections: readonly string[];
 };
 
 export const isTerrainPlan = (plan: WorldPlan): plan is TerrainPlan =>
@@ -80,7 +82,7 @@ export function createPlan(
     refiners.forEach((refine, index) => {
       if (refine && weights[index] > 0) height += weights[index] * refine(x, z, base);
     });
-    return height;
+    return preserveShore(base, height);
   };
   // The platform, the rivers and the lakes are found on the uneroded ground and kept out of the
   // erosion, which drains into them as its base level: sediment settles at their banks and
@@ -92,7 +94,8 @@ export function createPlan(
     lakes = waters.lakes.map((lake) => relevel(naturalGrid, lake));
   const water = waterCarver(rivers, lakes, naturalGrid),
     level = platformLeveller(platform, 400),
-    carved = (x: number, z: number) => level(x, z, water(x, z, natural(x, z))),
+    carved = (x: number, z: number) =>
+      preserveShore(natural(x, z), level(x, z, water(x, z, natural(x, z))), natural(x, z), 0.5),
     ground: Ground = {
       grid: heightGrid(carved),
       height: carved,
@@ -106,10 +109,12 @@ export function createPlan(
       mouth,
       platform,
       relief.islands,
+      (x, z) => relief.coast(x, z) > 150,
     ),
     network = planNetwork(ground, settlements, lakes, platform),
     roads = roadLeveller(network.courses),
-    height = (x: number, z: number) => roads(x, z, carved(x, z)),
+    height = (x: number, z: number) =>
+      preserveShore(natural(x, z), roads(x, z, carved(x, z)), natural(x, z), 0.5),
     budgets = regionBudgets();
   const biomeWeights = new Float64Array(REGIONS.length);
   const biome = (x: number, z: number) => {
@@ -152,5 +157,6 @@ export function createPlan(
     courses: network.courses,
     tunnels: network.tunnels,
     viewpoints: network.viewpoints,
+    failedConnections: network.failedConnections,
   };
 }

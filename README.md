@@ -130,6 +130,23 @@ What the server holds, installed once by an idempotent script that lives on the 
   with the list of those missing; the checks and the build stay green. A run started before the
   secrets were set does not see them: rerun only its deploy job, `gh run rerun <id> --failed`.
 
+## Island geography
+
+The 8 × 8 km frame contains an original rounded island, a southern bay and three offshore
+islets. Its chosen land target is 42 ±3 km², with at least 250 m of ocean along every outer
+edge. The northern mountain spine retains the 2,000 m raw relief envelope; erosion and river
+cuts determine the final summit. Existing desert, countryside, city, airport and coast modules
+continue to use the shared composed ground.
+
+Run `node scripts/island-report.ts 332` and repeat with seed `333` to inspect the generated
+land area, dry components, all four shoreline profiles, settlements, placements, missing road
+courses and cook key. Area and dry connectivity are **25 m cell-center approximations**;
+source tests also cover the complete sampled perimeter, composed terrain seams, airport,
+land spawns, road segments and actual crop vertices. `failedConnections` reports route builds
+that produced no course; it does not prove geometric road junctions or driving grades. The
+traversal issue owns that separate proof. No cooked content or hardware performance result is
+included in the geography report.
+
 ## Contributing
 
 The rules are Trillion3D's ([AGENTS.md](AGENTS.md)): one issue and one pull request per change,

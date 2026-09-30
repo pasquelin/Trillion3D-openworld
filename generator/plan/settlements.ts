@@ -31,6 +31,7 @@ export function planSettlements(
   mouth: readonly [number, number],
   platform: Platform,
   islands: readonly Island[],
+  mainland: (x: number, z: number) => boolean = () => true,
 ): Settlement[] {
   const out: Settlement[] = [],
     add = (id: string, kind: Settlement['kind'], region: RegionName, centre: Vec3) =>
@@ -38,6 +39,7 @@ export function planSettlements(
   const spaced = (x: number, z: number, h: number) =>
     h > 3 &&
     !ground.wet(x, z) &&
+    mainland(x, z) &&
     out.every((s) => Math.hypot(s.centre[0] - x, s.centre[2] - z) > s.radius + 300);
   const at = (x: number, z: number): Vec3 => [x, ground.height(x, z), z];
   // The city fills the land between the airport and the shore, centred across it.

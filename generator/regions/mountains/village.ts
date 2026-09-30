@@ -45,8 +45,8 @@ export function placeVillage(placer: Placer, site: Settlement, rand: () => numbe
   // A church stands on its basement first; on steeper ground, on a terrace up to three storeys.
   let seated = false;
   for (const basement of TERRACES) {
-    for (let k = 0; k < 300 && !seated; k++) {
-      const r = 10 + k * 3,
+    for (let k = 0; k < 1_200 && !seated; k++) {
+      const r = 10 + Math.sqrt(k) * 26,
         [x, z] = [cx + Math.cos(k * GOLDEN) * r, cz + Math.sin(k * GOLDEN) * r],
         yaw = valleyYaw(placer, x, z),
         church = placer.place('mountains/church', x, z, {
@@ -67,8 +67,8 @@ export function placeVillage(placer: Placer, site: Settlement, rand: () => numbe
   // Every village keeps its teleport: at its centre, looking down the valley.
   if (!seated) markers.push(facingTeleport(placer, tag, cx, cz, valleyYaw(placer, cx, cz)));
   let built = 0;
-  for (let k = 0; k < 900 && built < houses; k++) {
-    const r = 45 + Math.sqrt(k) * 13;
+  for (let k = 0; k < 3_600 && built < houses; k++) {
+    const r = 45 + Math.sqrt(k) * 6.5;
     if (r > site.radius) break;
     const [x, z] = [cx + Math.cos(k * GOLDEN + 1) * r, cz + Math.sin(k * GOLDEN + 1) * r],
       spec = site.kind === 'resort' && built < 2 ? HOTEL : HOMES[Math.floor(rand() * HOMES.length)],

@@ -9,6 +9,7 @@
  */
 import { TERRAIN_TRIANGLES } from '../plan/budget.ts';
 import { WORLD, type Instance } from '../plan/contract.ts';
+import { dryFootprint } from '../plan/dry.ts';
 import { hash01 } from '../props/index.ts';
 import { forestStands, STAND_SIDE, type StandBiome, type StandVariant } from '../props/stands.ts';
 
@@ -107,7 +108,7 @@ export function plantStands(options: StandOptions): { patches: number; trees: nu
             ...samples.map(([dx, dz, h]) => Math.abs(h - centre) / (Math.hypot(dx, dz) || 1)),
           ),
           biome = biomeAt(x, z, centre, Math.atan(rise) / (Math.PI / 2));
-        if (!biome) continue;
+        if (!biome || centre <= 0 || samples.some(([, , h]) => h <= 0)) continue;
         const spot = fitStand(
           samples,
           variants.filter((v) => v.biome === biome),
@@ -115,7 +116,12 @@ export function plantStands(options: StandOptions): { patches: number; trees: nu
           z,
           seed,
         );
-        if (!spot || !place(spot, `stand-${Math.round(x)}-${Math.round(z)}`)) continue;
+        if (
+          !spot ||
+          !dryFootprint(height, x, z, STAND_SIDE / 2, STAND_SIDE / 2, spot.yaw) ||
+          !place(spot, `stand-${Math.round(x)}-${Math.round(z)}`)
+        )
+          continue;
         patches++;
         trees += spot.variant.trees;
       }

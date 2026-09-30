@@ -74,7 +74,7 @@ export function markerSite({ plan, meshes, instances, solids }: MarkerWorld) {
   const onFooting = (marker: Standing, x: number, feet: number, z: number) => {
     if (isBoat(marker))
       return Math.abs(feet - WORLD.seaLevel) <= FOOTING && plan.height(x, z) < WORLD.seaLevel;
-    if (inside(x, feet, z)) return false;
+    if (inside(x, feet, z) || (!marker.deck && plan.height(x, z) < WORLD.seaLevel)) return false;
     return (
       Math.abs(feet - groundAt(x, z)) <= FOOTING ||
       (marker.deck === true && Math.abs((deckTop(x, feet, z) ?? Infinity) - feet) <= FOOTING)
@@ -110,7 +110,13 @@ export function markerSite({ plan, meshes, instances, solids }: MarkerWorld) {
         (deckTop(x0, declared, z0) ?? -Infinity) > groundAt(x0, z0) + FOOTING ||
         (box !== undefined && over(x0, z0).length > 0),
       lift = marker.kind === 'teleport' ? EYE : 0;
-    if (!marker.deck && !landmark && !onFooting(marker, x0, declared, z0)) return marker;
+    if (
+      !marker.deck &&
+      !landmark &&
+      plan.height(x0, z0) >= WORLD.seaLevel &&
+      !onFooting(marker, x0, declared, z0)
+    )
+      return marker;
     const footing = (x: number, z: number) =>
       isBoat(marker) ? WORLD.seaLevel : marker.deck ? deckTop(x, declared, z) : groundAt(x, z);
     for (const [dx, dz] of SPIRAL) {

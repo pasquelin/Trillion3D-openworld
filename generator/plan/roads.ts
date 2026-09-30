@@ -77,9 +77,17 @@ export function riverIndex(rivers: readonly RiverCourse[]) {
  */
 function roadCost(ground: Ground, cls: RoadClass, strict: boolean) {
   const { grade } = ROAD_STYLE[cls];
-  return (_: number, to: number, length: number, rise: number) => {
+  return (from: number, to: number, length: number, rise: number) => {
     const steep = Math.abs(rise) / length / grade;
-    if (ground.wet(nodeX(to), nodeZ(to)) || (strict && steep > 1)) return Infinity;
+    if (strict && steep > 1) return Infinity;
+    const ax = nodeX(from),
+      az = nodeZ(from),
+      bx = nodeX(to),
+      bz = nodeZ(to),
+      samples = Math.ceil(length / 25);
+    for (let k = 1; k <= samples; k++)
+      if (ground.wet(ax + ((bx - ax) * k) / samples, az + ((bz - az) * k) / samples))
+        return Infinity;
     return length * (1 + steep ** 4);
   };
 }
@@ -93,7 +101,27 @@ export function layRoad(
   overRiver: (x: number, z: number) => number | null,
 ): { course: RoadCourse; bridges: Bridge[]; tunnels: Tunnel[] } {
   const style = ROAD_STYLE[cls];
-  const points = resample(chaikin(path, 2), ROAD_STEP);
+  const rounded = resample(chaikin(path, 2), ROAD_STEP),
+    dry = rounded.every(([x, z], k) => {
+      if (ground.wet(x, z)) return false;
+      if (!k) return true;
+      const [ax, az] = rounded[k - 1],
+        samples = Math.ceil(Math.hypot(x - ax, z - az) / 10);
+      for (let i = 1; i < samples; i++)
+        if (ground.wet(ax + ((x - ax) * i) / samples, az + ((z - az) * i) / samples)) return false;
+      return true;
+    }),
+    points = dry
+      ? rounded
+      : path.flatMap(([x, z], k) => {
+          if (!k) return [[x, z] as Point2];
+          const [ax, az] = path[k - 1],
+            n = Math.ceil(Math.hypot(x - ax, z - az) / ROAD_STEP);
+          return Array.from({ length: n }, (_, i): Point2 => [
+            ax + ((x - ax) * (i + 1)) / n,
+            az + ((z - az) * (i + 1)) / n,
+          ]);
+        });
   // A paved road holds its grade on cuts and fills; a trail follows the land. A road surface
   // never dips below the shore: where it grazes a bay it stands on a causeway.
   const land = smooth(

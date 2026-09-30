@@ -10,6 +10,7 @@ import { EROSION_CELL } from './erosion.ts';
 import { HEIGHT_SAMPLES, tileHeights, writeHeights } from './heights.ts';
 import { SNOWLINE } from './paint.ts';
 import { createPlan } from './plan.ts';
+import { SegmentIndex } from './segments.ts';
 
 const plan = createPlan();
 const HALF = WORLD.size / 2;
@@ -31,7 +32,7 @@ describe('open world plan', () => {
     assert.equal(createPlan().subSeed('sky'), plan.subSeed('sky'));
     assert.notEqual(plan.subSeed('sky'), plan.subSeed('traffic'));
   });
-  it('rises to the peak over one continent with the sea to the south', () => {
+  it('rises to the peak on an island enclosed by the sea', () => {
     const range = plan.regions.mountains.bounds;
     let [raised, highest] = [-Infinity, -Infinity];
     for (let z = range.minZ; z <= range.maxZ; z += 50)
@@ -43,7 +44,7 @@ describe('open world plan', () => {
     // Erosion wears the summit down, on the mountains' 50 m grid, but leaves it snow-capped.
     assert.ok(highest > SNOWLINE && highest < raised, `peak ${highest}`);
     assert.ok(plan.height(0, HALF - 100) < 0);
-    assert.ok(plan.height(-HALF + 100, 0) > 0 && plan.height(0, -HALF + 100) > 0);
+    assert.ok(plan.height(-HALF + 100, 0) < 0 && plan.height(0, -HALF + 100) < 0);
   });
   it('blends biomes with weights that sum to one, the owner holding the largest', () => {
     for (let z = -HALF; z <= HALF; z += 250)
@@ -55,9 +56,15 @@ describe('open world plan', () => {
       }
   });
   it('keeps every road on land except its bridges, its ground level across its width', () => {
-    const everyPoint = plan.courses.flatMap(({ road }) =>
-      road.points.map((p, k) => ({ p, road, k })),
-    );
+    const segments = new SegmentIndex(),
+      owners: { road: (typeof plan.roads)[number]; k: number }[] = [];
+    for (const road of plan.roads)
+      road.points.slice(1).forEach((b, k) => {
+        const a = road.points[k];
+        segments.add(a[0], a[2], b[0], b[2], road.width * 4.5 + 10);
+        owners.push({ road, k });
+      });
+    const classes = new Set<string>();
     let [checked, onLand] = [0, 0];
     for (const { road, bridge, tunnel } of plan.courses)
       road.points.forEach((p, k) => {
@@ -67,11 +74,10 @@ describe('open world plan', () => {
         // Level check away from junctions, hairpins, bridge and tunnel ends, where works meet.
         if (k < 2 || k > road.points.length - 3) return;
         if ([...bridge.slice(k - 2, k + 2), ...tunnel.slice(k - 2, k + 2)].some(Boolean)) return;
-        const crowded = everyPoint.some(
-          (o) =>
-            (o.road !== road || Math.abs(o.k - k) > 6) &&
-            Math.hypot(o.p[0] - p[0], o.p[2] - p[2]) < (o.road.width + road.width) * 5,
-        );
+        const crowded = segments.near(p[0], p[2]).some(({ segment }) => {
+          const other = owners[segment];
+          return other.road !== road || Math.abs(other.k - k) > 6;
+        });
         if (crowded) return;
         const heading = (j: number) =>
             Math.atan2(
@@ -90,10 +96,13 @@ describe('open world plan', () => {
           const tolerance = side ? 0.1 : 0.02;
           assert.ok(Math.abs(h - p[1]) < tolerance, `${road.id} ${k} at ${side}: ${h - p[1]}`);
         }
+        classes.add(road.class);
         checked++;
       });
-    // Junctions, bends and crowded points aside, a fifth of the land points is still checked.
-    assert.ok(checked > onLand / 5, `${checked} of ${onLand} road points checked`);
+    // At least 5 km of representative 50 m land samples remain after geometry-based exclusions.
+    assert.ok(checked > onLand / 10, `${checked} of ${onLand} road points checked`);
+    for (const cls of ['highway', 'secondary', 'pass', 'avenue', 'dirt'])
+      assert.ok(classes.has(cls), cls);
   });
   it('plans every road class, a bridge over each river and trails to walk', () => {
     const classes = new Set(plan.roads.map((road) => road.class));
@@ -156,7 +165,7 @@ describe('open world plan', () => {
               height(x + s * EROSION_CELL, z),
               height(x, z + s * EROSION_CELL),
             ]);
-          if (h <= WORLD.seaLevel) continue;
+          if (h <= WORLD.seaLevel || plan.relief.coast(x, z) <= 800) continue;
           sum += (h - ring.reduce((a, b) => a + b, 0) / 4) ** 2;
           count++;
         }

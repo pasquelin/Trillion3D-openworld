@@ -70,7 +70,7 @@ const axes = (r: Rect): [number, number][] => [
 ];
 
 /** Separating-axis test: do the two rectangles overlap by more than `TOUCH`? */
-export function overlaps(a: Rect, b: Rect): boolean {
+export function overlaps(a: Rect, b: Rect, touch = TOUCH): boolean {
   for (const [ux, uz] of [...axes(a), ...axes(b)]) {
     const project = (r: Rect) => {
       const [[ax, az], [bx, bz]] = axes(r),
@@ -80,7 +80,7 @@ export function overlaps(a: Rect, b: Rect): boolean {
     };
     const [a0, a1] = project(a),
       [b0, b1] = project(b);
-    if (Math.min(a1, b1) - Math.max(a0, b0) <= TOUCH) return false;
+    if (Math.min(a1, b1) - Math.max(a0, b0) <= touch) return false;
   }
   return true;
 }

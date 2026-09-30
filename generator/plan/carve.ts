@@ -134,7 +134,15 @@ export function roadLeveller(courses: readonly RoadCourse[]) {
     let strongest = 0,
       sum = 0,
       weights = 0;
-    for (const { segment, t, distance } of index.near(x, z, hits)) {
+    const nearby = index.near(x, z, hits),
+      nearest = Math.min(...nearby.map((hit) => hit.distance)),
+      dominance = Math.max(
+        0,
+        ...nearby.map(({ segment, distance }) =>
+          smoothstep(owner[segment][0].width, owner[segment][0].width / 2, distance),
+        ),
+      );
+    for (const { segment, t, distance } of nearby) {
       // A joint belongs to one segment only: the next one covers its start, and a point beside
       // the previous segment's span is that segment's, so no stretch pulls on its neighbours.
       if (t >= 1 && next[segment] >= 0) continue;
@@ -143,7 +151,9 @@ export function roadLeveller(courses: readonly RoadCourse[]) {
       const [road, at] = owner[segment],
         surface = lerp(road.points[at][1], road.points[at + 1][1], t),
         half = road.width / 2,
-        weight = smoothstep(road.width * 4.5, half, distance) ** 4;
+        weight =
+          smoothstep(road.width * 4.5, half, distance) ** 4 *
+          (1 - dominance * smoothstep(0, half, distance - nearest));
       if (weight <= 0) continue;
       const cap = road.width * 4,
         shaped = distance <= half ? surface : earthwork(height, surface, distance - half, cap);

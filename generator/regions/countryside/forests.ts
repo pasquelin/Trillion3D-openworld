@@ -12,6 +12,7 @@ import { hash01, partBounds } from '../../props/index.ts';
 import { plantStands } from '../stands.ts';
 import { shuffle, type Land } from './land.ts';
 import type { Site } from './site.ts';
+import { OPEN } from './landmarks.ts';
 
 /** Share of trees with a bush at their foot. */
 const UNDERGROWTH = 0.3;
@@ -117,7 +118,7 @@ export function deepestWood(site: Site, land: Land): [number, number] | undefine
   for (let x = b.minX + CELL; x < b.maxX - CELL; x += CELL * 2.5)
     for (let z = b.minZ + CELL; z < b.maxZ - CELL; z += CELL * 2.5) {
       const d = land.forest(x, z);
-      if (d > depth) [best, depth] = [[x, z], d];
+      if (d > depth && site.free({ x, z, hx: OPEN, hz: OPEN, yaw: 0 })) [best, depth] = [[x, z], d];
     }
   return best;
 }

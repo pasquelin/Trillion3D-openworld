@@ -64,7 +64,7 @@ const alongRoad = (s: Station) => Math.atan2(-s.tz, s.tx);
 /** The filling station: forecourt, shop, price sign, lamps, a car spawn and a teleport. */
 function fillingStation(b: Build, road: Road, run: readonly Vec3[]) {
   // Beside the road first; on steep ground the forecourt steps back to the nearest flat.
-  for (const gap of [0, 30, 60, 120, 240]) {
+  for (const gap of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 160, 200, 240]) {
     const side = stationAt(b, road.width / 2 + gap, run);
     if (side) return side;
   }
@@ -90,7 +90,7 @@ function stationAt(b: Build, hw: number, run: readonly Vec3[]) {
       kind: 'spawn',
       vehicle: 'car',
       name: 'desert/station/car',
-      position: [cx, slab.position[1] + 0.3, cz],
+      position: [cx, Math.max(slab.position[1] + 0.3, b.plan.height(cx, cz)), cz],
       yaw: facing(s.tx, s.tz),
     });
     const [vx, vz] = offset(s, side * (hw + 4), -40);

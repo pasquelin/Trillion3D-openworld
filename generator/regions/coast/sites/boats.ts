@@ -57,8 +57,20 @@ export function sailing(layout: Layout, frames: readonly ShoreFrame[]) {
       ['sailboat', 800, 500, 3.5],
       ['motorboat', 1_200, 700, 9],
     ] as const) {
-      const [x, z] = [f.origin[0] + f.normal[0] * distance, f.origin[2] + f.normal[1] * distance],
-        points = loop(layout, f, x, z, radius);
+      let points: Vec3[] | undefined;
+      for (const shift of [0, -radius, radius, -radius * 2, radius * 2]) {
+        for (const factor of [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]) {
+          points = loop(
+            layout,
+            f,
+            f.origin[0] + f.normal[0] * distance * factor + f.tangent[0] * shift,
+            f.origin[2] + f.normal[1] * distance * factor + f.tangent[1] * shift,
+            radius,
+          );
+          if (points) break;
+        }
+        if (points) break;
+      }
       if (points)
         layout.movers.push({
           kind: 'path',
