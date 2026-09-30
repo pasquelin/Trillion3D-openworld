@@ -69,6 +69,7 @@ test('midrise fronts share flush party walls and leave clear end alleys to the c
       const [left, right] = local
         .filter(({ v }) => Math.sign(v) === side)
         .sort((a, b) => a.u - b.u);
+      assert.notEqual(left.item.building!.height, right.item.building!.height);
       assert.ok(
         Math.abs(left.u + left.item.box!.half[0] - right.u + right.item.box!.half[0]) < TOUCH,
       );

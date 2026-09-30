@@ -20,7 +20,7 @@ export function midriseBlock(placer: Placer, cell: Cell, catalog: CityCatalog, s
         catalog.midrise[Math.floor(hash01(seed, cell.i, cell.j, side) * catalog.midrise.length)],
       choices = catalog.midrise.filter((right) => {
         const half = left.half[0] + right.half[0];
-        return half >= 37 && half <= 41;
+        return half >= 37 && half <= 41 && right.roof !== left.roof;
       }),
       right = choices[Math.floor(hash01(seed + 1, cell.i, cell.j, side) * choices.length)],
       seam = left.half[0] - right.half[0];
