@@ -12,7 +12,6 @@ export const KEYS = {
   left: ['KeyA', 'ArrowLeft'],
   right: ['KeyD', 'ArrowRight'],
   run: ['ShiftLeft', 'ShiftRight'],
-  crouch: ['KeyC'],
   jump: 'Space',
   brake: ['Space'],
   throttleUp: ['KeyR', 'ArrowUp'],
@@ -24,7 +23,7 @@ export const KEYS = {
 } as const;
 
 export const HINTS: Record<Mode, string> = {
-  foot: 'W A S D walk · Shift run · Space jump · C crouch · E get in a vehicle',
+  foot: 'W A S D walk · Shift run · Space jump · E get in a vehicle',
   car: 'W accelerate · S brake and reverse · A D steer · Space handbrake · V view · E get out',
   plane: 'R F throttle · W S pitch · A D roll · Z X rudder · V view · E get out (stopped)',
 };
@@ -42,7 +41,6 @@ export function readInputs(keys: Input, mode: Mode, look: Look): Inputs {
     forward: plane ? 0 : forward,
     right: plane ? 0 : right,
     run: keys.held(...k.run),
-    crouch: mode === 'foot' && keys.held(...k.crouch),
     jump: keys.presses(k.jump),
     use: keys.presses(k.use),
     brake: mode === 'car' && keys.held(...k.brake),

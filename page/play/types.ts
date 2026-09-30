@@ -1,3 +1,4 @@
+import type { World } from 'trillion3d-engine';
 /**
  * What the play layer reads of the engine and of the page. The kit never imports the engine (a
  * second copy would be bundled): the page passes its families in, and these structural types
@@ -46,6 +47,8 @@ type Color = readonly [number, number, number];
 
 /** The engine families the play layer builds with, passed in by the page. */
 export interface Engine {
+  vehicle: typeof import('trillion3d-engine').vehicle;
+  math: typeof import('trillion3d-engine').math;
   geometry: {
     box(width: number, height: number, depth: number): unknown;
     cylinder(top: number, bottom: number, height: number, segments?: number): unknown;
@@ -79,9 +82,9 @@ export interface Engine {
 }
 
 /** The world the play layer drives: its canvas for input, its camera, its scene and its loop. */
-export interface PlayWorld {
+export interface PlayWorld extends Pick<World, 'physics' | 'controls' | 'raycast' | 'beforeFrame'> {
   canvas: HTMLCanvasElement;
-  camera: CameraNode;
+  camera: World['camera'];
   scene: Node3;
   /** Adds a hook run every frame; what it returns removes it. */
   onFrame(hook: (frame: { delta: number }) => void): () => void;
@@ -125,17 +128,6 @@ export type PlayOptions = {
   world: PlayWorld;
   engine: Engine;
   data: WorldRuntimeData;
-  /**
-   * Where tile (tx, tz)'s heights are, `{tx}` and `{tz}` replaced by its indices
-   * (`tx = floor((x + size / 2) / tile)`), e.g. `'../assets/openworld/heights/{tx}_{tz}.bin'`.
-   * Resolved against the page; the worker fetches it.
-   */
-  heights: string;
-  /**
-   * Where tile (tx, tz)'s solid placements are, as JSON `ColliderInstance[]`, beside a `props/`
-   * folder of their collision meshes (`collision.ts`); none when omitted.
-   */
-  colliders?: string;
   /** Models by name: `car` and `plane` for the player, `traffic` for the traffic (the car
    * when absent), `boat`, `rotor` and `cabin` for the movers, any mover's `model`. */
   models?: Readonly<Record<string, ModelSpec>>;
@@ -144,6 +136,6 @@ export type PlayOptions = {
   /** Traffic cars and pedestrians kept around the player (40 and 60 by default). */
   traffic?: number;
   pedestrians?: number;
-  /** Where the worker and Jolt are served; by default beside this module in `runtime/`. */
-  urls?: { worker?: string; jolt?: string };
+  /** Where the crowd worker is served; by default beside this module in `runtime/`. */
+  urls?: { worker?: string };
 };

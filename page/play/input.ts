@@ -19,7 +19,7 @@ export type Input = {
 /** Keys whose browser default (scrolling the page, closing a find bar) the game takes over. */
 const TAKEN = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 
-export function input(canvas: HTMLCanvasElement): Input {
+export function input(canvas: HTMLCanvasElement, vehicleLook: () => boolean = () => true): Input {
   const down = new Set<string>();
   const counts = new Map<string, number>();
   let [dx, dy] = [0, 0];
@@ -39,12 +39,12 @@ export function input(canvas: HTMLCanvasElement): Input {
     [window, 'keyup', ((event: KeyboardEvent) => void down.delete(event.code)) as EventListener],
     // A window that loses focus never hears its keys come back up.
     [window, 'blur', () => down.clear()],
-    [canvas, 'click', () => locked() || canvas.requestPointerLock?.()],
+    [canvas, 'click', () => !vehicleLook() || locked() || canvas.requestPointerLock?.()],
     [
       document,
       'mousemove',
       ((event: MouseEvent) => {
-        if (!locked()) return;
+        if (!vehicleLook() || !locked()) return;
         dx += event.movementX;
         dy += event.movementY;
       }) as EventListener,

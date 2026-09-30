@@ -2,7 +2,7 @@
  * Builds the page into `dist/`: `index.html`, its words (`i18n/`), its stylesheet (`css/`) and
  * `runtime/` — the engine bundled from its public entry point at the pinned commit (`pnpm
  * engine`), with its workers and codec, the panel kit, the play layer and its physics worker, and
- * Jolt as its package ships it. `dist/assets/<key>/`, the cooked world (`pnpm cook`), is left in
+ * the engine physics worker and its verified WebAssembly modules. `dist/assets/<key>/`, the cooked world (`pnpm cook`), is left in
  * place; the page is pointed at the folder of the current key (`cook-key.ts`).
  */
 import { execFileSync } from 'node:child_process';
@@ -31,6 +31,7 @@ await build({
     kit: 'page/kit/index.ts',
     openworld: 'page/index.ts',
     openworldSim: 'page/play/sim.worker.ts',
+    physicsWorker: resolve(browser, 'physics/physicsWorker.ts'),
   },
   outdir: runtime,
   bundle: true,
@@ -42,9 +43,8 @@ await build({
   logLevel: 'warning',
 });
 await cp(resolve(browser, 'page/decode/pageCodec.wasm'), resolve(runtime, 'pageCodec.wasm'));
-// Jolt finds its WebAssembly beside itself; the physics worker imports it on demand.
-for (const file of ['jolt-physics.wasm.js', 'jolt-physics.wasm.wasm'])
-  await cp(resolve(root, 'node_modules/jolt-physics/dist', file), resolve(runtime, file));
+for (const file of ['joltPhysics.wasm', 'joltPhysicsThreads.wasm'])
+  await cp(resolve(browser, 'physics', file), resolve(runtime, file));
 execFileSync(
   resolve(root, 'node_modules/.bin/tailwindcss'),
   ['-i', 'page/styles.css', '-o', 'dist/css/site.css', '--minify'],

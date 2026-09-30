@@ -1,5 +1,5 @@
 import { lerp, slerp, type Q } from './math3.ts';
-import { H, STEP, type FromWorker, type Inputs, type ToWorker } from './protocol.ts';
+import { H, STEP, type FromWorker, type ToWorker } from './protocol.ts';
 
 /**
  * The page's side of the simulation worker. It keeps the last two snapshots it received and
@@ -7,7 +7,7 @@ import { H, STEP, type FromWorker, type Inputs, type ToWorker } from './protocol
  * reads a pose between the two (one step behind, never waiting on the worker).
  */
 export type Client = {
-  /** Resolves once Jolt is loaded and the first step ran. */
+  /** Resolves once the first crowd snapshot arrives. */
   ready: Promise<void>;
   /** Snapshots received so far. */
   received(): number;
@@ -16,7 +16,6 @@ export type Client = {
   prev: Float32Array;
   next: Float32Array;
   send(message: Exclude<ToWorker, { type: 'start' | 'buffer' }>): void;
-  inputs(inputs: Inputs): void;
   dispose(): void;
 };
 
@@ -57,7 +56,6 @@ export function client(
     prev,
     next,
     send,
-    inputs: (inputs) => send({ type: 'inputs', inputs }),
     dispose: () => worker.terminate(),
   };
 }

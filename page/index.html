@@ -25,19 +25,19 @@
        *
        * Six regions packed around the airport — mountains, a city with its harbour, a desert,
        * countryside and a coast with islands — share one heightfield, so their borders have no
-       * seam. The simulation (Jolt physics,
-       * traffic, pedestrians) runs in a worker; this page only draws what the worker reports.
+       * seam. The engine owns physical bodies and streams cooked collision in its worker;
+       * a separate bounded worker advances traffic and pedestrians.
        *
        * Waiting on the engine: fog that spares the sky on WebGPU, environment lighting, post-processing
        * (bloom, heat haze), skinning, and moving hand-built meshes beside a compiled cache.
        */
-      import { createWorld, geometry, material, object, light, math, buffer, blending, side, texture, metric } from './runtime/engine.js';
+      import { createWorld, geometry, material, object, light, math, buffer, blending, side, texture, metric, vehicle } from './runtime/engine.js';
       import { controls, readout } from './runtime/kit.js';
       import { createPlay, createSky, beamHeading } from './runtime/openworld.js';
 
       // The cooked world, under its key (`scripts/cook-key.ts`), written in by `pnpm build`.
       const assets = './assets/';
-      const engine = { geometry, material, object, light, math, buffer, blending, side, texture };
+      const engine = { geometry, material, object, light, math, buffer, blending, side, texture, vehicle };
       // The world builds in steps; the screen says which one it is on, with how far the engine
       // says it has got, and lifts when the pages around you are resident.
       const step = (text) => (document.getElementById('step').textContent = text);
@@ -61,7 +61,7 @@
       const data = await (await fetch(`${assets}world.json`)).json();
 
       // One compiled world, under fixed memory pools the panel can change.
-      const world = createWorld('view');
+      const world = createWorld('view', { physics: { budget: { bodies: 4096, memoryBytes: 128 * 2 ** 20 }, simulationRange: 2500 } });
       world.budget.geometryPool = 512 * 2 ** 20;
       world.budget.texturePool = 256 * 2 ** 20;
       const model = await world.scene.load(`${assets}cache/native/full/manifest.json`, {
@@ -84,8 +84,6 @@
       // pedestrians live around you.
       const play = createPlay({
         world, engine, data,
-        heights: `${assets}heights/{tx}_{tz}.bin`,
-        colliders: `${assets}colliders/{tx}_{tz}.json`,
       });
       await play.ready;
       // You arrive at street level downtown: the frame reads only what stands around you.
@@ -115,7 +113,7 @@
       const views = ['beauty', 'clusters', 'pages', 'lod', 'screen-error', 'wireframe'];
       controls(
         {
-          keys: 'WASD walk · Shift run · Space jump · C crouch · E get in or out of a car or a plane',
+          keys: 'WASD walk · Shift run · Space jump · E get in or out of a car or a plane',
           teleport: ['—', ...play.teleports],
           timeOfDay: [0, 24, sky.time, 0.05],
           daySpeed: [0, 60, sky.speed, 0.5],

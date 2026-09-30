@@ -12,16 +12,16 @@ import {
   type PropMesh,
   type WorldPlan,
 } from '../plan/contract.ts';
-import { FOOT } from '../../page/play/sim/foot.ts';
+import { PERSON_CLEARANCE } from './clearance.ts';
 import { solidColliders, type SolidColliders } from './colliders.ts';
 import { crosses, footprintOf } from './footprint.ts';
 import { solidIndex } from './solids.ts';
 
 /** Eye height of a standing person, metres: a teleport puts the eye there. */
-export const EYE = FOOT.eye;
+export const EYE = PERSON_CLEARANCE.eye;
 /** How far feet may sit from the ground or a deck, and how high a solid under them may rise: the
  * walker's step. */
-export const FOOTING = FOOT.stepUp;
+export const FOOTING = PERSON_CLEARANCE.stepUp;
 /** The spiral's pitch and reach, metres. */
 const PITCH = 1;
 const REACH = 120;

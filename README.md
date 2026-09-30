@@ -21,8 +21,8 @@
 Six regions packed around an airport — mountains, a city with its harbour, a desert, countryside
 and a coast with islands — share one heightfield, so their borders have no seam. The generator
 writes them as one glTF; the Trillion3D native compiler turns it into one cache of clustered
-pages; the page streams what the frame reads under fixed memory budgets. The simulation (Jolt
-physics, traffic, pedestrians) runs in a worker; the page only draws what the worker reports.
+pages; the page streams what the frame reads under fixed memory budgets. The engine runs physical bodies and streamed cooked collision in its worker.
+A separate bounded worker advances traffic and pedestrians.
 
 It lives apart from Trillion3D because its cook takes about forty minutes: the engine's own
 checks stay fast, and this repository cooks only when its generator, its compiler or its engine
@@ -41,6 +41,12 @@ pnpm run serve             # http://localhost:4180/
 ```
 
 A browser with WebGPU plays it; the engine falls back to WebGL2 elsewhere.
+
+On foot, Trillion3D's native physical character owns movement, jumps, collisions and the
+camera: W A S D or the arrow keys move, Shift runs and Space jumps. Click the canvas to
+look with the mouse; Escape releases it. E enters or leaves a nearby vehicle.
+Native controller changes release the pointer; click again to look after switching modes. Crouching
+and a separate stamina system are not provided; character behavior follows the engine.
 
 ## Commands
 

@@ -1,14 +1,5 @@
 import type { SimLimits, SimWorld } from '../../page/play/protocol.ts';
 import type { Road, Vec3 } from '../../page/play/types.ts';
-import {
-  decodeCollisionMesh,
-  encodeCollisionMesh,
-  type ColliderInstance,
-} from '../../page/play/collision.ts';
-import { collisionMesh } from '../build/collision.ts';
-import { box, prop, SURFACES } from '../props/index.ts';
-import { churchSquare } from '../regions/countryside/church.ts';
-
 /**
  * A small world for the play layer's tests: 8 × 8 km of tiles 1 km wide, 32 samples a side, a
  * gentle slope rising east, a square of streets crossed by an avenue that meets a lane at a
@@ -145,18 +136,3 @@ export function tileHeights(tx: number, tz: number, size = 8000, tile = 1000): F
       );
   return heights;
 }
-
-/** The props the fixture places, as the generator writes them: a unit block on its base, and a
- * village's church square. */
-const SOLIDS = new Map(
-  [prop('block', [box(SURFACES.concrete, [1, 1, 1])]), churchSquare()[0]].map((mesh) => [
-    mesh.id,
-    encodeCollisionMesh(collisionMesh(mesh)!),
-  ]),
-);
-
-/** The colliders the worker would fetch: `tiles` by key `<tx>_<tz>`, each mesh read back. */
-export const solidSource = (tiles: Record<string, readonly ColliderInstance[]>) => ({
-  tile: async (tx: number, tz: number) => tiles[`${tx}_${tz}`] ?? [],
-  mesh: async (id: string) => decodeCollisionMesh(SOLIDS.get(id)!.slice().buffer),
-});
