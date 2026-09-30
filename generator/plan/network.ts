@@ -64,8 +64,7 @@ export function planNetwork(
       to === 'network'
         ? (index) =>
             onNetwork.has(index) &&
-            (id !== 'city-west/road' ||
-              (nodeZ(index) > 500 && ground.grid.heights[index] < 80)) &&
+            (id !== 'city-west/road' || (nodeZ(index) > 500 && ground.grid.heights[index] < 80)) &&
             (id !== 'mountains-town/road' ||
               (nodeZ(index) > 0 &&
                 ground.grid.heights[index] < find('mountains-town')!.centre[1] + 120))
