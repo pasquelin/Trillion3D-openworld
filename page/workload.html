@@ -58,6 +58,8 @@
         const response = await fetch(`${base}report.json`);
         if (!response.ok) throw new Error(`This workload has not been cooked. Run pnpm workload ${preset}.`);
         const report = await response.json();
+        if (!report.reload || !Number.isFinite(report.cookedBytes) || report.cookedBytes <= 0)
+          throw new Error(`This workload contains source files only. Run pnpm workload ${preset} to cook it before viewing.`);
         const world = createWorld('view', ['webgpu', 'webgl2'].includes(renderer) ? { renderer } : {});
         world.budget.geometryPool = report.geometryPoolBytes;
         world.budget.texturePool = report.texturePoolBytes;
