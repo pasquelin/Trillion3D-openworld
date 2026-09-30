@@ -5,6 +5,7 @@ import { WORLD } from './contract.ts';
 import { islandCensus } from './island.ts';
 import { createPlan } from './plan.ts';
 import { dryFootprint } from './dry.ts';
+import { standExtent } from '../props/stands.ts';
 import { REGIONS } from '../regions/index.ts';
 
 for (const seed of [332, 333]) {
@@ -100,33 +101,16 @@ for (const seed of [332, 333]) {
       for (const i of plants)
         assert.ok(plan.height(i.position[0], i.position[2]) > 0, i.name ?? i.prop);
     });
-    it('keeps actual field and stand mesh footprints out of the sea', () => {
-      const bounds = new Map(
-        world.meshes.map((mesh) => {
-          const b = [Infinity, -Infinity, Infinity, -Infinity];
-          for (const part of mesh.parts)
-            for (let k = 0; k < part.positions.length; k += 3) {
-              b[0] = Math.min(b[0], part.positions[k]);
-              b[1] = Math.max(b[1], part.positions[k]);
-              b[2] = Math.min(b[2], part.positions[k + 2]);
-              b[3] = Math.max(b[3], part.positions[k + 2]);
-            }
-          return [mesh.id, b] as const;
-        }),
-      );
-      for (const instance of world.instances.filter((i) =>
-        /^(tree-stand-|countryside\/field-)/.test(i.prop),
-      )) {
-        const [x0, x1, z0, z1] = bounds.get(instance.prop)!,
-          c = Math.cos(instance.yaw),
-          s = Math.sin(instance.yaw),
-          dx = (x0 + x1) / 2,
-          dz = (z0 + z1) / 2;
+    it('keeps draped field vertices and claimed stand ground footprints out of the sea', () => {
+      for (const instance of world.instances) {
+        const extent = standExtent(instance.prop);
+        if (!extent) continue;
+        const [x0, z0, x1, z1] = extent;
         assert.ok(
           dryFootprint(
             plan.height,
-            instance.position[0] + dx * c + dz * s,
-            instance.position[2] - dx * s + dz * c,
+            instance.position[0],
+            instance.position[2],
             (x1 - x0) / 2,
             (z1 - z0) / 2,
             instance.yaw,

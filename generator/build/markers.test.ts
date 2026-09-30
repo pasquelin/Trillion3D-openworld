@@ -45,7 +45,12 @@ test('every walker and car stands on the floor it is drawn on, decks included, w
         .over(x, z)
         .filter((surface) => surface.up && surface.y <= feet + FOOTING)
         .reduce((top, surface) => Math.max(top, surface.y), world.plan.height(x, z));
-    assert.ok(Math.abs(feet - floor) <= 0.1, `${marker.name}: feet ${feet}, floor ${floor}`);
+    // Keep the 0.1 m geometric bound; addition at large coordinates can differ by a few ULPs.
+    const roundoff = 8 * Number.EPSILON * Math.max(1, Math.abs(feet), Math.abs(floor));
+    assert.ok(
+      Math.abs(feet - floor) <= 0.1 + roundoff,
+      `${marker.name}: feet ${feet}, floor ${floor}`,
+    );
     if (marker.deck) decks.push(marker.name);
   }
   assert.ok(decks.includes('coast/lighthouse-gallery'), decks.join(', '));

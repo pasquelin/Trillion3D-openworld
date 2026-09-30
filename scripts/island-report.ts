@@ -16,13 +16,29 @@ console.log(
       toleranceKm2: 3,
       measurement: 'Areas and dry connectivity are approximate cell-center samples on a 25 m grid.',
       ...islandCensus(plan),
-      shoreProfiles: [-3000, -1500, 0, 1500, 3000].map((x) => {
-        const z = plan.relief.southCoastZ(x);
-        return {
-          x,
-          z,
-          heights: [-100, -25, 0, 25, 100].map((offset) => plan.height(x, z + offset)),
-        };
+      shoreProfiles: ['north', 'south', 'west', 'east'].flatMap((edge) => {
+        const horizontal = edge === 'west' || edge === 'east',
+          sign = edge === 'north' || edge === 'west' ? -1 : 1,
+          along = horizontal ? [-3000, -2000, -500, 1000, 2000] : [-3000, -1500, 0, 1500, 3000];
+        return along.map((value) => {
+          let low = 0,
+            high = WORLD.size / 2;
+          const at = (distance: number): [number, number] =>
+            horizontal ? [sign * distance, value] : [value, -500 + sign * distance];
+          for (let k = 0; k < 32; k++) {
+            const mid = (low + high) / 2;
+            if (plan.relief.coast(...at(mid)) > 0) low = mid;
+            else high = mid;
+          }
+          const distance = (low + high) / 2,
+            [x, z] = at(distance);
+          return {
+            edge,
+            x,
+            z,
+            heights: [-100, -25, 0, 25, 100].map((offset) => plan.height(...at(distance + offset))),
+          };
+        });
       }),
       settlements: plan.settlements.map(({ id, centre }) => ({ id, centre })),
       failedConnections: plan.failedConnections,

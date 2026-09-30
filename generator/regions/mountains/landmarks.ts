@@ -73,8 +73,11 @@ export function placeObservatory(placer: Placer, tops: readonly Vec3[]): Landmar
   const summit = tops[0];
   for (const top of tops.slice(1)) {
     if (top[1] < TREE_LINE || Math.hypot(top[0] - summit[0], top[2] - summit[2]) < 2_000) continue;
-    for (let k = 0; k < 40; k++) {
-      const [x, z] = [top[0] + Math.cos(k) * k * 6, top[2] + Math.sin(k) * k * 6],
+    for (let k = 0; k < 640; k++) {
+      const [x, z] = [
+          top[0] + Math.cos(k * 2.399963) * Math.sqrt(k) * 9.25,
+          top[2] + Math.sin(k * 2.399963) * Math.sqrt(k) * 9.25,
+        ],
         base = placer.place('mountains/observatory', x, z, {
           seat: 'high',
           basement: BASEMENT,

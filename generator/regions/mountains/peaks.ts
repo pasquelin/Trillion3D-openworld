@@ -38,12 +38,14 @@ export function summits(placer: Placer): Vec3[] {
       Array.from({ length: rows }, (_, j) => plan.height(...at(i, j))),
     );
   const tops: Vec3[] = [];
-  for (let i = 1; i + 1 < columns; i++)
-    for (let j = 1; j + 1 < rows; j++) {
+  for (let i = 0; i < columns; i++)
+    for (let j = 0; j < rows; j++) {
       const h = grid[i][j];
       let top = true;
       for (let di = -1; di <= 1 && top; di++)
-        for (let dj = -1; dj <= 1; dj++) if ((di || dj) && grid[i + di][j + dj] >= h) top = false;
+        for (let dj = -1; dj <= 1; dj++)
+          if ((di || dj) && (grid[i + di]?.[j + dj] ?? plan.height(...at(i + di, j + dj))) >= h)
+            top = false;
       if (!top) continue;
       const peak = climb(plan.height, ...at(i, j));
       if (placer.owns(peak[0], peak[2], 100)) tops.push(peak);

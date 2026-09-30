@@ -59,6 +59,8 @@ function promenade(layout: Layout, f: ShoreFrame): Vec3[] {
     const v = f.inland(u, DRY);
     if (v === undefined) continue;
     const [x, z] = f.at(u, v + PROMENADE / 2 + 2);
+    const b = layout.map.bounds;
+    if (x < b.minX || x > b.maxX || z < b.minZ || z > b.maxZ) continue;
     points.push([x, layout.map.height(x, z), z]);
   }
   if (points.length > 2)

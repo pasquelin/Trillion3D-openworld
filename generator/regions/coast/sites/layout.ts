@@ -89,7 +89,7 @@ export class Layout {
   }
 
   /** Whether `r` is inside the region, clear of roads (unless `onRoad`) and of every footprint. */
-  free(r: Rect, onRoad = false): boolean {
+  free(r: Rect, onRoad = false, touch?: number): boolean {
     const b: Bounds = this.map.bounds;
     if (corners(r).some(([x, z]) => x < b.minX || x > b.maxX || z < b.minZ || z > b.maxZ))
       return false;
@@ -97,7 +97,7 @@ export class Layout {
     if (owner !== 'coast' && owner !== 'sea') return false;
     let hit = false;
     this.cells(r, (key) => {
-      if (!hit) hit = (this.buckets.get(key) ?? []).some((other) => overlaps(r, other));
+      if (!hit) hit = (this.buckets.get(key) ?? []).some((other) => overlaps(r, other, touch));
     });
     return !hit && (onRoad || this.clearOfRoads(r));
   }
@@ -110,7 +110,8 @@ export class Layout {
   /** Places `prop` at (x, z) facing `yaw`, or returns undefined when the rules refuse it. */
   place(prop: string, x: number, z: number, yaw: number, options: PlaceOptions = {}) {
     const r = rectOf(this.extent(prop), x, z, yaw, options.scale);
-    if (!this.free(r, options.onRoad)) return undefined;
+    if (!this.free(r, options.onRoad, prop.startsWith('tree-stand-') ? 0 : undefined))
+      return undefined;
     const seat = seatOf(prop),
       heights = this.ground(r),
       low = Math.min(...heights),

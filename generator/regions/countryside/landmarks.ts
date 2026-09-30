@@ -10,7 +10,7 @@ import type { Site } from './site.ts';
 import { EYE } from '../../build/markers.ts';
 
 /** Half the side of a kept-open viewpoint or clearing, metres. */
-const OPEN = 30;
+export const OPEN = 30;
 
 /** Radius a hill is measured against, and farthest a windmill stands from its village, metres. */
 const HILL = 600,

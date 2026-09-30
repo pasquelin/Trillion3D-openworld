@@ -48,7 +48,29 @@ test('the coast stays within its budget, measured', () => {
   assert.equal(triangles, 369_147);
   assert.ok(triangles <= TARGET * 1.1);
   assert.ok(output.instances.length <= budget.nodes);
-  assert.ok(output.instances.length > budget.nodes * 0.9, 'the node budget is spent');
+  // Ocean cells need no vegetation nodes; retain the density target per sampled dry area.
+  let dry = 0,
+    total = 0;
+  const eligible = new Set<string>();
+  for (let x = bounds.minX + 50; x < bounds.maxX; x += 100)
+    for (let z = bounds.minZ + 50; z < bounds.maxZ; z += 100) {
+      total++;
+      const h = plan.height(x, z);
+      if (h <= 0 || plan.biome(x, z).owner !== 'coast') continue;
+      dry++;
+      if (h > 1.5 && h < 400) eligible.add(`${Math.floor(x / 100)},${Math.floor(z / 100)}`);
+    }
+  const plants = output.instances.filter((i) => /^tree-|^bush-|^coast-marram/.test(i.prop)),
+    occupied = new Set(
+      plants.map((i) => `${Math.floor(i.position[0] / 100)},${Math.floor(i.position[2] / 100)}`),
+    );
+  assert.ok(dry > 0 && eligible.size > 0);
+  assert.ok(plants.length > (budget.nodes * 0.9 * dry) / total, 'dry land retains node density');
+  assert.ok(
+    [...eligible].filter((cell) => occupied.has(cell)).length > eligible.size / 2,
+    'vegetation covers most habitable coastal cells',
+  );
+  assert.ok(plants.every((i) => plan.height(i.position[0], i.position[2]) > 0));
 });
 
 test('no two props overlap and none stands on a road', () => {

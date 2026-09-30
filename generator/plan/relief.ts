@@ -64,7 +64,8 @@ export function createRelief(seed: number): Relief {
     let height = shore;
     // Each layer is evaluated only where its envelope is non-zero: the sea skips them all.
     if (inland > 0) {
-      const envelope = smoothstep(-1_000, -2_200, z),
+      const end = -2_300 + 300 * smoothstep(800, -800, x),
+        envelope = smoothstep(-1_400, end, z),
         plateau = smoothstep(-1_600, -2_200, x) * smoothstep(1_000, 0, z);
       let land = 25 * fbm(rollSeed, x / 1_500, z / 1_500, 4) * (1 + 2 * plateau) + 120 * plateau;
       if (envelope > 0) {
