@@ -83,3 +83,28 @@ test('a port endpoint half a routing grid cell from the highway gains an authore
   assert.deepEqual(spur.road.points.at(-1), [100, 6, 0]);
   assert.deepEqual(main.road.points[1], [100, 6, 0]);
 });
+
+test('a fixed low urban junction permits mountain cuts without sacrificing a real bridge', () => {
+  const land = course('land', [
+      [0, 10, 0],
+      [250, 500, 0],
+      [500, 500, 0],
+      [1000, 40, 0],
+      [2000, 10, 0],
+    ]),
+    bridge = course('bridge', [
+      [1000, 40, 0],
+      [1100, 40, 0],
+    ]);
+  bridge.bridge = [true];
+  joinRoadProfiles(
+    [land, bridge],
+    [],
+    (x) => (x > 150 && x < 700 ? 500 : 10),
+    (x) => (x === 2000 ? 10 : undefined),
+  );
+  assert.equal(land.road.points.at(-1)![1], 10);
+  assert.ok(land.road.points[1][1] <= 150);
+  assert.equal(bridge.road.points[0][1], 40);
+  assert.ok(land.tunnel.some(Boolean));
+});

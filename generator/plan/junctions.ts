@@ -1,3 +1,4 @@
+import { boundedProfiles } from './profile-bounds.ts';
 import type { Bridge, Vec3 } from './contract.ts';
 import type { RoadCourse } from './carve.ts';
 import { SegmentIndex } from './segments.ts';
@@ -19,6 +20,7 @@ export function joinRoadProfiles(
   courses: RoadCourse[],
   bridges: Bridge[],
   ground: (x: number, z: number) => number,
+  anchor?: (x: number, z: number) => number | undefined,
 ) {
   const index = new SegmentIndex(),
     segments: { course: RoadCourse; at: number; a: Vec3; b: Vec3 }[] = [];
@@ -85,6 +87,8 @@ export function joinRoadProfiles(
   }
   const ids = new Map<string, number>(),
     height: number[] = [],
+    floors: number[] = [],
+    anchors: (number | undefined)[] = [],
     links: { to: number; rise: number }[][] = [];
   const node = (p: Vec3, bridge = '') => {
     const key = `${p[0].toFixed(5)}/${p[2].toFixed(5)}/${bridge}`;
@@ -93,8 +97,13 @@ export function joinRoadProfiles(
       id = height.length;
       ids.set(key, id);
       height.push(p[1]);
+      floors.push(bridge ? p[1] : 0.5);
+      anchors.push(bridge ? undefined : anchor?.(p[0], p[2]));
       links.push([]);
-    } else height[id] = Math.max(height[id], p[1]);
+    } else {
+      height[id] = Math.max(height[id], p[1]);
+      if (bridge) floors[id] = Math.max(floors[id], p[1]);
+    }
     return id;
   };
   const nodes = courses.map((c) =>
@@ -113,24 +122,10 @@ export function joinRoadProfiles(
       links[b].push({ to: a, rise });
     }
   });
-  // Minimal upward grade envelope: bridge clearance is never reduced to remove a slope violation.
-  const pending = [...height.keys()],
-    queued = new Set(pending);
-  for (let cursor = 0; cursor < pending.length; cursor++) {
-    const a = pending[cursor];
-    queued.delete(a);
-    for (const { to, rise } of links[a])
-      if (height[to] + 1e-8 < height[a] - rise) {
-        height[to] = height[a] - rise;
-        if (!queued.has(to)) {
-          queued.add(to);
-          pending.push(to);
-        }
-      }
-  }
+  const solved = boundedProfiles(height, links, floors, anchors);
   courses.forEach(
     (c, k) =>
-      (c.road.points = c.road.points.map((p, i): Vec3 => [p[0], height[nodes[k][i]], p[2]])),
+      (c.road.points = c.road.points.map((p, i): Vec3 => [p[0], solved[nodes[k][i]], p[2]])),
   );
   for (const bridge of bridges) {
     const points = courses.find((c) => c.road.id === bridge.road)!.road.points;

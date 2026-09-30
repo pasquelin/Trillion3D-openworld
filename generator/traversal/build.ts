@@ -1,3 +1,4 @@
+import { airfieldFlight } from './airfield-flight.ts';
 import type { Marker, Road } from '../plan/contract.ts';
 import type { TerrainPlan } from '../plan/plan.ts';
 import { drivingRoutes, flightRoute } from './routes.ts';
@@ -17,6 +18,7 @@ export function buildTraversal(
   const drive = drivingRoutes(plan, roads),
     view = vistas(plan, markers),
     flight = flightRoute(plan, markers),
+    transfer = airfieldFlight(plan, roads, markers),
     summit = summitAccess(plan, roads, markers);
   return {
     version: 1,
@@ -37,6 +39,7 @@ export function buildTraversal(
       ...drive.routes,
       ...view.routes,
       ...flight.routes,
+      ...transfer.routes,
       ...summit.routes,
     ].map((route) => ({ ...route, camera: route.camera ?? { fov: 50, far: 60_000 } })),
     rejectedRoadSegments: drive.rejectedRoadSegments,
@@ -45,6 +48,7 @@ export function buildTraversal(
       ...drive.failures,
       ...view.failures,
       ...flight.failures,
+      ...transfer.failures,
       ...summit.failures,
     ],
     envelope: { halfSize: 4000, maxAltitude: 3200, seaLevel: 0 },

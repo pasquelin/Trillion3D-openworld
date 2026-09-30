@@ -90,6 +90,7 @@ export function airportInfluence(
   x: number,
   z: number,
   band: number,
+  generalFactor = 1,
 ) {
   const main = outside(fields.main, x, z, band + 100)
       ? 0
@@ -97,7 +98,7 @@ export function airportInfluence(
     general = outside(fields.general, x, z, band + 100)
       ? 0
       : union(generalDistances(fields.general, x, z), band);
-  return main + general - main * general;
+  return main + general * generalFactor * (1 - main);
 }
 
 /** Smooth cut/fill union preserves exact runway levels without flattening either reservation. */

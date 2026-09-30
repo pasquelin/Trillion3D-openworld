@@ -37,23 +37,24 @@ export type CoastMap = {
   height(x: number, z: number): number;
 };
 
-/** Labels 4-connected land cells; the component touching the region's inland (-X) edge is 1. */
+/** Labels 4-connected land cells; the largest component is mainland, including fully bounded islands. */
 function components(nx: number, nz: number, heights: Float32Array): Int32Array {
   const land = new Int32Array(nx * nz),
     stack: number[] = [];
   let next = 2,
-    mainland = 0;
+    mainland = 0,
+    largest = 0;
   for (let start = 0; start < land.length; start++) {
     if (land[start] || heights[start] <= 0) continue;
     const label = next++;
-    let touchesInland = false;
+    let size = 0;
     land[start] = label;
     stack.push(start);
     while (stack.length) {
+      size++;
       const c = stack.pop()!,
         i = c % nx,
         k = (c - i) / nx;
-      if (i === 0) touchesInland = true;
       for (const [di, dk] of [
         [1, 0],
         [-1, 0],
@@ -68,7 +69,10 @@ function components(nx: number, nz: number, heights: Float32Array): Int32Array {
         stack.push(n);
       }
     }
-    if (touchesInland && !mainland) mainland = label;
+    if (size > largest) {
+      largest = size;
+      mainland = label;
+    }
   }
   // Renumber: mainland 1, islands from 2, in first-seen order.
   return land.map((label) => (label === 0 ? 0 : label === mainland ? 1 : label + 1));

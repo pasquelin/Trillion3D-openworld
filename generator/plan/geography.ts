@@ -15,7 +15,7 @@ export const HARBOUR_SITE = { x: 1_350, z: 2_450, radius: 700 } as const;
 /** Compact airfield reservations include runway overruns; buildings remain on the east side. */
 export const AIRFIELD_AREAS: Record<'main' | 'general', Bounds> = {
   main: { minX: -2_450, maxX: -1_100, minZ: -1_400, maxZ: 1_900 },
-  general: { minX: 2_300, maxX: 2_700, minZ: -1_850, maxZ: -650 },
+  general: { minX: 2_900, maxX: 3_300, minZ: -1_550, maxZ: -350 },
 };
 
 /** A broad curved massif with foothills, without any rectangular altitude cutoff. */

@@ -17,7 +17,7 @@ import { solidColliders } from './colliders.ts';
 import { fillEmptyLand } from './fill.ts';
 import { settleMarkers } from './markers.ts';
 import { buildTraversal } from '../traversal/build.ts';
-import { buildCity } from '../regions/city/index.ts';
+import { buildUrbanCentres } from '../regions/city/centres.ts';
 import { walkingRoutes } from '../traversal/walk.ts';
 
 /** Keeps the first mesh of each id: regions may hand back the shared props they place. */
@@ -35,14 +35,15 @@ function uniqueMeshes(lists: readonly (readonly PropMesh[])[]) {
  */
 export function placeWorld(seed: number = WORLD.seed, regions: readonly RegionModule[] = REGIONS) {
   const plan = createPlan(seed, regions),
-    city = regions.some((r) => r.name === 'city') ? buildCity(plan) : undefined,
+    urban = regions.some((r) => r.name === 'city') ? buildUrbanCentres(plan) : undefined,
+    city = urban?.centres.find((core) => core.id === 'city'),
     walk = city ? walkingRoutes(city) : null,
     placed = regions.map((region) =>
-      region.name === 'city' && city
+      region.name === 'city' && urban
         ? {
-            ...city.output,
-            props: [...city.output.props, ...walk!.ramps.map((r) => r.mesh)],
-            instances: [...city.output.instances, ...walk!.ramps.map((r) => r.instance)],
+            ...urban.output,
+            props: [...urban.output.props, ...walk!.ramps.map((r) => r.mesh)],
+            instances: [...urban.output.instances, ...walk!.ramps.map((r) => r.instance)],
           }
         : region.generate(plan),
     ),
@@ -69,7 +70,7 @@ export function placeWorld(seed: number = WORLD.seed, regions: readonly RegionMo
       { plan, meshes, instances, solids },
       placed.flatMap((output) => output.markers),
     );
-  return { plan, placed, meshes, instances, solids, markers, fill, city };
+  return { plan, placed, meshes, instances, solids, markers, fill, city, centres: urban?.centres };
 }
 
 export function buildWorld(seed: number = WORLD.seed, regions: readonly RegionModule[] = REGIONS) {

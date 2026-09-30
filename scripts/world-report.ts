@@ -1,12 +1,16 @@
 /** Actual world placement census and map inputs; contains no render-time performance inference. */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { placeWorld } from '../generator/build/world.ts';
 import { landCoverage } from '../generator/build/coverage.ts';
 import { triangleCount } from '../generator/props/index.ts';
 import { cookKey } from './cook-key.ts';
 import { REGIONS } from '../generator/regions/index.ts';
+import { buildTraversal } from '../generator/traversal/build.ts';
+import { lakeRadiusAt } from '../generator/plan/lake-shore.ts';
+import { forestStands } from '../generator/props/stands.ts';
 
 const seed = Number(process.argv.find((a) => a.startsWith('--seed='))?.slice(7) ?? 332),
   out = resolve(process.argv.find((a) => a.startsWith('--out='))?.slice(6) ?? 'dist/world-report');
@@ -16,6 +20,12 @@ const sourceKey = cookKey(),
   world = placeWorld(seed),
   roads = world.placed.flatMap((region) => region.roads),
   coverage = landCoverage(world.plan, world.instances, world.meshes, roads),
+  traversal = buildTraversal(
+    world.plan,
+    [...world.plan.roads, ...roads],
+    world.markers,
+    world.city,
+  ),
   pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')),
   heights = Array.from({ length: 201 }, (_, z) =>
     Array.from({ length: 201 }, (_, x) => world.plan.height(-4000 + x * 40, -4000 + z * 40)),
@@ -23,11 +33,40 @@ const sourceKey = cookKey(),
   payload = {
     seed,
     sourceCookKey: sourceKey,
+    sourceHead: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     engineCommit: pkg.trillion3d.commit,
+    traversalFailures: traversal.failures,
+    flights: traversal.routes
+      .filter((r) => r.kind === 'flight')
+      .map((r) => ({
+        id: r.id,
+        lengthM: r.length,
+        durationSeconds: r.duration,
+        start: r.samples[0],
+        end: r.samples.at(-1),
+        maxAltitudeM: Math.max(...r.samples.map((p) => p.position[1])),
+      })),
     coverage,
     initialEmptyCells: world.fill.empty,
     initialEligibleCells: world.fill.land,
     infillInstances: world.fill.instances.length,
+    airfields: world.plan.airfields,
+    runwayRoadIds: roads.filter((r) => r.class === 'runway').map((r) => r.id),
+    airfieldMarkerNames: world.markers
+      .filter(
+        (m) => m.name === 'Airport — runway threshold' || m.name === 'airport/general/landing',
+      )
+      .map((m) => m.name),
+    centres: world.centres?.map((core) => ({
+      id: core.id,
+      buildings: core.report.buildings.length,
+      maxBuildingHeightM: Math.max(...core.report.buildings.map((b) => b.height ?? 0)),
+      maxRoofAltitudeM: Math.max(
+        ...core.report.buildings.map((b) => b.position[1] + (b.height ?? 0)),
+      ),
+      roads: core.output.roads.length,
+      districts: core.report.districts,
+    })),
     ruralHouses: world.instances.filter((i) => i.name?.startsWith('countryside/rural-house/'))
       .length,
     regionalNodes: Object.entries(world.plan.regions).map(([name, region]) => {
@@ -75,10 +114,22 @@ await writeFile(
     roads: [...world.plan.roads, ...roads],
     rivers: world.plan.rivers,
     lakes: world.plan.lakes,
+    lakeOutlines: world.plan.lakes.map((lake) =>
+      Array.from({ length: 96 }, (_, n) => {
+        const angle = (n * Math.PI * 2) / 96,
+          radius = lakeRadiusAt(lake, angle);
+        return [lake.x + Math.cos(angle) * radius, lake.z + Math.sin(angle) * radius];
+      }),
+    ),
     airfields: world.plan.airfields,
     settlements: world.plan.settlements,
     markers: world.markers,
     instances: world.instances,
+    buildings: world.centres?.flatMap((c) => c.report.buildings),
+    stands: forestStands(world.plan.subSeed('props')).variants.map((s) => ({
+      id: s.id,
+      roots: s.roots,
+    })),
   }) + '\n',
 );
 console.log(JSON.stringify({ ...payload, contentHash }, null, 2));

@@ -23,7 +23,7 @@ frame. The northeast field adds a physical 900 m runway, taxiway, terminal, hang
 and distinct landing/spawn markers. Operational strips/pads differ from routing
 reservations: their smooth earthworks and biome masks release unused corners to
 natural terrain and rural content. The two destinations support free flight;
-a public A-to-B demonstration route awaits integration with #21.
+the #21 public replay controls expose a separate F2 A-to-B camera route. Its southern lowland corridor bakes terrain clearance into a profile bounded to 8% climb/descent, with exact runway marker endpoints. This is a source camera workload; native piloted flight validation remains deferred.
 
 Village/farm geometry is retained. Additional homes occupy selected accessible
 lowland and 30–250 m rural land on approximately 50 m plots, through existing foundations and
@@ -48,3 +48,15 @@ Full composed marker, route, collision and cache gates remain required before
 publication. Final map/route validation must include #20 and #21. Source maps and
 cook-time timing/memory are not native GPU captures or frame-performance evidence;
 the user deferred that native verification. No engine source is modified.
+
+The integrated road solver preserves authored bridge clearance but permits cuts and
+real tunnels where terrestrial profiles need lowering. Fixed urban arterial
+junctions and operational airfield anchors prevent a mountain road from lifting
+all lowland junctions. Incompatible bridge/anchor grade intervals fail explicitly.
+Coastal component labeling uses the largest land component, so an island enclosed
+by sea retains a real mainland beach and its F1/V1 landmarks.
+
+`python3 scripts/world-map.py REPORT_DIRECTORY docs/captures/coherent-world.png`
+renders the final source map from the census inputs, actual building footprints,
+shared stand tree roots and the same organic lake outline. Its adjacent JSON
+records the source cook key, engine pin, census hash and map/PNG SHA-256 hashes.

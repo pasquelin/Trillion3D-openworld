@@ -1,3 +1,4 @@
+import { CITY_CORES } from './geography.ts';
 /**
  * The road network (Trillion3D#332): the regional highway ring, village links, city avenues,
  * airport access, mountain pass, and walking trails between named landmarks.
@@ -6,7 +7,7 @@ import type { Bridge, RoadClass, Settlement, Vec3 } from './contract.ts';
 import type { Lake, Platform, RoadCourse } from './carve.ts';
 import { REGION_BOUNDS } from './layout.ts';
 import type { Point2 } from './polyline.ts';
-import { onAirfield, type AirfieldPlatforms } from './airfields.ts';
+import { onAirfield, onOperationalAirfield, type AirfieldPlatforms } from './airfields.ts';
 import type { Tunnel } from './tunnels.ts';
 import { layRoad, buildRoad, riverIndex, ROAD_STEP, type Ground } from './roads.ts';
 import { node, STEP } from './route.ts';
@@ -179,7 +180,16 @@ export function planNetwork(
       shore: Point2 = [lake.x + lake.radius + ROAD_STEP, lake.z];
     if (village) road(`trail/${lake.id}`, 'dirt', xz(village), shore, false);
   }
-  const joinedTunnels = joinRoadProfiles(courses, bridges, ground.height);
+  const joinedTunnels = joinRoadProfiles(courses, bridges, ground.height, (x, z) =>
+    (airfields && onOperationalAirfield(airfields, x, z)) ||
+    settlements.some(
+      (site) =>
+        CITY_CORES.some((core) => core.id === site.id) &&
+        Math.hypot(x - site.centre[0], z - site.centre[2]) < STEP,
+    )
+      ? ground.height(x, z)
+      : undefined,
+  );
   return { courses, bridges, tunnels: joinedTunnels, viewpoints, failedConnections };
 }
 

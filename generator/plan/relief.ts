@@ -61,7 +61,7 @@ export function createRelief(seed: number): Relief {
     // Each layer is evaluated only where its envelope is non-zero: the sea skips them all.
     if (inland > 0) {
       const mountain = mountainEnvelope(x, z),
-        plain = airportInfluence(AIRFIELD_AREAS, x, z, 250),
+        plain = airportInfluence(AIRFIELD_AREAS, x, z, 250, 0.5 / 0.9),
         plateau = smoothstep(-1_600, -2_400, x) * smoothstep(500, -800, z),
         rolling = 90 + 70 * fbm(rollSeed, x / 1_100, z / 1_100, 4),
         foothills = 220 * Math.sqrt(mountain),

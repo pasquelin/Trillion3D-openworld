@@ -12,6 +12,30 @@ const world = placeWorld(),
   roads = [...world.plan.roads, ...world.placed.flatMap((o) => o.roads)],
   manifest = buildTraversal(world.plan, roads, world.markers, world.city);
 
+test('placeWorld retains actual geometry, roads and settled landmarks for all five urban centres', () => {
+  assert.equal(world.centres?.length, 5);
+  const output = world.placed.find((o) => o.instances.some((i) => i.name?.startsWith('city/')))!;
+  for (const core of world.centres!) {
+    const buildings = core.kept.filter((i) => i.building && i.building.class !== 'civic');
+    assert.ok(buildings.length > 20, core.id);
+    for (const building of buildings)
+      assert.ok(
+        output.instances.some((i) => i.name === building.instance.name),
+        building.instance.name,
+      );
+    assert.ok(
+      world.markers.some((m) => m.name === `${core.id}/downtown`),
+      core.id,
+    );
+    assert.ok(
+      roads.some((r) => r.id.startsWith(`${core.id}/`)),
+      `${core.id}: streets`,
+    );
+  }
+  assert.equal(world.city?.id, 'city');
+  assert.ok(manifest.routes.some((r) => r.id === 'W1'));
+});
+
 test('the generated island exposes every required traversal with no missing connection or landmark', () => {
   assert.deepEqual(manifest.failures, []);
   const required = [
@@ -22,6 +46,7 @@ test('the generated island exposes every required traversal with no missing conn
     'D1-port',
     'D1-airport',
     'F1',
+    'F2',
     'S1',
     ...['summit', 'roof', 'harbor', 'beach', 'desert', 'woodland'].map((id) => `V1-${id}`),
   ];
@@ -136,4 +161,36 @@ test('the full W1 body clearance includes actual cooked-world solids and both CC
       undefined,
       JSON.stringify(sample),
     );
+});
+
+test('F2 reaches the distinct northeast field with exact source endpoint poses and baked clearance', () => {
+  const transfer = manifest.routes.find((r) => r.id === 'F2')!,
+    departure = world.markers.find(
+      (m) => m.kind === 'teleport' && m.name === 'Airport — runway threshold',
+    )!,
+    arrival = world.markers.find(
+      (m) => m.kind === 'teleport' && m.name === 'airport/general/landing',
+    )!;
+  assert.deepEqual(transfer.samples[0].position, departure.position);
+  assert.deepEqual(transfer.samples.at(-1)!.position, arrival.position);
+  assert.ok(Math.hypot(...departure.position.map((v, k) => v - arrival.position[k])) > 4000);
+  assert.equal(transfer.samples[0].yaw, 'yaw' in departure ? departure.yaw : undefined);
+  assert.equal(transfer.samples.at(-1)!.yaw, 'yaw' in arrival ? arrival.yaw : undefined);
+  for (const [k, sample] of transfer.samples.entries()) {
+    const [x, y, z] = sample.position;
+    assert.ok(Math.abs(x) <= 4000 && Math.abs(z) <= 4000 && y <= 3200);
+    assert.ok(y >= world.plan.height(x, z) + 1.6, JSON.stringify(sample));
+    if (k) {
+      const previous = transfer.samples[k - 1];
+      assert.ok(sample.seconds > previous.seconds);
+      assert.ok(
+        Math.abs(y - previous.position[1]) <=
+          0.08001 * Math.hypot(x - previous.position[0], z - previous.position[2]),
+      );
+    }
+  }
+  assert.deepEqual(
+    manifest.routes.find((r) => r.id === 'F1')!.samples[0].position,
+    manifest.routes.find((r) => r.id === 'F1')!.samples.at(-1)!.position,
+  );
 });
