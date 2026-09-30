@@ -1,0 +1,106 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { createPlan } from '../../plan/plan.ts';
+import { REGIONS } from '../index.ts';
+import { buildCity } from './index.ts';
+import { buildingMetadata } from './metadata.ts';
+import { dryFootprint } from './dry-footprint.ts';
+import { dry } from './site.ts';
+import { Occupancy, overlaps } from './frame.ts';
+
+const plan = createPlan(undefined, REGIONS);
+const city = buildCity(plan);
+
+test('density counts explicit buildings and reconciles footprint union on actual dry catchments', () => {
+  let count = 0;
+  for (const d of city.report.districts) {
+    count += d.buildingCount;
+    assert.equal(d.densityPerKm2, d.buildingCount / d.areaKm2);
+    assert.equal(d.coverage, d.footprintUnionM2 / (d.usableDryKm2 * 1e6));
+    assert.equal(d.meanFootprintM2, d.footprintUnionM2 / d.buildingCount);
+    if (d.id === 'park') continue;
+    assert.ok('density' in d.targets);
+    assert.ok(d.densityPerKm2 >= d.targets.density[0] && d.densityPerKm2 <= d.targets.density[1]);
+    assert.ok(d.coverage >= d.targets.coverage[0] && d.coverage <= d.targets.coverage[1]);
+    assert.equal(d.roadConnectedComponents, 1, d.name);
+    assert.ok(d.roadConnections.length >= 2, d.name);
+    assert.ok(d.sidewalkLoop && d.sidewalkLoop.length === 5, d.name);
+    assert.deepEqual(d.sidewalkLoop[0], d.sidewalkLoop[4]);
+  }
+  for (const i of city.kept.filter((i) => i.building && i.building.class !== 'civic')) {
+    const [min, max] = { low: [5, 15], mid: [15, 50], high: [80, 220] }[
+      i.building!.class as 'low' | 'mid' | 'high'
+    ];
+    if (i.instance.prop === 'city/tower-round-310') continue;
+    assert.ok(i.building!.height >= min && i.building!.height <= max, i.instance.prop);
+  }
+  assert.equal(count, city.kept.filter((i) => i.building).length);
+  assert.ok(city.output.instances.length > count * 2, 'accessories are not counted as buildings');
+  const footprints = new Occupancy<string>(100);
+  for (const i of city.kept.filter((i) => i.building)) {
+    assert.ok(i.box && dryFootprint(city.site, i.box), i.instance.name);
+    assert.deepEqual(footprints.hits(i.box), [], i.instance.name);
+    footprints.add(i.box, i.instance.name!);
+  }
+});
+
+test('all three sidewalk circuits remain clear of solid furniture and buildings', () => {
+  for (const d of city.report.districts.filter((d) => d.id !== 'park')) {
+    const loop = d.sidewalkLoop!;
+    for (let k = 1; k < loop.length; k++) {
+      // The midpoint of each sidewalk side must have an unobstructed pedestrian footprint.
+      const centre = [
+        (loop[k - 1][0] + loop[k][0]) / 2,
+        (loop[k - 1][2] + loop[k][2]) / 2,
+      ] as const;
+      const body = { centre, half: [0.6, 0.6] as const, yaw: city.site.yaw };
+      assert.ok(
+        !city.kept.some((i) => i.kind === 'solid' && i.box && overlaps(body, i.box)),
+        d.name,
+      );
+    }
+  }
+});
+
+test('a narrow river crossing the interior rejects a building despite dry corners and center', () => {
+  const site = {
+    ...city.site,
+    plan: {
+      ...plan,
+      height: () => 3,
+      rivers: [
+        {
+          id: 'interior-channel',
+          points: [
+            [25, 3, -100],
+            [25, 3, 100],
+          ] as const,
+          widths: [1, 1],
+        },
+      ],
+    },
+  };
+  const footprint = { centre: [0, 0] as const, half: [50, 50] as const, yaw: 0 };
+  for (const p of [
+    [-50, -50],
+    [-50, 50],
+    [50, 50],
+    [50, -50],
+    [0, 0],
+  ] as const)
+    assert.ok(dry(site, p));
+  assert.equal(dryFootprint(site, footprint), false);
+});
+
+test('building class comes from catalogue membership and height excludes buried foundations', () => {
+  const part = {
+    surface: city.output.props[0].parts[0].surface,
+    positions: new Float32Array([0, -4, 0, 0, 14, 0, 1, 0, 1]),
+    indices: new Uint32Array([0, 1, 2]),
+  };
+  const metadata = buildingMetadata([
+    { prop: { id: 'a-name-without-building-words', parts: [part] }, class: 'mid' },
+  ]);
+  assert.deepEqual(metadata.get('a-name-without-building-words'), { class: 'mid', height: 14 });
+  assert.equal(metadata.has('city/tower-decoration'), false);
+});

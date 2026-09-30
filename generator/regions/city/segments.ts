@@ -54,7 +54,7 @@ export function segments(placer: Placer, cells: Map<string, Cell>): Segment[] {
 
 /** A world point `along` a segment from its junction, `across` toward its +side cell. */
 export function at(
-  placer: Placer,
+  placer: { site: Placer['site'] },
   axis: Axis,
   i: number,
   j: number,

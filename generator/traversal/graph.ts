@@ -3,7 +3,7 @@ import { SegmentIndex } from '../plan/segments.ts';
 import { roadGraph } from '../../page/play/sim/roadGraph.ts';
 
 const GRADES = { highway: 0.06, secondary: 0.08, pass: 0.1, avenue: 0.08, street: 0.1, dirt: 0.25 };
-export type Edge = { to: number; distance: number; road: string };
+type Edge = { to: number; distance: number; road: string };
 export type TravelGraph = { points: Vec3[]; edges: Edge[][]; rejected: string[] };
 const mix = (a: Vec3, b: Vec3, t: number): Vec3 =>
   a.map((v, i) => v + (b[i] - v) * t) as unknown as Vec3;

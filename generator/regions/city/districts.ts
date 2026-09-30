@@ -2,7 +2,7 @@
  * What each cell holds. Downtown: one tower per block, taller toward the centre — the landmark
  * supertall on the central block, the helipad slab beside it — with rooftop equipment and
  * benches on the plaza. Mid-rise: four apartment blocks around a courtyard, neon signs on some
- * shop fronts. Suburb: eight fenced garden lots with a house and a tree. Park: lawns, paths, a
+ * shop fronts. Suburb: sixteen garden lots with a house and a tree. Park: lawns, paths, a
  * fountain, benches, big trees. Stadium: the bowl on its superblock and four floodlight masts.
  */
 import type { Vec3 } from '../../plan/contract.ts';
@@ -10,13 +10,14 @@ import { hash01 } from '../../props/index.ts';
 import { IDS, type CityCatalog } from './catalog.ts';
 import { facing, headingOf, turn } from './frame.ts';
 import { KERB } from './ground-props.ts';
-import { footprint, inCell, RINGS, superblock, type Cell } from './grid.ts';
+import { footprint, inCell, superblock, type Cell } from './grid.ts';
 import { FLOOD_LAMPS } from './floodlight.ts';
 import { RANK, type Placer } from './placement.ts';
 import { house, midriseBlock } from './lots.ts';
 import { rooftop } from './mounts.ts';
 import { park } from './park.ts';
 import { FOUNDATION } from './tower-kit.ts';
+import { towerPair } from './tower-pair.ts';
 
 export function fillCells(
   placer: Placer,
@@ -49,7 +50,10 @@ export function fillCells(
     if (cell.district === 'downtown') deck = tower(placer, cell, catalog, downtown++, seed) ?? deck;
     else if (cell.district === 'midrise') midriseBlock(placer, cell, catalog, seed);
     else if (cell.district === 'park') park(placer, cell, y, support);
-    else for (let lot = 0; lot < 8; lot++) house(placer, cell, catalog, lot, seed);
+    else {
+      for (let lot = 0; lot < 16; lot++) house(placer, cell, catalog, lot, seed);
+      for (let lot = 0; lot < 16; lot++) house(placer, cell, catalog, lot, seed, true);
+    }
   }
   return deck;
 }
@@ -60,14 +64,21 @@ export function fillCells(
  * distance, so the skyline peaks at the centre.
  */
 function tower(placer: Placer, cell: Cell, catalog: CityCatalog, rank: number, seed: number) {
-  const list = catalog.tower,
+  if (rank >= 2 && rank % 4 === 2) {
+    towerPair(placer, cell, catalog);
+    return undefined;
+  }
+  const list = catalog.tower.filter((t) => {
+      const h = catalog.buildings.get(t.prop.id)!.height;
+      return h >= 80 && h <= 220;
+    }),
     byHeight = [...list].sort((a, b) => b.height - a.height),
-    // Three quarters of the rank comes from the distance, one quarter from the draw.
-    t = Math.min(0.999, (cell.d / RINGS.downtown) * 0.75 + hash01(seed, cell.i, cell.j) * 0.25),
+    // The seed varies the skyline while the closest two blocks retain landmark access.
+    t = hash01(seed, cell.i, cell.j),
     pick =
       [
-        list.find((x) => x.prop.id === 'city/tower-round-310')!,
-        list.find((x) => x.prop.id === 'city/tower-slab-230')!,
+        catalog.tower.find((x) => x.prop.id === 'city/tower-round-310')!,
+        catalog.tower.find((x) => x.prop.id === 'city/tower-slab-170')!,
       ][rank] ?? byHeight[Math.floor(t * byHeight.length)];
   const quarter = hash01(seed + 2, cell.i, cell.j) < 0.5 ? 0 : Math.PI / 2,
     yaw = placer.site.yaw + quarter,

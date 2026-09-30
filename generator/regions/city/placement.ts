@@ -16,6 +16,8 @@ import type {
 import { placeLamps, type PropLamp } from '../../props/index.ts';
 import { corners, Occupancy, segmentBox, xz, type Obb } from './frame.ts';
 import { CELL, inBounds, type Site } from './site.ts';
+import type { BuildingMetadata } from './zones.ts';
+import { dryFootprint } from './dry-footprint.ts';
 
 /**
  * `solid` things stand on the ground and never overlap one another; `flat` ones cover it (block
@@ -33,6 +35,7 @@ export const RANK = { structure: 0, street: 1, furniture: 2, garden: 3 } as cons
 
 export type Item = {
   instance: Instance;
+  building?: BuildingMetadata;
   box?: Obb;
   kind: Kind;
   rank: number;
@@ -53,6 +56,7 @@ export type Extras = {
 
 export class Placer {
   readonly items: Item[] = [];
+  readonly rejected: { prop: string; reason: string }[] = [];
   readonly roads: Road[] = [];
   /** Markers and movers that belong to no node (spawns, viewpoints, boats). */
   readonly markers: Marker[] = [];
@@ -63,8 +67,10 @@ export class Placer {
   private readonly counts = new Map<string, number>();
 
   readonly site: Site;
-  constructor(site: Site) {
+  private readonly buildings: Map<string, BuildingMetadata>;
+  constructor(site: Site, buildings = new Map<string, BuildingMetadata>()) {
     this.site = site;
+    this.buildings = buildings;
   }
 
   /** A local road; vehicle roads keep props off them like the plan's own. */
@@ -113,7 +119,23 @@ export class Placer {
     box?: Obb,
     extras: Extras = {},
   ) {
-    if (box && !this.fits(box, kind)) return undefined;
+    const building = this.buildings.get(prop);
+    const reason =
+      box &&
+      (!corners(box).every((c) => inBounds(this.site, c))
+        ? 'bounds'
+        : building && !dryFootprint(this.site, box)
+          ? 'water'
+          : kind !== 'road' &&
+              (this.site.roads.hits(box, TOUCH).length || this.streets.hits(box, TOUCH).length)
+            ? 'road'
+            : !this.fits(box, kind)
+              ? 'overlap'
+              : undefined);
+    if (reason) {
+      this.rejected.push({ prop, reason });
+      return undefined;
+    }
     const instance: Instance = {
       prop,
       position: at,
@@ -123,6 +145,7 @@ export class Placer {
     };
     const item: Item = {
       instance,
+      ...(building ? { building } : {}),
       ...(box ? { box } : {}),
       kind,
       rank,

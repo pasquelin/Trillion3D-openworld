@@ -64,25 +64,38 @@ export function midriseBlock(placer: Placer, cell: Cell, catalog: CityCatalog, s
     );
 }
 
-/** One of a suburban block's eight lots: a house facing its street, a fence, a garden tree. */
-export function house(placer: Placer, cell: Cell, catalog: CityCatalog, lot: number, seed: number) {
-  const col = lot % 4,
-    side = lot < 4 ? 1 : -1,
-    u = -33.75 + col * 22.5,
+/** Sixteen garden lots: ten on long frontages and six small homes on the side streets. */
+export function house(
+  placer: Placer,
+  cell: Cell,
+  catalog: CityCatalog,
+  lot: number,
+  seed: number,
+  decorate = false,
+) {
+  const frontage = lot < 10,
+    col = frontage ? lot % 5 : (lot - 10) % 3,
+    side = frontage ? (lot < 5 ? 1 : -1) : lot < 13 ? 1 : -1,
+    choices = catalog.house.filter((h) => h.half[0] * 2 <= (frontage ? 17 : 11.5)),
+    pick = choices[Math.floor(hash01(seed, cell.i * 16 + lot, cell.j) * choices.length)],
+    turnBy = frontage ? (side > 0 ? 0 : Math.PI) : (side * Math.PI) / 2,
+    along = frontage ? -36 + col * 18 : -18 + col * 18,
+    edge = side * (37 - pick.half[1]),
+    [u, v] = frontage ? [along, edge] : [edge, along],
     y = cell.base + KERB,
-    support = cell.base - FOUNDATION,
-    pick = catalog.house[Math.floor(hash01(seed, cell.i * 8 + lot, cell.j) * catalog.house.length)],
-    turnBy = side > 0 ? 0 : Math.PI,
-    v = side * (37 - pick.half[1]);
-  placer.place(
-    pick.prop.id,
-    inCell(placer, cell, [u - side * pick.shift, v], y),
-    placer.site.yaw + turnBy,
-    'solid',
-    RANK.structure,
-    footprint(placer, cell, [u, v], pick.half, turnBy),
-    { support: y - FOUNDATION },
-  );
+    support = cell.base - FOUNDATION;
+  if (!decorate) {
+    placer.place(
+      pick.prop.id,
+      inCell(placer, cell, [u, v], y),
+      placer.site.yaw + turnBy,
+      'solid',
+      RANK.structure,
+      footprint(placer, cell, [u, v], pick.half, turnBy),
+      { support: y - FOUNDATION },
+    );
+    return;
+  }
   const fence = (uv: Xz, across: boolean) =>
     placer.place(
       'city/garden-fence',
@@ -93,12 +106,11 @@ export function house(placer: Placer, cell: Cell, catalog: CityCatalog, lot: num
       footprint(placer, cell, uv, [11.25, 0.15], across ? Math.PI / 2 : 0),
       { support },
     );
-  if (side > 0) fence([u, 0], false);
-  if (col > 0) for (const along of [11.25, 33.75]) fence([u - 11.25, side * along], true);
+  if (frontage && col === 0) fence([0, side * 15], false);
   const tree = ['tree-oak-small', 'tree-birch-small', 'bush-round'][
       Math.floor(hash01(seed + 5, cell.i * 8 + lot, cell.j) * 3)
     ],
-    at: Xz = [u + (hash01(seed + 6, cell.i * 8 + lot, cell.j) - 0.5) * 8, side * 12];
+    at: Xz = frontage ? [u, side * 18] : [side * 18, v];
   placer.place(
     tree,
     inCell(placer, cell, at, y),

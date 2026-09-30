@@ -25,7 +25,8 @@
     "lint": "eslint .",
     "check:lines": "node scripts/check-lines.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "knip": "knip"
+    "knip": "knip",
+    "report:urban": "node scripts/urban-report.ts"
   },
   "dependencies": {
     "three": "^0.174.0"
