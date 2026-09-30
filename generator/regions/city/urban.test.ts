@@ -62,6 +62,22 @@ test('all three sidewalk circuits remain clear of solid furniture and buildings'
   }
 });
 
+test('three neighboring clear blocks expose a real residential, mixed and center interface', () => {
+  const protectedCells = [...city.cells.values()].filter((c) => c.interface);
+  assert.equal(protectedCells.length, 3);
+  assert.deepEqual(
+    new Set(protectedCells.map((c) => c.district)),
+    new Set(['suburb', 'midrise', 'downtown']),
+  );
+  for (const cell of protectedCells) {
+    const district = city.report.districts.find((d) => d.id === cell.district)!;
+    assert.ok(
+      district.sidewalkLoops.some((l) => l.cellId === `${cell.i},${cell.j}`),
+      district.name,
+    );
+  }
+});
+
 test('a narrow river crossing the interior rejects a building despite dry corners and center', () => {
   const site = {
     ...city.site,
@@ -90,6 +106,21 @@ test('a narrow river crossing the interior rejects a building despite dry corner
   ] as const)
     assert.ok(dry(site, p));
   assert.equal(dryFootprint(site, footprint), false);
+});
+
+test('above-sea lake water excludes point and full building footprints', () => {
+  const site = {
+    ...city.site,
+    plan: {
+      ...plan,
+      height: () => 10,
+      rivers: [],
+      lakes: [{ id: 'raised-lake', x: 25, z: 0, radius: 4, level: 12, depth: 2 }],
+    },
+  };
+  assert.equal(dry(site, [25, 0]), false);
+  assert.equal(dry(site, [0, 0]), true);
+  assert.equal(dryFootprint(site, { centre: [0, 0], half: [30, 30], yaw: 0 }), false);
 });
 
 test('building class comes from catalogue membership and height excludes buried foundations', () => {

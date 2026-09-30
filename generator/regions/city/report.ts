@@ -9,6 +9,7 @@ import { NEIGHBORHOODS } from './zones.ts';
 import { districtAccess } from './access.ts';
 import { streetAccessGraph } from './access-graph.ts';
 
+const CHOSEN_AREAS = { suburb: 1, midrise: 0.8, downtown: 0.25, park: 0.15 } as const;
 const TARGETS = {
   suburb: { areaKm2: 4, density: [900, 1400], height: [5, 15], coverage: [0.12, 0.2] },
   midrise: { areaKm2: 2.5, density: [200, 320], height: [15, 50], coverage: [0.08, 0.16] },
@@ -68,6 +69,8 @@ export function cityReport(
       usableDryKm2: usable / 1e6,
       areaErrorKm2: area / 1e6 - target.areaKm2,
       areaRelativeError: area / 1e6 / target.areaKm2 - 1,
+      chosenAreaKm2: CHOSEN_AREAS[district as keyof typeof CHOSEN_AREAS],
+      chosenAreaErrorKm2: area / 1e6 - CHOSEN_AREAS[district as keyof typeof CHOSEN_AREAS],
       buildingCount: buildings.length,
       uniqueBuildingMeshes: new Set(buildings.map((i) => i.instance.prop)).size,
       densityPerKm2: area ? buildings.length / (area / 1e6) : 0,
@@ -90,6 +93,9 @@ export function cityReport(
     areaDefinition: 'disjoint block catchments including half adjacent streets and open lots',
     coverageDefinition: 'union of conservative building OBB footprints / usable dry catchment area',
     districts: rows,
+    interfaceCells: [...cells.values()]
+      .filter((c) => c.interface)
+      .map((c) => ({ cellId: `${c.i},${c.j}`, district: c.district, center: c.box.centre })),
     buildings: kept
       .filter((i) => i.building)
       .map((i) => ({

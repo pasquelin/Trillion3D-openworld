@@ -35,7 +35,8 @@ console.table(
   payload.districts.map((d) => ({
     district: d.name,
     areaKm2: d.areaKm2.toFixed(3),
-    chosenAreaKm2: d.targets.areaKm2,
+    initialAreaKm2: d.targets.areaKm2,
+    chosenAreaKm2: d.chosenAreaKm2,
     buildings: d.buildingCount,
     density: d.densityPerKm2.toFixed(1),
     coverage: (d.coverage * 100).toFixed(2) + '%',

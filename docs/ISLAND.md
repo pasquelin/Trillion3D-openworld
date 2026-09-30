@@ -96,3 +96,7 @@ Delivery tasks: #18 enclosing island; #19 urban districts; #20 vetted assets and
 - GTA V geographic reference maps: https://github.com/gta5-map/gta5-map.github.io and https://github.com/DurtyFree/gta-v-map-leaflet . No exact density measurements are asserted.
 - Kenney public source and asset license: https://github.com/KenneyNL/Starter-Kit-City-Builder/tree/4535092b740b378b700efd9df9e27a631815b84a .
 - KayKit public source and asset license: https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0/tree/63976910ca04d16f0fc531b9c614244be8128713 .
+
+## Urban area revision from #19
+
+The completed enclosing-island terrain with the city plain contains only 4.744375 km² of dry land in the current city ownership rectangle (seed 332, 25 m census excluding river banks and water). The initial 8 km² urban design cannot fit there. #19 therefore chooses 2.2 km² of foundation-safe, road-connected catchments: 1.00 km² residential, 0.80 km² mixed streets, 0.25 km² center and 0.15 km² civic spaces. The generated total is 2.203125 km²; original area targets and their errors remain explicit in the report. Density, height and coverage targets are retained. [URBAN.md](URBAN.md) records the actual building counts, definitions and reproduction command. This changes the urban area design; it does not claim that the initial exclusive land-use table was satisfied. A final whole-island land-use census must report the remaining land under its actual classes.

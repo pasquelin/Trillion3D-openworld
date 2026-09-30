@@ -5,7 +5,7 @@
  */
 import type { PropMesh } from '../../plan/contract.ts';
 import { bridgePier, bridgeSpan } from './bridge-props.ts';
-import { crossing, fountain, parkBlock, pavedBlock, sidewalkRing } from './ground-props.ts';
+import { crossing, fountain, parkBlock, pavedBlock, gardenBlock } from './ground-props.ts';
 import { floodMast } from './floodlight.ts';
 import { cranePortal, craneJib, quay, warehouse } from './harbour-props.ts';
 import { gardenFence } from './house-parts.ts';
@@ -44,7 +44,7 @@ export function cityCatalog(seed: number, grid: { block: number; street: number 
     arena.prop,
     gardenFence(),
     pavedBlock(IDS.paved, grid.block),
-    sidewalkRing(IDS.suburb, grid.block),
+    gardenBlock(IDS.suburb, grid.block),
     parkBlock(IDS.park, grid.block),
     pavedBlock(IDS.superblock, superblockSize(grid)),
     crossing(IDS.crossing, grid.street),

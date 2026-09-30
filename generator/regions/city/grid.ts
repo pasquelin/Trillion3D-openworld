@@ -28,6 +28,7 @@ export type Cell = {
   base: number;
   /** The stadium's 2 × 2 group, by its lowest (i, j), when the cell belongs to it. */
   group?: string;
+  interface?: boolean;
 };
 
 /** Where cell-local offsets `(u, v)` from the grid origin land in the world. */
@@ -85,7 +86,7 @@ export function layCells(
     }
   zoneCells(cells);
   for (const cell of cells.values())
-    if (cell.district !== 'downtown' && hash01(seed + 1, cell.i, cell.j) < 0.05)
+    if (!cell.interface && cell.district !== 'downtown' && hash01(seed + 1, cell.i, cell.j) < 0.05)
       cell.district = 'park';
   placeStadium(site, cells);
   return cells;
@@ -105,7 +106,7 @@ function placeStadium(site: Site, cells: Map<string, Cell>) {
       cells.get(key(cell.i + 1, cell.j + 1)),
     ];
     const s = Math.abs(cell.d - STADIUM_RADIUS);
-    if (s >= score || group.some((c) => !c || c.district === 'downtown')) continue;
+    if (s >= score || group.some((c) => !c || c.interface || c.district === 'downtown')) continue;
     const plinth = superblock(site, cell),
       ground = groundUnder(site, plinth, SAMPLE);
     if (site.roads.hits(plinth, TOUCH).length || Math.max(...ground) - Math.min(...ground) > STEP)
