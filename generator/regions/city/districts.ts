@@ -1,7 +1,8 @@
 /**
  * What each cell holds. Downtown: one tower per block, taller toward the centre — the landmark
  * supertall on the central block, the helipad slab beside it — with rooftop equipment and
- * benches on the plaza. Mid-rise: four apartment blocks around a courtyard, neon signs on some
+ * benches on the plaza. Mid-rise: two adjoining apartment pairs with service alleys into a
+ * courtyard, neon signs on some
  * shop fronts. Suburb: sixteen garden lots with a house and a tree. Park: lawns, paths, a
  * fountain, benches, big trees. Stadium: the bowl on its superblock and four floodlight masts.
  */
