@@ -6,7 +6,8 @@ import { buildCity } from './index.ts';
 import { buildingMetadata } from './metadata.ts';
 import { dryFootprint } from './dry-footprint.ts';
 import { dry } from './site.ts';
-import { Occupancy, overlaps } from './frame.ts';
+import { Occupancy, overlaps, turn } from './frame.ts';
+import { TOUCH } from './placement.ts';
 
 const plan = createPlan(undefined, REGIONS);
 const city = buildCity(plan);
@@ -39,8 +40,52 @@ test('density counts explicit buildings and reconciles footprint union on actual
   const footprints = new Occupancy<string>(100);
   for (const i of city.kept.filter((i) => i.building)) {
     assert.ok(i.box && dryFootprint(city.site, i.box), i.instance.name);
-    assert.deepEqual(footprints.hits(i.box), [], i.instance.name);
+    assert.deepEqual(footprints.hits(i.box, TOUCH), [], i.instance.name);
     footprints.add(i.box, i.instance.name!);
+  }
+});
+
+test('midrise fronts share flush party walls and leave clear end alleys to the courtyard', () => {
+  for (const prop of city.output.props.filter((p) => p.id.startsWith('city/midrise-'))) {
+    const width = city.kept.find((i) => i.instance.prop === prop.id)!.box!.half[0];
+    for (const part of prop.parts)
+      for (let k = 0; k < part.positions.length; k += 3)
+        assert.ok(Math.abs(part.positions[k]) <= width + TOUCH, prop.id);
+  }
+  for (const cell of city.cells.values()) {
+    if (cell.district !== 'midrise') continue;
+    const local = city.kept
+      .filter((i) => i.building?.class === 'mid' && i.box)
+      .map((i) => {
+        const [u, v] = turn(
+          [i.box!.centre[0] - cell.box.centre[0], i.box!.centre[1] - cell.box.centre[1]],
+          -city.site.yaw,
+        );
+        return { item: i, u, v };
+      })
+      .filter(({ u, v }) => Math.abs(u) < 45 && Math.abs(v) < 45);
+    assert.equal(local.length, 4);
+    for (const side of [-1, 1]) {
+      const [left, right] = local
+        .filter(({ v }) => Math.sign(v) === side)
+        .sort((a, b) => a.u - b.u);
+      assert.ok(
+        Math.abs(left.u + left.item.box!.half[0] - right.u + right.item.box!.half[0]) < TOUCH,
+      );
+      assert.ok(left.u - left.item.box!.half[0] >= -42 - TOUCH);
+      assert.ok(right.u + right.item.box!.half[0] <= 42 + TOUCH);
+    }
+    for (const u of [-43.5, 43.5]) {
+      const [dx, dz] = turn([u, 0], city.site.yaw);
+      const lane = {
+        centre: [cell.box.centre[0] + dx, cell.box.centre[1] + dz] as const,
+        half: [1.2, 43] as const,
+        yaw: city.site.yaw,
+      };
+      assert.ok(
+        !city.kept.some((i) => i.kind === 'solid' && i.box && overlaps(lane, i.box, TOUCH)),
+      );
+    }
   }
 });
 

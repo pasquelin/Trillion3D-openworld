@@ -12,20 +12,25 @@ import { RANK, type Placer } from './placement.ts';
 import { neon, onProp } from './mounts.ts';
 import { FOUNDATION } from './tower-kit.ts';
 
-/** Four mid-rise blocks around a courtyard, their fronts on the streets. */
+/** Two adjoining pairs face the streets; narrow end alleys enter the shared courtyard. */
 export function midriseBlock(placer: Placer, cell: Cell, catalog: CityCatalog, seed: number) {
   const y = cell.base + KERB;
-  for (const [u, side] of [
-    [-22.5, 1],
-    [22.5, 1],
-    [-22.5, -1],
-    [22.5, -1],
-  ] as const) {
-    const pick =
-        catalog.midrise[
-          Math.floor(hash01(seed, cell.i * 4 + u, cell.j, side) * catalog.midrise.length)
-        ],
-      v = side * (45 - pick.half[1] - 0.5),
+  const rows = [-1, 1].flatMap((side) => {
+    const left =
+        catalog.midrise[Math.floor(hash01(seed, cell.i, cell.j, side) * catalog.midrise.length)],
+      choices = catalog.midrise.filter((right) => {
+        const half = left.half[0] + right.half[0];
+        return half >= 37 && half <= 41;
+      }),
+      right = choices[Math.floor(hash01(seed + 1, cell.i, cell.j, side) * choices.length)],
+      seam = left.half[0] - right.half[0];
+    return [
+      { pick: left, u: seam - left.half[0], side },
+      { pick: right, u: seam + right.half[0], side },
+    ];
+  });
+  for (const { pick, u, side } of rows) {
+    const v = side * (45 - pick.half[1] - 0.5),
       turnBy = side > 0 ? 0 : Math.PI,
       yaw = placer.site.yaw + turnBy,
       at = inCell(placer, cell, [u, v], y);
