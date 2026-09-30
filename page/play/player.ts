@@ -148,7 +148,7 @@ export function createPlayer(options: PlayOptions, view: View) {
       used = input.use;
       const at = position();
       const floor = ground.read(at[0], at[2]);
-      if (mode !== 'foot' || (waiting && floor === null))
+      if (mode !== 'foot' || floor === null)
         ground.request(
           ...at,
           mode === 'car' ? car.body : mode === 'plane' ? plane.body : undefined,
@@ -170,6 +170,10 @@ export function createPlayer(options: PlayOptions, view: View) {
       }
       if (mode === 'plane' && !waiting) plane.step(input, dt);
       view.spawns(carSpawn, planeSpawn);
+    },
+    returnToGround(at: readonly number[]) {
+      if (mode !== 'foot') leave();
+      putFoot(at);
     },
     teleport(name: string) {
       const marker = data.markers.find((m) => m.kind === 'teleport' && m.name === name);

@@ -187,6 +187,7 @@ export type RegionOutput = {
  * (`heights/<tx>_<tz>.bin`: Float32, `(samples+1)²` values, row-major from the tile's -X,-Z corner).
  */
 export type WorldRuntimeData = {
+  traversal?: import('../traversal/types.ts').Traversal;
   seed: number;
   size: number;
   tile: number;

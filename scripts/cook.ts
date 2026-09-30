@@ -19,6 +19,7 @@ import { islandBuildings } from '../generator/assets/island.ts';
 import { appendBuildings } from '../generator/assets/assemble.ts';
 import { BUILDING_ASSETS } from '../generator/assets/source.ts';
 import { cookKey } from './cook-key.ts';
+import { pinnedEngine } from './engine.ts';
 
 const assets = resolve(import.meta.dirname, '../dist/assets'),
   out = resolve(assets, cookKey());
@@ -80,6 +81,11 @@ for (let tx = 0; tx < tiles; tx++)
       JSON.stringify(colliders.get(key) ?? []),
     );
   }
+if (data.traversal) {
+  data.traversal.contentHash = cookKey();
+  data.traversal.enginePin = pinnedEngine().commit;
+  await writeFile(resolve(out, 'routes.json'), JSON.stringify(data.traversal));
+}
 await writeFile(resolve(out, 'world.json'), JSON.stringify(data));
 await writeFile(resolve(out, 'vehicles.json'), JSON.stringify(VEHICLE_SPECS));
 lap('physics and page data written');

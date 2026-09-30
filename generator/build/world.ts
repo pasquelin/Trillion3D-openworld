@@ -16,6 +16,7 @@ import { REGIONS } from '../regions/index.ts';
 import { solidColliders } from './colliders.ts';
 import { fillEmptyLand } from './fill.ts';
 import { settleMarkers } from './markers.ts';
+import { buildTraversal } from '../traversal/build.ts';
 
 /** Keeps the first mesh of each id: regions may hand back the shared props they place. */
 function uniqueMeshes(lists: readonly (readonly PropMesh[])[]) {
@@ -72,5 +73,6 @@ export function buildWorld(seed: number = WORLD.seed, regions: readonly RegionMo
     movers: placed.flatMap((output) => output.movers),
     lights,
   };
+  data.traversal = buildTraversal(plan, data.roads, markers);
   return { plan, terrain, objects: { meshes, instances, lights }, solids, data };
 }
