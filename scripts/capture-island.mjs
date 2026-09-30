@@ -17,8 +17,10 @@ const output = args.out;
 if (!output || !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url))
   throw Error('Set --out=DIR and a local --url=http://127.0.0.1:PORT/');
 const route = args.route ?? 'V1-summit';
-const timeoutMs = Math.min(180_000, Number(args.timeout ?? 90_000));
-const waitMs = Math.min(45_000, Number(args.wait ?? 10_000));
+const waitMs = Math.min(180_000, Number(args.wait ?? 10_000));
+const timeoutMs = Math.min(240_000, Number(args.timeout ?? Math.max(90_000, waitMs + 60_000)));
+if (![waitMs, timeoutMs].every(Number.isFinite) || waitMs < 0 || timeoutMs < waitMs + 30_000)
+  throw Error('Timeout must leave at least 30 seconds for loading before --wait');
 await mkdir(output, { recursive: true });
 const profile = join(output, `chrome-profile-${process.pid}`);
 const child = spawn(
@@ -146,6 +148,7 @@ try {
     return {selected: option.value, name: option.textContent};
   })()`);
   if (!selected.selected) throw Error(`Route unavailable: ${JSON.stringify(selected)}`);
+  if (Date.now() + waitMs + 10_000 > deadline) throw Error('Timeout leaves no time for capture');
   await pause(waitMs);
   const evidence = await evaluate(`(() => {
     const output = [...document.querySelectorAll('output')].map(x => x.textContent).join(' ');
