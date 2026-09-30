@@ -6,6 +6,7 @@ import type { Bridge, RoadClass, Settlement, Vec3 } from './contract.ts';
 import type { Lake, Platform, RoadCourse } from './carve.ts';
 import { REGION_BOUNDS } from './layout.ts';
 import type { Point2 } from './polyline.ts';
+import { onAirfield, type AirfieldPlatforms } from './airfields.ts';
 import type { Tunnel } from './tunnels.ts';
 import { layRoad, buildRoad, riverIndex, ROAD_STEP, type Ground } from './roads.ts';
 import { node, STEP } from './route.ts';
@@ -28,6 +29,7 @@ export function planNetwork(
   settlements: readonly Settlement[],
   lakes: readonly Lake[],
   platform: Platform,
+  airfields?: AirfieldPlatforms,
 ): Network {
   const overRiver = riverIndex(ground.rivers),
     courses: RoadCourse[] = [],
@@ -64,6 +66,7 @@ export function planNetwork(
         ...ground,
         wet: (x, z) =>
           ground.wet(x, z) ||
+          (!!airfields && onAirfield(airfields, x, z, 60)) ||
           (x > platform.minX - 60 &&
             x < platform.maxX + 60 &&
             z > platform.minZ - 60 &&
@@ -81,9 +84,9 @@ export function planNetwork(
     keep(built, joins);
   };
 
-  // The airport interchange sits south of the platform, facing the city.
-  const centreX = (platform.minX + platform.maxX) / 2,
-    interchange: Point2 = [centreX, platform.maxZ + 300];
+  // The western field's terminal faces east; the interchange keeps clear of both approaches.
+  const centreZ = (platform.minZ + platform.maxZ) / 2,
+    interchange: Point2 = [platform.maxX + 300, centreZ];
   const ring: Point2[] = [
     find('city'),
     interchange,
@@ -97,14 +100,18 @@ export function planNetwork(
   ring.forEach((stop, index) =>
     road(`highway-${index}`, 'highway', stop, ring[(index + 1) % ring.length]),
   );
-  const terminal = siteFrame(REGION_BOUNDS.airport, platform, 0, interchange).world(
+  const terminal = siteFrame(REGION_BOUNDS.airport, platform, 0, interchange, -1).world(
     0,
     FIELD.curbside,
   );
-  road('airport-access', 'secondary', interchange, [centreX, platform.maxZ + 100], true, [
-    [centreX, platform.level, platform.maxZ],
+  road('airport-access', 'secondary', interchange, [platform.maxX + 100, centreZ], true, [
+    [platform.maxX, platform.level, centreZ],
     [terminal[0], platform.level, terminal[1]],
   ]);
+  if (airfields) {
+    const p = airfields.general;
+    road('general-airfield-access', 'secondary', [p.maxX + 100, (p.minZ + p.maxZ) / 2], 'network');
+  }
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
   if (resort && mountainTown) road('pass', 'pass', xz(mountainTown), xz(resort));
@@ -122,11 +129,12 @@ export function planNetwork(
   if (summit && (resort || mountainTown))
     road('summit-trail', 'dirt', xz((resort || mountainTown)!), xz(summit), false, [summit]);
   for (const s of settlements)
-    if (s.kind === 'village' || (s.kind === 'port' && s.region === 'city'))
+    if (s.kind === 'village' || (s.region === 'city' && (s.kind === 'port' || s.kind === 'town')))
       road(`${s.id}/road`, 'secondary', xz(s), 'network');
 
-  const city = find('city');
-  if (city)
+  for (const city of settlements.filter(
+    (s) => s.region === 'city' && (s.kind === 'city' || s.kind === 'town'),
+  ))
     avenues(city, ground, (id, path) => keep(layRoad(id, 'avenue', path, ground, overRiver)));
 
   const villages = settlements.filter((s) => s.kind === 'village' || s.kind === 'resort'),

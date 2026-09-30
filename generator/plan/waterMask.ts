@@ -5,6 +5,7 @@
  */
 import type { Waters } from './erosion.ts';
 import { WORLD } from './contract.ts';
+import { lakeDistance } from './lake-shore.ts';
 
 const HALF = WORLD.size / 2;
 
@@ -24,14 +25,16 @@ export function waterMask({ lakes, rivers }: Waters, side: number, cell: number)
         for (let i = clamp(index(minX)); i <= clamp(index(maxX)); i++)
           if (inside(i * cell - HALF, j * cell - HALF)) mask[j * side + i] = 1;
     };
-  for (const { x, z, radius } of lakes)
+  for (const lake of lakes) {
+    const { x, z, radius } = lake;
     mark(
       x - radius,
       x + radius,
       z - radius,
       z + radius,
-      (px, pz) => Math.hypot(px - x, pz - z) <= radius,
+      (px, pz) => lakeDistance(lake, px, pz) <= radius,
     );
+  }
   for (const { river } of rivers)
     for (let k = 0; k + 1 < river.points.length; k++) {
       const [ax, , az] = river.points[k],

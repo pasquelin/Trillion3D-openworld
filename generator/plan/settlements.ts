@@ -5,7 +5,8 @@
  */
 import { WORLD, type RegionName, type Settlement, type Vec3 } from './contract.ts';
 import type { Platform } from './carve.ts';
-import { REGION_BOUNDS } from './layout.ts';
+import { REGION_BOUNDS, REGIONS, landWeights } from './layout.ts';
+import { CITY_CORES, HARBOUR_SITE } from './geography.ts';
 import type { Island } from './relief.ts';
 import type { Ground } from './roads.ts';
 import { best, RADIUS, seededSpot, settle, slopeAt } from './sites.ts';
@@ -19,10 +20,10 @@ const VILLAGES: Partial<Record<RegionName, number>> = {
 };
 /** Where each region's town is sought: a spot, searched within 1.2 km for flat dry land. */
 const TOWNS: Partial<Record<RegionName, [number, number]>> = {
-  countryside: [2_900, -500],
-  desert: [-2_900, -500],
-  coast: [2_500, 2_000],
-  mountains: [-1_000, -2_900],
+  countryside: [1_000, 500],
+  desert: [-3_000, -1_200],
+  coast: [2_800, 2_000],
+  mountains: [-1_000, -1_400],
 };
 
 export function planSettlements(
@@ -42,9 +43,29 @@ export function planSettlements(
     mainland(x, z) &&
     out.every((s) => Math.hypot(s.centre[0] - x, s.centre[2] - z) > s.radius + 300);
   const at = (x: number, z: number): Vec3 => [x, ground.height(x, z), z];
-  // The city fills the land between the airport and the shore, centred across it.
-  add('city', 'city', 'city', at(mouth[0], (REGION_BOUNDS.city.minZ + mouth[1]) / 2));
-  const portX = mouth[0] + 1_500,
+  const owner = (x: number, z: number) => {
+    const weights = landWeights(x, z);
+    return REGIONS[weights.indexOf(Math.max(...weights))];
+  };
+  for (const core of CITY_CORES) {
+    const centre = settle(
+      ground.grid,
+      [core.x, core.z],
+      350,
+      REGION_BOUNDS.city,
+      core.radius,
+      (x, z, h) => h > 3 && !ground.wet(x, z) && owner(x, z) === 'city',
+    );
+    if (!centre) throw new Error(`No dry site for ${core.id}`);
+    out.push({
+      id: core.id,
+      kind: core.primary ? 'city' : 'town',
+      region: 'city',
+      centre,
+      radius: core.radius,
+    });
+  }
+  const portX = HARBOUR_SITE.x,
     port = best(
       ground.grid,
       { minX: portX - 500, maxX: portX + 500, minZ: mouth[1] - 2_000, maxZ: mouth[1] + 500 },
@@ -64,12 +85,12 @@ export function planSettlements(
       1_200,
       REGION_BOUNDS[region],
       RADIUS.town,
-      (x, z, h) => spaced(x, z, h) && h < WORLD.peak * 0.75,
+      (x, z, h) => spaced(x, z, h) && owner(x, z) === region && h < WORLD.peak * 0.75,
     );
     if (centre) add(`${region}-town`, 'town', region, centre);
   }
   const resort = best(ground.grid, REGION_BOUNDS.mountains, (x, z, h) =>
-    spaced(x, z, h)
+    spaced(x, z, h) && owner(x, z) === 'mountains'
       ? -Math.abs(h - WORLD.peak * 0.75) / 100 - slopeAt(ground.grid, x, z) * 20
       : -Infinity,
   );
@@ -83,18 +104,25 @@ export function planSettlements(
           1_500,
           REGION_BOUNDS[region],
           RADIUS.village,
-          (x, z, h) => spaced(x, z, h) && h < 1_600,
+          (x, z, h) => spaced(x, z, h) && owner(x, z) === region && h < 1_600,
         );
       if (centre) add(`${region}-village-${index}`, 'village', region, centre);
     }
   // The island port stands on the largest island inside the coast region.
   const coast = REGION_BOUNDS.coast,
     island = islands
-      .filter((i) => i.x - i.radius > coast.minX && i.z > coast.minZ && i.z < coast.maxZ)
+      .filter((i) => i.x > 0 && i.x - i.radius > coast.minX && i.z > coast.minZ && i.z < coast.maxZ)
       .sort((a, b) => b.radius * b.top - a.radius * a.top)[0],
     islandPort =
       island &&
-      settle(ground.grid, [island.x, island.z], 2_000, coast, RADIUS.port, (_x, _z, h) => h < 12);
+      settle(
+        ground.grid,
+        [island.x, island.z],
+        500,
+        coast,
+        RADIUS.port,
+        (x, z, h) => h < 12 && Math.hypot(x - island.x, z - island.z) < island.radius * 1.5,
+      );
   if (islandPort) add('island-port', 'port', 'coast', islandPort);
   return out;
 }

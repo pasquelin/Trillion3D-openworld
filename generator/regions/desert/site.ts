@@ -117,6 +117,7 @@ export class Site {
   /** Whether `shape` is inside the region and clear of every road, river and footprint. */
   free(shape: readonly Point[], clearance = 0.5): boolean {
     const { minX, minZ, maxX, maxZ } = this.bounds;
+    if (shape.some(([x, z]) => this.plan.biome(x, z).owner !== 'desert')) return false;
     if (shape.some(([x, z]) => x < minX || x > maxX || z < minZ || z > maxZ)) return false;
     const xs = shape.map((p) => p[0]),
       zs = shape.map((p) => p[1]);

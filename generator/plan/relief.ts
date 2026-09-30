@@ -7,7 +7,8 @@
 import { WORLD } from './contract.ts';
 import { fbm, hash2, nameSeed, ridged, smoothstep } from './noise.ts';
 import { enclosingCoast, preserveShore } from './shore.ts';
-import { airfieldPlain, mountainEnvelope } from './geography.ts';
+import { AIRFIELD_AREAS, mountainEnvelope } from './geography.ts';
+import { airportInfluence } from './airfields.ts';
 
 /** Depth scale of the continental shelf, metres: the sea a swimmer or a boat sees near shore. */
 const SHELF = 80;
@@ -60,7 +61,7 @@ export function createRelief(seed: number): Relief {
     // Each layer is evaluated only where its envelope is non-zero: the sea skips them all.
     if (inland > 0) {
       const mountain = mountainEnvelope(x, z),
-        plain = airfieldPlain(x, z),
+        plain = airportInfluence(AIRFIELD_AREAS, x, z, 250),
         plateau = smoothstep(-1_600, -2_400, x) * smoothstep(500, -800, z),
         rolling = 90 + 70 * fbm(rollSeed, x / 1_100, z / 1_100, 4),
         foothills = 220 * Math.sqrt(mountain),

@@ -1,30 +1,50 @@
 # Coherent world implementation (#15)
 
-The approved five-centre sketch is a design reference, not an engine capture.
-This first foundation moves the natural terrain to a continuously curved island,
-a curved inland massif, gradual foothills and rolling rural ground. The natural
-profile already reserves low ground for a compact western airport and a northeast
-general aviation field. The fixed 8 km frame, 800 MiB cache envelope, triangle and
-node budgets, physics height sampling and public engine pin are unchanged.
+The approved five-centre sketch guides original proportions; it is not an engine
+capture. The source now composes a curved island, one continuous massif, gradual
+foothills, rolling rural ground and organic ownership. Seeded coastal undulations
+retain the 8 km frame, ocean margin and three detached islets. A smooth summit
+ceiling bounds natural relief; the final composed altitude remains separately
+measured. The intermediate 40 m census found 1,891 m; only 0.2096 km²
+exceeded 1,800 m. These rare crests retain the existing `WORLD.peak = 2000`
+contract and long-view geometry. The engine pin and 800 MiB envelope remain unchanged.
 
-`generator/plan/geography.ts` owns the five intended city anchors and two airfield
-reservations. Anchors are original authored proportions in metres. Settlement
-builders must search nearby suitable dry ground, keep approaches clear and share
-these locations with roads and flight endpoints. No airport runway has moved in
-this foundation: existing airport output, marker names and its single-platform
-API remain active until placement ownership is migrated together.
+`geography.ts` owns five anchors and two airfield reservations. The richer #19 city
+builder consumes all five settlements, with a single shared catalogue, qualified
+secondary identifiers and one fixed city node allowance. Primary towers and dense
+frontages retain their own census; secondary cores use actual 50–140 m buildings.
+Each core reaches a real arterial, including shared highway access where adding a
+second identical road would duplicate geometry. Terrain grading blends around
+rounded urban catchments; river carving and airport earthworks retain priority.
 
-The next integration must replace rectangular biome ownership and gate every
-region's placements by that ownership. Mountains and coast already enforce it;
-countryside, desert and city still need coordinated placement guards. Activating
-overlapping bounds alone would introduce overlapping geometry. The richer city
-builder from #19 must be integrated before it consumes the five anchors. #20's
-shared asset geometry and #21's routes then use the same ownership and clearances.
+The western field contains two actual 2.4 km runways and its existing terminal,
+freight and landside geometry. Its terminal faces east in the shared terrain/site
+frame. The northeast field adds a physical 900 m runway, taxiway, terminal, hangar
+and distinct landing/spawn markers. Operational strips/pads differ from routing
+reservations: their smooth earthworks and biome masks release unused corners to
+natural terrain and rural content. The two destinations support free flight;
+a public A-to-B demonstration route awaits integration with #21.
 
-The whole redesign also requires the western two-runway airport, a working 900 m
-northeast field, five populated centres, scattered residential and agricultural
-sites, and a deterministic spatial coverage census. The existing 100 m fill with
-four props per empty cell does not establish the approved approximately 10 m
-perceived coverage; it must be replaced under fixed budgets. Native GPU views and
-flight performance are unmeasured and deferred by the user. No source plan plot
-or census is presented as rendered image or frame performance evidence.
+Village/farm geometry is retained. Additional homes occupy selected accessible
+lowland and 30–250 m rural land on approximately 50 m plots, through existing foundations and
+occupancy checks. Understory infill visits 18 m cells, prioritizes routes and
+settlements, respects remaining regional node allowances and protects operational
+strips. Countryside woodland retains 25% of its node allowance for distributed
+infill. Shared forest patches fit every actual tree root as well as ground samples,
+so accepted tree bases neither float nor bury their crowns. Sloped patches rotate
+along their actual downhill direction; forest cells sample partial ownership
+instead of cutting whole 250 m cells at a single centre. Organic lake outlines are
+shared by water geometry, basin carving, erosion, ground stamps and jetty placement.
+
+`node scripts/world-report.ts --out=...` produces actual placements, composed
+terrain map inputs and an after-placement proximity census. Distances use retained
+actual mesh vertices projected horizontally, rather than bounding boxes or
+instance counts. Thinning can understate coverage. Quantiles are censored at 30 m;
+water, operational fields, roads and steep cliffs are reported separately.
+Approximately 10 m coverage is a local target, not a proved whole-island promise.
+The initial `fill.empty` count is separate from the final proximity observations.
+
+Full composed marker, route, collision and cache gates remain required before
+publication. Final map/route validation must include #20 and #21. Source maps and
+cook-time timing/memory are not native GPU captures or frame-performance evidence;
+the user deferred that native verification. No engine source is modified.

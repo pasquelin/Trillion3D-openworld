@@ -5,6 +5,7 @@
  * output never overlaps, floats or sinks by construction, and the test checks it again.
  */
 import { dryFootprint } from '../../plan/dry.ts';
+import { lakeDistance, type LakeShore } from '../../plan/lake-shore.ts';
 import type { Bounds, Instance, PropMesh, Road, WorldPlan } from '../../plan/contract.ts';
 import {
   corners,
@@ -24,7 +25,14 @@ const CLEARANCE = 1.5;
 /** Distance kept from the region's edge, metres: crowns and roofs stay inside. */
 const EDGE = 25;
 /** A lake the plan carved: centre, radius and water level. Not in the contract yet. */
-export type Lake = { id: string; x: number; z: number; radius: number; level: number };
+export type Lake = {
+  id: string;
+  x: number;
+  z: number;
+  radius: number;
+  level: number;
+  shore?: LakeShore;
+};
 
 type Segment = { ax: number; az: number; bx: number; bz: number; half: number; water: boolean };
 /** How a prop meets the ground: on a level plinth, at the mean height, or at a given height. */
@@ -112,13 +120,20 @@ export class Site {
   /** True when `r` lies inside the bounds, off roads and water (unless allowed), over no prop. */
   free(r: Rect, { onRoad = false, inWater = false } = {}): boolean {
     const b = this.bounds;
+    if (!inWater && this.plan.biome(r.x, r.z).owner !== 'countryside') return false;
     if (!inWater && !dryFootprint(this.plan.height, r.x, r.z, r.hx, r.hz, r.yaw)) return false;
     for (const [x, z] of corners(r))
-      if (x < b.minX + EDGE || x > b.maxX - EDGE || z < b.minZ + EDGE || z > b.maxZ - EDGE)
+      if (
+        (!inWater && this.plan.biome(x, z).owner !== 'countryside') ||
+        x < b.minX + EDGE ||
+        x > b.maxX - EDGE ||
+        z < b.minZ + EDGE ||
+        z > b.maxZ - EDGE
+      )
         return false;
     if (
       !inWater &&
-      this.lakes.some((l) => Math.hypot(l.x - r.x, l.z - r.z) < l.radius + reach(r) + CLEARANCE)
+      this.lakes.some((l) => lakeDistance(l, r.x, r.z) < l.radius + 3 * (reach(r) + CLEARANCE))
     )
       return false;
     const blocked = this.around(

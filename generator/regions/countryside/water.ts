@@ -2,6 +2,7 @@
  * Where the countryside meets water: stone arch bridges on the plan's bridges (one 12 m span
  * repeated and stretched to each crossing), and a plank jetty on the lake with a lantern at its end.
  */
+import { lakeRadiusAt } from '../../plan/lake-shore.ts';
 import type { Bridge, MeshPart, PropMesh, Vec3 } from '../../plan/contract.ts';
 import {
   box,
@@ -150,8 +151,8 @@ export function jetty(): [PropMesh, PropLamp[]] {
 export function placeJetty(site: Site, lake: Lake, angle: number) {
   const dx = Math.cos(angle),
     dz = Math.sin(angle),
-    x = lake.x + dx * (lake.radius + 3),
-    z = lake.z + dz * (lake.radius + 3),
+    x = lake.x + dx * (lakeRadiusAt(lake, Math.atan2(dz, dx)) + 3),
+    z = lake.z + dz * (lakeRadiusAt(lake, Math.atan2(dz, dx)) + 3),
     yaw = Math.atan2(-dx, -dz),
     placed = site.place('countryside/jetty', x, z, yaw, {
       seat: { y: lake.level + JETTY.deck },

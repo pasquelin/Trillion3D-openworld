@@ -60,6 +60,8 @@ export function placeWorld(seed: number = WORLD.seed, regions: readonly RegionMo
       placed.map((output) => output.instances),
       meshes,
       (prop) => regionSolids.shapes.has(prop),
+      placed.flatMap((output) => output.roads),
+      placed.map((output) => output.instances.length + output.movers.length),
     ),
     instances = [...regionInstances, ...fill.instances],
     solids = solidColliders(meshes, instances),

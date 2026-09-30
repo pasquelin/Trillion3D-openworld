@@ -83,11 +83,19 @@ export function cityReport(
     };
   });
   let dryLand = 0;
-  for (let x = site.bounds.minX + 12.5; x < site.bounds.maxX; x += 25)
-    for (let z = site.bounds.minZ + 12.5; z < site.bounds.maxZ; z += 25)
-      if (dry(site, [x, z])) dryLand += 625;
+  const [cx, , cz] = site.city.centre,
+    radius = site.city.radius * 1.5;
+  for (let x = cx - radius + 12.5; x < cx + radius; x += 25)
+    for (let z = cz - radius + 12.5; z < cz + radius; z += 25)
+      if (
+        Math.hypot(x - cx, z - cz) <= radius &&
+        site.plan.biome(x, z).owner === 'city' &&
+        dry(site, [x, z])
+      )
+        dryLand += 625;
   return {
     regionDryLandKm2: dryLand / 1e6,
+    regionDryLandScope: 'city-owned ground within 1.5 settlement radii of this core',
     seed: site.plan.seed,
     areaSamplingM: 25,
     areaDefinition: 'disjoint block catchments including half adjacent streets and open lots',

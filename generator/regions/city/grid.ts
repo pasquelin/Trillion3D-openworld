@@ -7,7 +7,7 @@
 import { hash01 } from '../../props/index.ts';
 import { superblockSize } from './catalog.ts';
 import type { Vec3 } from '../../plan/contract.ts';
-import { turn, type Obb, type Xz } from './frame.ts';
+import { corners, turn, type Obb, type Xz } from './frame.ts';
 import { KERB } from './ground-props.ts';
 import { TOUCH } from './placement.ts';
 import { FOUNDATION } from './tower-kit.ts';
@@ -52,6 +52,7 @@ export function layCells(
   site: Site,
   seed: number,
   rejected: Record<string, number> = {},
+  civic = true,
 ): Map<string, Cell> {
   const cells = new Map<string, Cell>(),
     { pitch } = site,
@@ -64,7 +65,8 @@ export function layCells(
         d =
           Math.hypot(centre[0] - site.city.centre[0], centre[1] - site.city.centre[2]) /
           site.city.radius;
-      if (d > 1 || !inBounds(site, centre, pitch)) continue;
+      if (d > 1 || !inBounds(site, centre, pitch) || !corners(box).every((p) => inBounds(site, p)))
+        continue;
       const reject = (reason: string) => {
         rejected[reason] = (rejected[reason] ?? 0) + 1;
       };
@@ -88,7 +90,7 @@ export function layCells(
   for (const cell of cells.values())
     if (!cell.interface && cell.district !== 'downtown' && hash01(seed + 1, cell.i, cell.j) < 0.05)
       cell.district = 'park';
-  placeStadium(site, cells);
+  if (civic) placeStadium(site, cells);
   return cells;
 }
 

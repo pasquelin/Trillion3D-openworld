@@ -5,6 +5,7 @@ import { AIRFIELD_AREAS, CITY_CORES, mountainEnvelope } from './geography.ts';
 import { islandCensus } from './island.ts';
 import { nameSeed } from './noise.ts';
 import { createRelief } from './relief.ts';
+import { levelAirfields, onOperationalAirfield } from './airfields.ts';
 
 for (const seed of [332, 333]) {
   const relief = createRelief(nameSeed(seed, 'relief'));
@@ -67,4 +68,28 @@ test('massif lobes join without a normal crease at their crossing', () => {
     left = (centre - mountainEnvelope(x - step, z)) / step,
     right = (mountainEnvelope(x + step, z) - centre) / step;
   assert.ok(Math.abs(left - right) < 1e-7, `${left} versus ${right}`);
+});
+
+test('airfield earthworks keep exact strips while releasing unused reservation corners', () => {
+  const fields = {
+      main: { ...AIRFIELD_AREAS.main, level: 20 },
+      general: { ...AIRFIELD_AREAS.general, level: 40 },
+    },
+    level = levelAirfields(fields),
+    origin = fields.main.maxX - 330,
+    centre = (fields.main.minZ + fields.main.maxZ) / 2;
+  for (const offset of [-900, -450])
+    for (let z = centre - 1200; z <= centre + 1200; z += 50) {
+      assert.equal(level(origin + offset, z, 110), 20);
+      assert.ok(onOperationalAirfield(fields, origin + offset, z));
+    }
+  const x = fields.main.maxX - 20,
+    z = fields.main.maxZ - 30;
+  assert.equal(level(x, z, 110), 110, 'unused corner keeps its natural relief');
+  assert.equal(onOperationalAirfield(fields, x, z), false, 'unused corner allows rural content');
+  for (let dz = -450; dz <= 450; dz += 50)
+    assert.equal(
+      level(fields.general.minX + 85, (fields.general.minZ + fields.general.maxZ) / 2 + dz, 110),
+      40,
+    );
 });

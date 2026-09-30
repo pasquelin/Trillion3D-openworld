@@ -74,6 +74,7 @@ export function siteOf(plan: WorldPlan): Site {
     area,
     margin,
     nearestArterial(plan, (area.minX + area.maxX) / 2, (area.minZ + area.maxZ) / 2),
+    isTerrainPlan(plan) ? -1 : undefined,
   );
 }
 
@@ -83,12 +84,13 @@ export function siteFrame(
   area: Bounds,
   margin: number,
   road?: readonly [number, number],
+  authoredSide?: -1 | 1,
 ): Site {
   const alongX = area.maxX - area.minX >= area.maxZ - area.minZ,
     ax = (area.minX + area.maxX) / 2,
     az = (area.minZ + area.maxZ) / 2;
   const u: [number, number] = alongX ? [1, 0] : [0, 1],
-    side = road && (road[0] - ax) * -u[1] + (road[1] - az) * u[0] < 0 ? -1 : 1,
+    side = authoredSide ?? (road && (road[0] - ax) * -u[1] + (road[1] - az) * u[0] < 0 ? -1 : 1),
     v: [number, number] = [-u[1] * side, u[0] * side];
   const spanS = alongX ? area.maxX - area.minX : area.maxZ - area.minZ,
     spanT = alongX ? area.maxZ - area.minZ : area.maxX - area.minX,

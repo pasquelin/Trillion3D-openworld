@@ -1,9 +1,7 @@
 import type { Settlement } from './contract.ts';
 import type { Point2 } from './polyline.ts';
-import { REGION_BOUNDS } from './layout.ts';
+import { REGION_BOUNDS, REGIONS, landWeights } from './layout.ts';
 import { ROAD_STEP, type Ground } from './roads.ts';
-
-/** Avenue spacing, metres: each avenue block holds the region's smaller streets. */
 const AVENUE = 500;
 
 /**
@@ -16,7 +14,12 @@ export function avenues(
   lay: (id: string, path: Point2[]) => void,
 ) {
   const b = REGION_BOUNDS.city,
-    inside = (x: number, z: number) => x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ,
+    inside = (x: number, z: number) =>
+      x > b.minX &&
+      x < b.maxX &&
+      z > b.minZ &&
+      z < b.maxZ &&
+      landWeights(x, z)[REGIONS.indexOf('city')] > 0.5,
     [cx, , cz] = city.centre,
     r = city.radius,
     lines = Math.floor(r / AVENUE);
@@ -25,7 +28,11 @@ export function avenues(
       let run: Point2[] = [],
         part = 0;
       const flush = () => {
-        if (run.length * ROAD_STEP >= AVENUE) lay(`avenue-${axis ? 'z' : 'x'}${k}-${part++}`, run);
+        if (run.length * ROAD_STEP >= AVENUE)
+          lay(
+            `avenue-${city.id === 'city' ? '' : `${city.id}-`}${axis ? 'z' : 'x'}${k}-${part++}`,
+            run,
+          );
         run = [];
       };
       const half = Math.sqrt(Math.max(0, r * r - (k * AVENUE) ** 2));

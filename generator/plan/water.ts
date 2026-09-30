@@ -7,6 +7,7 @@ import { WORLD, type Surface, type Vec3 } from './contract.ts';
 import type { TerrainPlan } from './plan.ts';
 import { roadSurface, SURFACE } from './surfaces.ts';
 import { tileOrigin } from './tileGrid.ts';
+import { lakeRadiusAt } from './lake-shore.ts';
 
 export type FlatPart = { surface: Surface; positions: number[]; indices: number[] };
 /** Flat parts per tile, keyed `tx_tz`. */
@@ -16,7 +17,7 @@ const TILES = WORLD.size / WORLD.tile;
 const tileOf = (value: number) =>
   Math.min(TILES - 1, Math.max(0, Math.floor((value + WORLD.size / 2) / WORLD.tile)));
 /** Segments of a lake's shore: a vertex every few metres of its rim at the lakes' sizes. */
-const LAKE_SEGMENTS = 48;
+const LAKE_SEGMENTS = 96;
 /** How far a water or road surface reaches under the ground at its edges, metres. */
 const TUCK = 2;
 
@@ -80,15 +81,14 @@ export function flatParts(plan: TerrainPlan, lift: number): FlatParts {
     );
   for (const lake of plan.lakes) {
     const { target, x0, z0 } = part(parts, lake.x, lake.z, SURFACE.lake),
-      base = target.positions.length / 3,
-      radius = lake.radius + TUCK;
+      base = target.positions.length / 3;
     target.positions.push(lake.x - x0, lake.level, lake.z - z0);
     for (let k = 0; k < LAKE_SEGMENTS; k++) {
       const angle = (k / LAKE_SEGMENTS) * Math.PI * 2;
       target.positions.push(
-        lake.x + radius * Math.cos(angle) - x0,
+        lake.x + (lakeRadiusAt(lake, angle) + TUCK) * Math.cos(angle) - x0,
         lake.level,
-        lake.z + radius * Math.sin(angle) - z0,
+        lake.z + (lakeRadiusAt(lake, angle) + TUCK) * Math.sin(angle) - z0,
       );
       target.indices.push(base, base + 1 + ((k + 1) % LAKE_SEGMENTS), base + 1 + k);
     }

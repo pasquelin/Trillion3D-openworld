@@ -7,6 +7,8 @@
 import { type Bounds, type RegionName, type Settlement, type Vec3 } from './contract.ts';
 import type { Lake, Platform } from './carve.ts';
 import { REGION_BOUNDS } from './layout.ts';
+import { AIRFIELD_AREAS } from './geography.ts';
+import { platformAt } from './airfields.ts';
 import { hash2 } from './noise.ts';
 import { STEP, type HeightGrid } from './route.ts';
 
@@ -54,44 +56,9 @@ const inset = (bounds: Bounds, margin: number): Bounds => ({
   maxZ: bounds.maxZ - margin,
 });
 
-/** The airport platform: 3.3 × 2.2 km, levelled at the mean height of the ground it covers. */
-export function airportPlatform(grid: HeightGrid): Platform {
-  // The platform stays inside the airport's rectangle, sought near its middle.
-  const b = REGION_BOUNDS.airport,
-    [halfX, halfZ] = [1_650, 1_100],
-    area = {
-      minX: b.minX + halfX,
-      maxX: b.maxX - halfX,
-      minZ: b.minZ + halfZ + 200,
-      maxZ: b.maxZ - halfZ - 200,
-    },
-    centre = best(grid, area, (x, z) => -rough(grid, around(x, z, halfZ)))!,
-    rect = {
-      minX: centre[0] - halfX,
-      maxX: centre[0] + halfX,
-      minZ: centre[2] - halfZ,
-      maxZ: centre[2] + halfZ,
-    };
-  let sum = 0,
-    count = 0;
-  for (let z = rect.minZ; z <= rect.maxZ; z += STEP)
-    for (let x = rect.minX; x <= rect.maxX; x += STEP)
-      [sum, count] = [sum + grid.at(x, z), count + 1];
-  return { ...rect, level: Math.max(sum / count, 8) };
-}
-
-/** Spread of heights in an area, metres: how much earth levelling it would move. */
-function rough(grid: HeightGrid, area: Bounds): number {
-  let low = Infinity,
-    high = -Infinity;
-  for (let z = area.minZ; z <= area.maxZ; z += STEP * 2)
-    for (let x = area.minX; x <= area.maxX; x += STEP * 2) {
-      const h = grid.at(x, z);
-      [low, high] = [Math.min(low, h), Math.max(high, h)];
-      if (h < 2) return Infinity;
-    }
-  return high - low;
-}
+/** The western main airfield: exact dimensions shared with its reserved natural plain. */
+export const airportPlatform = (grid: HeightGrid): Platform =>
+  platformAt(grid, AIRFIELD_AREAS.main, 'airport');
 
 /** A lake in the deepest basin of an area: its level is the lowest point of its rim. */
 export function basinLake(

@@ -25,6 +25,7 @@ export function fillCells(
   cells: Map<string, Cell>,
   catalog: CityCatalog,
   seed: number,
+  primary = true,
 ) {
   const ordered = [...cells.values()].sort((a, b) => a.d - b.d || a.i - b.i || a.j - b.j);
   let downtown = 0,
@@ -48,7 +49,8 @@ export function fillCells(
       { support },
     );
     if (!plinth) continue;
-    if (cell.district === 'downtown') deck = tower(placer, cell, catalog, downtown++, seed) ?? deck;
+    if (cell.district === 'downtown')
+      deck = tower(placer, cell, catalog, downtown++, seed, primary) ?? deck;
     else if (cell.district === 'midrise') midriseBlock(placer, cell, catalog, seed);
     else if (cell.district === 'park') park(placer, cell, y, support);
     else {
@@ -64,22 +66,33 @@ export function fillCells(
  * and the rooftop viewpoint; farther blocks draw an archetype and step down in height with
  * distance, so the skyline peaks at the centre.
  */
-function tower(placer: Placer, cell: Cell, catalog: CityCatalog, rank: number, seed: number) {
+function tower(
+  placer: Placer,
+  cell: Cell,
+  catalog: CityCatalog,
+  rank: number,
+  seed: number,
+  primary: boolean,
+) {
   if (rank >= 2 && rank % 4 === 2) {
     towerPair(placer, cell, catalog);
     return undefined;
   }
   const list = catalog.tower.filter((t) => {
       const h = catalog.buildings.get(t.prop.id)!.height;
-      return h >= 80 && h <= 220;
+      return primary ? h >= 80 && h <= 220 : h >= 50 && h <= 140;
     }),
     byHeight = [...list].sort((a, b) => b.height - a.height),
     // The seed varies the skyline while the closest two blocks retain landmark access.
     t = hash01(seed, cell.i, cell.j),
     pick =
       [
-        catalog.tower.find((x) => x.prop.id === 'city/tower-round-310')!,
-        catalog.tower.find((x) => x.prop.id === 'city/tower-slab-170')!,
+        catalog.tower.find(
+          (x) => x.prop.id === (primary ? 'city/tower-round-310' : 'city/tower-slab-110'),
+        )!,
+        catalog.tower.find(
+          (x) => x.prop.id === (primary ? 'city/tower-slab-170' : 'city/tower-office-105'),
+        )!,
       ][rank] ?? byHeight[Math.floor(t * byHeight.length)];
   const quarter = hash01(seed + 2, cell.i, cell.j) < 0.5 ? 0 : Math.PI / 2,
     yaw = placer.site.yaw + quarter,
@@ -112,7 +125,7 @@ function tower(placer: Placer, cell: Cell, catalog: CityCatalog, rank: number, s
       footprint(placer, cell, [u, v], [1, 1]),
       { support: cell.base - FOUNDATION },
     );
-  return pick.roof ? rooftop(placer, at, yaw, pick.roof, rank === 1) : undefined;
+  return pick.roof ? rooftop(placer, at, yaw, pick.roof, primary && rank === 1) : undefined;
 }
 
 /** The stadium on its superblock plinth, four floodlight masts at the plinth's corners. */
