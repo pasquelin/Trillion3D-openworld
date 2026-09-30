@@ -4,8 +4,9 @@ import { partBounds } from '../props/geometry.ts';
 import { box } from '../props/shapes.ts';
 import { prop } from '../props/transform.ts';
 import { SURFACES } from '../props/surfaces.ts';
-import { Occupancy, corners, segmentBox, turn, xz, type Obb } from '../regions/city/frame.ts';
-import { dry, groundUnder, inBounds, readSite } from '../regions/city/site.ts';
+import { Occupancy, segmentBox, turn, xz, type Obb } from '../regions/city/frame.ts';
+import { groundUnder, inBounds, readSite } from '../regions/city/site.ts';
+import { dryFootprint } from '../regions/city/dry-footprint.ts';
 import { gridPoint } from '../regions/city/grid.ts';
 import { BUILDING_ASSETS } from './source.ts';
 
@@ -90,11 +91,7 @@ export function islandBuildings(
                 Math.max(...ground) - Math.min(...ground) > 1
               )
                 continue;
-              if (
-                !ground.every(Number.isFinite) ||
-                ![centre, ...corners(footprint)].every((p) => dry(site, p))
-              )
-                continue;
+              if (!ground.every(Number.isFinite) || !dryFootprint(site, footprint, 2)) continue;
               const top = Math.max(...ground) + 0.15;
               // Water and ground/paving below the foundation are not building obstructions.
               if (

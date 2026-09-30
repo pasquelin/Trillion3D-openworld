@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import type { WorldPlan } from '../plan/contract.ts';
 import { islandBuildings } from './island.ts';
 import { BUILDING_ASSETS } from './source.ts';
-import { overlaps, corners, type Obb } from '../regions/city/frame.ts';
+import { overlaps, corners, turn, type Obb } from '../regions/city/frame.ts';
 import { prop } from '../props/transform.ts';
 import { box, plane } from '../props/shapes.ts';
 import { SURFACES } from '../props/surfaces.ts';
@@ -82,4 +82,27 @@ test('ocean below dry land does not block the whole city through its broad sourc
       .buildings.length,
     2,
   );
+});
+
+test('positive-height pond inside a civic footprint rejects a lot with dry center and corners', () => {
+  const plan = flatPlan(),
+    initial = islandBuildings(plan, [], [], plan.roads).buildings[0].footprint;
+  const offset = turn([initial.half[0] * 0.6, initial.half[1] * 0.2], initial.yaw);
+  const pond = {
+    id: 'interior-pond',
+    x: initial.centre[0] + offset[0],
+    z: initial.centre[1] + offset[1],
+    radius: 1.25,
+    level: 21,
+    depth: 1,
+  };
+  assert.ok(
+    [initial.centre, ...corners(initial)].every(
+      ([x, z]) => Math.hypot(x - pond.x, z - pond.z) > pond.radius,
+    ),
+  );
+  assert.ok(plan.height(pond.x, pond.z) > 0);
+  Object.assign(plan, { natural: plan.height, lakes: [pond], tunnels: [] });
+  const result = islandBuildings(plan, [], [], plan.roads);
+  assert.notDeepEqual(result.buildings[0].footprint, initial);
 });
