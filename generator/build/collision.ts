@@ -132,7 +132,7 @@ export function collisionMesh(mesh: PropMesh, grown = 1): CollisionMesh | undefi
   });
   for (const { piece, box } of all) {
     if (speck(box, cell)) continue;
-    const kept = simplify(piece, cell),
+    const kept = mesh.collision === 'exact' ? piece : simplify(piece, cell),
       base = out.length / 3;
     out.push(...kept.positions);
     for (const v of kept.indices) triangles.push(v + base);

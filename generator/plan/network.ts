@@ -11,6 +11,8 @@ import type { Tunnel } from './tunnels.ts';
 import { layRoad, buildRoad, riverIndex, ROAD_STEP, type Ground } from './roads.ts';
 import { node, STEP } from './route.ts';
 import { around, best, slopeAt } from './sites.ts';
+import { joinRoadProfiles } from './junctions.ts';
+import { groundSummits } from '../regions/mountains/peaks.ts';
 
 /** Avenue spacing in the city, metres: a block of avenues the city region fills with streets. */
 const AVENUE = 500;
@@ -88,6 +90,19 @@ export function planNetwork(
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
   if (resort && mountainTown) road('pass', 'pass', xz(mountainTown), xz(resort));
+  const mountainBounds = REGION_BOUNDS.mountains;
+  const summit = groundSummits(
+    ground.height,
+    mountainBounds,
+    (x, z, margin) =>
+      !ground.wet(x, z) &&
+      x > mountainBounds.minX + margin &&
+      x < mountainBounds.maxX - margin &&
+      z > mountainBounds.minZ + margin &&
+      z < mountainBounds.maxZ - margin,
+  )[0];
+  if (summit && (resort || mountainTown))
+    road('summit-trail', 'dirt', xz((resort || mountainTown)!), xz(summit), false);
   for (const s of settlements)
     if (s.kind === 'village' || (s.kind === 'port' && s.region === 'city'))
       road(`${s.id}/road`, 'secondary', xz(s), 'network');
@@ -139,7 +154,8 @@ export function planNetwork(
       shore: Point2 = [lake.x + lake.radius + ROAD_STEP, lake.z];
     if (village) road(`trail/${lake.id}`, 'dirt', xz(village), shore, false);
   }
-  return { courses, bridges, tunnels, viewpoints, failedConnections };
+  const joinedTunnels = joinRoadProfiles(courses, bridges, ground.height);
+  return { courses, bridges, tunnels: joinedTunnels, viewpoints, failedConnections };
 }
 
 const dist = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[2] - b[2]);

@@ -2,7 +2,7 @@
  * The region's summits: local maxima of the plan's height on a coarse grid, each climbed to its
  * top by a shrinking hill-climb, highest first, kept apart so two tops of one mountain count once.
  */
-import type { Vec3 } from '../../plan/contract.ts';
+import type { Bounds, Vec3 } from '../../plan/contract.ts';
 import type { Placer } from './space.ts';
 
 const GRID = 250;
@@ -28,14 +28,17 @@ function climb(height: (x: number, z: number) => number, x: number, z: number): 
 }
 
 /** Summits on ground the region owns, highest first, at least `APART` from one another. */
-export function summits(placer: Placer): Vec3[] {
-  const { bounds, plan } = placer,
-    columns = Math.floor((bounds.maxX - bounds.minX) / GRID),
+export function groundSummits(
+  height: (x: number, z: number) => number,
+  bounds: Bounds,
+  owns: (x: number, z: number, margin: number) => boolean,
+): Vec3[] {
+  const columns = Math.floor((bounds.maxX - bounds.minX) / GRID),
     rows = Math.floor((bounds.maxZ - bounds.minZ) / GRID),
     at = (i: number, j: number) =>
       [bounds.minX + (i + 0.5) * GRID, bounds.minZ + (j + 0.5) * GRID] as const,
     grid = Array.from({ length: columns }, (_, i) =>
-      Array.from({ length: rows }, (_, j) => plan.height(...at(i, j))),
+      Array.from({ length: rows }, (_, j) => height(...at(i, j))),
     );
   const tops: Vec3[] = [];
   for (let i = 0; i < columns; i++)
@@ -47,12 +50,18 @@ export function summits(placer: Placer): Vec3[] {
           if ((di || dj) && (grid[i + di]?.[j + dj] ?? plan.height(...at(i + di, j + dj))) >= h)
             top = false;
       if (!top) continue;
-      const peak = climb(plan.height, ...at(i, j));
-      if (placer.owns(peak[0], peak[2], 100)) tops.push(peak);
+      const peak = climb(height, ...at(i, j));
+      if (owns(peak[0], peak[2], 100)) tops.push(peak);
     }
   tops.sort((a, b) => b[1] - a[1]);
   const kept: Vec3[] = [];
   for (const top of tops)
     if (kept.every((k) => Math.hypot(k[0] - top[0], k[2] - top[2]) > APART)) kept.push(top);
   return kept;
+}
+
+export function summits(placer: Placer): Vec3[] {
+  return groundSummits(placer.plan.height, placer.bounds, (x, z, margin) =>
+    placer.owns(x, z, margin),
+  );
 }

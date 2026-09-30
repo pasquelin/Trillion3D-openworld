@@ -1,17 +1,22 @@
 import type { Marker, Road } from '../plan/contract.ts';
 import type { TerrainPlan } from '../plan/plan.ts';
 import { drivingRoutes, flightRoute, vistas } from './routes.ts';
-import type { ReplayRoute, Traversal } from './types.ts';
+import { summitAccess } from './summit.ts';
+import { walkingRoutes } from './walk.ts';
+import type { buildCity } from '../regions/city/index.ts';
+import type { Traversal } from './types.ts';
 
 export function buildTraversal(
   plan: TerrainPlan,
   roads: readonly Road[],
   markers: readonly Marker[],
-  walk: ReplayRoute[] = [],
+  city?: ReturnType<typeof buildCity>,
 ): Traversal {
+  const walk = city ? walkingRoutes(city) : { routes: [], failures: ['W1: no city metadata'] };
   const drive = drivingRoutes(plan, roads),
     view = vistas(markers),
-    flight = flightRoute(plan, markers);
+    flight = flightRoute(plan, markers),
+    summit = summitAccess(plan, roads, markers);
   return {
     version: 1,
     seed: plan.seed,
@@ -26,8 +31,15 @@ export function buildTraversal(
       pedestrians: 60,
       time: 12,
     },
-    routes: [...walk, ...drive.routes, ...view.routes, ...flight.routes],
-    failures: [...drive.failures, ...view.failures, ...flight.failures],
+    routes: [...walk.routes, ...drive.routes, ...view.routes, ...flight.routes, ...summit.routes],
+    rejectedRoadSegments: drive.rejectedRoadSegments,
+    failures: [
+      ...walk.failures,
+      ...drive.failures,
+      ...view.failures,
+      ...flight.failures,
+      ...summit.failures,
+    ],
     envelope: { halfSize: 4000, maxAltitude: 3200, seaLevel: 0 },
   };
 }

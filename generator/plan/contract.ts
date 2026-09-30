@@ -92,7 +92,7 @@ export type MeshPart = {
 };
 
 /** A mesh written once and placed by many nodes: that is how the engine shares its pages. */
-export type PropMesh = { id: string; parts: readonly MeshPart[] };
+export type PropMesh = { id: string; parts: readonly MeshPart[]; collision?: 'exact' };
 
 /** One placed node of a shared mesh. `yaw` in radians about +Y. */
 export type Instance = {

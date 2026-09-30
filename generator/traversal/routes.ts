@@ -8,7 +8,7 @@ const nearest = (graph: TravelGraph, p: Vec3, radius: number) => {
   let best = -1,
     distance = radius;
   graph.points.forEach((v, k) => {
-    const d = Math.hypot(v[0] - p[0], v[2] - p[2]);
+    const d = Math.hypot(v[0] - p[0], v[1] - p[1], v[2] - p[2]);
     if (d < distance) {
       best = k;
       distance = d;
@@ -18,7 +18,7 @@ const nearest = (graph: TravelGraph, p: Vec3, radius: number) => {
 };
 export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
   const graph = travelGraph(roads),
-    failures = [...graph.rejected],
+    failures: string[] = [],
     points: Vec3[] = [];
   const speeds: number[] = [];
   const classes = new Map(roads.map((r) => [r.id, r.class]));
@@ -76,12 +76,12 @@ export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
           `D1-${id}`,
           `${id} access`,
           'drive',
-          path.map((i) => graph.points[i]),
+          path.map((i): Vec3 => [graph.points[i][0], graph.points[i][1] + 1.7, graph.points[i][2]]),
           [30 / 3.6],
         ),
       );
   }
-  return { routes, failures };
+  return { routes, failures, rejectedRoadSegments: graph.rejected };
 }
 
 export function vistas(markers: readonly Marker[]) {
@@ -139,7 +139,7 @@ export function flightRoute(plan: TerrainPlan, markers: readonly Marker[]) {
     above(beach.position, 300),
     above(airport.position, 300),
   ];
-  const path: Vec3[] = [];
+  const path: Vec3[] = [airport.position];
   for (let k = 1; k < corners.length; k++) {
     const a = corners[k - 1],
       b = corners[k],
@@ -151,7 +151,7 @@ export function flightRoute(plan: TerrainPlan, markers: readonly Marker[]) {
       path.push([x, Math.max(a[1] + (b[1] - a[1]) * t, plan.height(x, z) + 300), z]);
     }
   }
-  path.push(corners.at(-1)!);
+  path.push(corners.at(-1)!, airport.position);
   return {
     routes: [sampleRoute('F1', 'Island flight', 'flight', path, [40, 100, 160])],
     failures: [],

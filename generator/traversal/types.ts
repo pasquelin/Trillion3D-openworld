@@ -25,5 +25,6 @@ export type Traversal = {
   };
   routes: ReplayRoute[];
   failures: string[];
+  rejectedRoadSegments: string[];
   envelope: { halfSize: number; maxAltitude: number; seaLevel: number };
 };

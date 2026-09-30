@@ -39,6 +39,8 @@ export function createTraversalPanel(play: Play, setTime: (night: boolean | null
   document.body.append(panel);
   return {
     dispose() {
+      play.stopReplay();
+      setTime(null);
       panel.remove();
     },
   };

@@ -4,6 +4,7 @@ import type { PlayWorld } from './types.ts';
 
 /** Renderer replay owns only the camera. Native character/vehicle acceptance is separate. */
 export function cameraReplay(world: PlayWorld, applyTime: (night: boolean) => void) {
+  let disposed = false;
   let route: ReplayRoute | null = null,
     elapsed = 0,
     sample = 0;
@@ -28,6 +29,7 @@ export function cameraReplay(world: PlayWorld, applyTime: (night: boolean) => vo
   };
   return {
     start(next: ReplayRoute) {
+      if (disposed) throw new Error('Replay disposed');
       stop();
       if (!next.samples.length) throw new Error('Replay has no samples');
       const p = world.camera.position,
@@ -69,6 +71,9 @@ export function cameraReplay(world: PlayWorld, applyTime: (night: boolean) => vo
       world.invalidate();
     },
     stop,
-    dispose: stop,
+    dispose() {
+      stop();
+      disposed = true;
+    },
   };
 }

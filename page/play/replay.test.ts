@@ -44,4 +44,20 @@ test('replay owns camera while active and restores pose/control/physics after st
   assert.equal(world.physics.paused, false);
   replay.dispose();
   assert.equal(replay.active, false);
+  assert.throws(
+    () =>
+      replay.start(
+        sampleRoute(
+          'W1',
+          'Walk',
+          'walk',
+          [
+            [0, 0, 0],
+            [1, 0, 0],
+          ],
+          [1],
+        ),
+      ),
+    /disposed/,
+  );
 });
