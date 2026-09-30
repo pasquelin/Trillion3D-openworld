@@ -1,3 +1,4 @@
+import { propFootprints, occupiedCells } from './infill-occupancy.ts';
 /** Budgeted understory infill on an 18 m lattice; measured coverage is reported separately. */
 import { WORLD, type Instance, type PropMesh, type RegionName } from '../plan/contract.ts';
 import type { TerrainPlan } from '../plan/plan.ts';
@@ -19,33 +20,6 @@ const VERGE = 8;
 
 const SIDE = Math.ceil(WORLD.size / FILL_CELL),
   HALF = WORLD.size / 2;
-
-/** The horizontal reach of each mesh from its origin, metres. */
-function reaches(meshes: readonly PropMesh[]) {
-  const out = new Map<string, number>();
-  for (const mesh of meshes) {
-    let reach = 0;
-    for (const part of mesh.parts)
-      for (let i = 0; i < part.positions.length; i += 3)
-        reach = Math.max(reach, Math.hypot(part.positions[i], part.positions[i + 2]));
-    out.set(mesh.id, reach);
-  }
-  return out;
-}
-
-/** The cells any placed prop reaches into. */
-function occupied(instances: readonly Instance[], reach: ReadonlyMap<string, number>) {
-  const used = new Uint8Array(SIDE * SIDE);
-  for (const { prop, position, scale } of instances) {
-    const s = typeof scale === 'number' ? scale : scale ? Math.max(scale[0], scale[2]) : 1,
-      r = (reach.get(prop) ?? 0) * s,
-      [i0, i1, k0, k1] = [position[0] - r, position[0] + r, position[2] - r, position[2] + r].map(
-        (v) => Math.min(SIDE - 1, Math.max(0, Math.floor((v + HALF) / FILL_CELL))),
-      );
-    for (let k = k0; k <= k1; k++) for (let i = i0; i <= i1; i++) used[k * SIDE + i] = 1;
-  }
-  return used;
-}
 
 /** Whether a cell is ground a prop may stand on: dry, off roads, lakes and the platform. */
 function open(
@@ -75,8 +49,8 @@ export function fillEmptyLand(
   localRoads: readonly Road[] = [],
   reservedNodes: readonly number[] = placed.map((p) => p.length),
 ) {
-  const reach = reaches(meshes),
-    used = occupied(placed.flat(), reach),
+  const footprints = propFootprints(meshes),
+    used = occupiedCells(placed.flat(), footprints, WORLD.size, FILL_CELL),
     pools = new Map<string, string[]>(),
     remaining = new Map(
       names.map((name, i) => [
@@ -147,7 +121,7 @@ export function fillEmptyLand(
       const px = x + (hash01(seed, i, k, n * 4) - 0.5) * 12,
         pz = z + (hash01(seed, i, k, n * 4 + 1) - 0.5) * 12;
       const prop = pool[Math.floor(hash01(seed, i, k, n * 4 + 2) * pool.length)],
-        radius = reach.get(prop) ?? 0,
+        radius = footprints.get(prop)?.radius ?? 0,
         yaw = hash01(seed, i, k, n * 4 + 3) * Math.PI * 2,
         extent = standExtent(prop);
       if (
