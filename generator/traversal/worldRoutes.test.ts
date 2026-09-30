@@ -5,6 +5,8 @@ import { solidIndex } from '../build/solids.ts';
 import { buildTraversal } from './build.ts';
 import { nearestRoad, roadIndex } from '../../page/play/roads.ts';
 import { rotate, yawPitchRoll } from '../../page/play/math3.ts';
+import { markerSite } from '../build/markers.ts';
+import { civicRouteObservations } from './observations.ts';
 
 const world = placeWorld(),
   roads = [...world.plan.roads, ...world.placed.flatMap((o) => o.roads)],
@@ -113,4 +115,25 @@ test('the generated fast flight keeps its declared altitude and island envelope 
     );
     assert.ok(y <= manifest.envelope.maxAltitude);
   }
+});
+test('the full W1 body clearance includes actual cooked-world solids and both CC0 civic footprints', async () => {
+  const civic = await civicRouteObservations(world, manifest),
+    standing = markerSite({ ...world, solids: civic.solids });
+  assert.deepEqual(civic.failures, []);
+  assert.equal(civic.observations.supplementalCivicBuildings.length, 2);
+  assert.ok(civic.observations.supplementalCivicBuildings.every((building) => building.walkClear));
+  assert.equal(civic.observations.supplementalColliderInstances, 4);
+  assert.equal(civic.observations.supplementalColliderTriangles, 2509);
+  for (const sample of manifest.routes.find((route) => route.id === 'W1')!.samples)
+    assert.equal(
+      standing.problem({
+        kind: 'teleport',
+        name: 'W1',
+        position: sample.position,
+        yaw: sample.yaw,
+        deck: true,
+      }),
+      undefined,
+      JSON.stringify(sample),
+    );
 });

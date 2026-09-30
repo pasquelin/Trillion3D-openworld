@@ -6,7 +6,9 @@ import { solidIndex } from '../generator/build/solids.ts';
 import { buildTraversal } from '../generator/traversal/build.ts';
 import { cookKey } from './cook-key.ts';
 import { pinnedEngine } from './engine.ts';
-const { plan, placed, markers, city, solids, meshes } = placeWorld();
+import { civicRouteObservations } from '../generator/traversal/observations.ts';
+const world = placeWorld(),
+  { plan, placed, markers, city, meshes } = world;
 const manifest = buildTraversal(
   plan,
   [...plan.roads, ...placed.flatMap((o) => o.roads)],
@@ -15,7 +17,8 @@ const manifest = buildTraversal(
 );
 manifest.contentHash = cookKey();
 manifest.enginePin = pinnedEngine().commit;
-const collision = solidIndex(solids),
+const civic = await civicRouteObservations(world, manifest),
+  collision = solidIndex(civic.solids),
   walk = manifest.routes.find((route) => route.id === 'W1'),
   floorErrors = (walk?.samples ?? []).map(({ position: [x, y, z] }) =>
     Math.min(
@@ -28,6 +31,7 @@ const collision = solidIndex(solids),
   ),
   maxFloorError = floorErrors.length ? Math.max(...floorErrors) : null,
   ramps = meshes.filter((mesh) => mesh.id.startsWith('traversal/crossing-'));
+manifest.failures.push(...civic.failures);
 if (maxFloorError !== null && maxFloorError > 0.1)
   manifest.failures.push(`W1: collision floor error ${maxFloorError.toFixed(4)} m`);
 const encoded = JSON.stringify(
@@ -38,6 +42,7 @@ const encoded = JSON.stringify(
       execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
     ),
     observations: {
+      ...civic.observations,
       walkMaxCollisionFloorError: maxFloorError,
       walkCollisionRampCount: ramps.length,
       walkCollisionRampTriangles: ramps.reduce(
