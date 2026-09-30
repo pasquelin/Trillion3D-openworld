@@ -1,0 +1,28 @@
+{
+  "initialReady": true,
+  "facadeCamera": [
+    -28,
+    1.7,
+    -11
+  ],
+  "skylineCamera": [
+    95,
+    85,
+    95
+  ],
+  "afterPresetReady": true,
+  "afterPreset": {
+    "url": "http://localhost:4192/workload.html?preset=four-blocks&renderer=webgl2",
+    "preset": "four-blocks",
+    "graphics": "webgl2",
+    "renderer": "webgl2"
+  },
+  "afterRetryReady": true,
+  "afterRetry": {
+    "url": "http://localhost:4192/workload.html?preset=four-blocks&renderer=webgl2",
+    "preset": "four-blocks",
+    "graphics": "webgl2",
+    "renderer": "webgl2"
+  },
+  "exceptions": []
+}
