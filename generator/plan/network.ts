@@ -112,7 +112,7 @@ export function planNetwork(
   }
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
-  if (mountainTown) road('mountain-town-access', 'pass', xz(mountainTown), 'network');
+  if (mountainTown) road('mountains-town/road', 'pass', xz(mountainTown), 'network');
   if (resort && mountainTown) road('pass', 'pass', xz(mountainTown), xz(resort));
   const mountainBounds = REGION_BOUNDS.mountains;
   const summit = groundSummits(
