@@ -7,7 +7,13 @@ import { along, lengthOf, type Build } from './build.ts';
 import type { Point } from './geometry2.ts';
 
 /** Flattest ground within `reach` metres of `hint`, at least `margin` inside the region. */
-export function flattest(b: Build, [hx, hz]: Point, reach: number, margin: number): Point {
+export function flattest(
+  b: Build,
+  [hx, hz]: Point,
+  reach: number,
+  margin: number,
+  suitable: (x: number, z: number) => boolean = () => true,
+): Point {
   const { minX, minZ, maxX, maxZ } = b.site.bounds,
     samples = 512;
   let best: Point = [hx, hz],
@@ -26,9 +32,15 @@ export function flattest(b: Build, [hx, hz]: Point, reach: number, margin: numbe
         hi = Math.max(hi, h);
       }
     // Dry land only: a site whose lowest ground is under the sea does not count.
-    if (lo > WORLD.seaLevel + 2 && b.plan.biome(x, z).owner === 'desert' && hi - lo < score)
+    if (
+      lo > WORLD.seaLevel + 2 &&
+      b.plan.biome(x, z).owner === 'desert' &&
+      hi - lo < score &&
+      suitable(x, z)
+    )
       [best, score] = [[x, z], hi - lo];
   }
+  if (!Number.isFinite(score)) throw new Error('No dry footprint for desert settlement streets');
   return best;
 }
 

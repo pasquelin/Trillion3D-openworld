@@ -22,13 +22,13 @@ export function bridges(layout: Layout, spans: readonly Bridge[]): PropMesh[] {
       side = (p: Vec3, dx: number, dz: number) => {
         const signs = branches.flatMap((branch) => {
           const points = branch.points;
-          return [
-            [points[0], points[1]],
-            [points.at(-1)!, points.at(-2)!],
-          ].flatMap(([end, near]) => {
-            if (Math.hypot(end[0] - p[0], end[2] - p[2]) > 0.001) return [];
-            const cross = dz * (near[0] - p[0]) - dx * (near[2] - p[2]);
-            return cross ? [Math.sign(cross)] : [];
+          return points.flatMap((at, k) => {
+            if (Math.hypot(at[0] - p[0], at[2] - p[2]) > 0.001) return [];
+            return [points[k - 1], points[k + 1]].flatMap((near) => {
+              if (!near) return [];
+              const cross = dz * (near[0] - p[0]) - dx * (near[2] - p[2]);
+              return cross ? [Math.sign(cross)] : [];
+            });
           });
         });
         return signs.includes(-1) && signs.includes(1) ? 0 : (signs[0] ?? 2);

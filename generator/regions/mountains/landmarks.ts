@@ -55,6 +55,11 @@ export function dressLake(placer: Placer, { id, centre, radius, spill, fall }: L
 /** The summit's cross and the viewpoint turned toward the city (or the map's centre). */
 export function dressSummit(placer: Placer, plan: WorldPlan, summit: Vec3): Marker {
   const city = plan.settlements.find((s) => s.kind === 'city')?.centre ?? ([0, 0, 0] as Vec3);
+  const trailEnd = plan.roads.find((r) => r.id === 'summit-trail')?.points.at(-1),
+    view =
+      trailEnd && Math.hypot(trailEnd[0] - summit[0], trailEnd[2] - summit[2]) <= 100
+        ? ([trailEnd[0], plan.height(trailEnd[0], trailEnd[2]), trailEnd[2]] as Vec3)
+        : summit;
   placer.place('mountains/summit-cross', summit[0] + 3, summit[2], {
     sink: 0.3,
     name: 'mountains/summit-cross',
@@ -62,8 +67,8 @@ export function dressSummit(placer: Placer, plan: WorldPlan, summit: Vec3): Mark
   return {
     kind: 'teleport',
     name: 'mountains/summit-viewpoint',
-    position: [summit[0], summit[1] + EYE, summit[2]],
-    yaw: headingYaw(city[0] - summit[0], city[2] - summit[2]),
+    position: [view[0], view[1] + EYE, view[2]],
+    yaw: headingYaw(city[0] - view[0], city[2] - view[2]),
     pitch: -0.12,
   };
 }

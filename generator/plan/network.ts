@@ -7,7 +7,7 @@ import type { Point2 } from './polyline.ts';
 import { onAirfield, onOperationalAirfield, type AirfieldPlatforms } from './airfields.ts';
 import type { Tunnel } from './tunnels.ts';
 import { layRoad, buildRoad, ROAD_STEP, type Ground } from './roads.ts';
-import { node, STEP } from './route.ts';
+import { node, nodeZ, STEP } from './route.ts';
 import { around, best, slopeAt } from './sites.ts';
 import { joinRoadProfiles } from './junctions.ts';
 import { groundSummits } from '../regions/mountains/peaks.ts';
@@ -61,7 +61,15 @@ export function planNetwork(
       id,
       cls,
       from,
-      to === 'network' ? (index) => onNetwork.has(index) : to,
+      to === 'network'
+        ? (index) =>
+            onNetwork.has(index) &&
+            (id !== 'city-west/road' ||
+              (nodeZ(index) > 500 && ground.grid.heights[index] < 80)) &&
+            (id !== 'mountains-town/road' ||
+              (nodeZ(index) > 0 &&
+                ground.grid.heights[index] < find('mountains-town')!.centre[1] + 120))
+        : to,
       {
         ...ground,
         wet: (x, z) =>

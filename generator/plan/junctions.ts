@@ -46,10 +46,7 @@ export function joinRoadProfiles(
       .filter((h) => segments[h.segment].course !== course)
       .sort((a, b) => a.distance - b.distance)[0];
     if (!hit) continue;
-    if (hit.distance < 0.01) {
-      junctions.add(xy(end));
-      continue;
-    }
+    const exact = hit.distance < 0.01;
     const target = segments[hit.segment],
       a = target.a,
       b = target.b,
@@ -71,15 +68,24 @@ export function joinRoadProfiles(
         );
       });
     if (at < 0) throw new Error('Connector target lost its authored segment');
-    const wetConnector = Array.from({ length: 8 }, (_, k) =>
-        ground(end[0] + ((p[0] - end[0]) * k) / 7, end[2] + ((p[2] - end[2]) * k) / 7),
-      ).some((y) => y < 0.5),
+    const dx = p[0] - end[0],
+      dz = p[2] - end[2],
+      length = Math.hypot(dx, dz),
+      count = Math.max(1, Math.ceil(length / 2)),
+      wetConnector = Array.from({ length: count + 1 }, (_, k) => k / count).some((t) =>
+        [-1, 0, 1].some((side) => {
+          const x = end[0] + dx * t + (side * dz * course.road.width) / (2 * (length || 1)),
+            z = end[2] + dz * t - (side * dx * course.road.width) / (2 * (length || 1));
+          return ground(x, z) < 0.5 || (bridgeFloor?.(x, z) ?? 0.5) > 0.5;
+        }),
+      ),
       deckJoin = !!target.course.bridge[at] || wetConnector;
     junctions.add(xy(p));
-    points.push(p);
+    if (exact) points[points.length - 1] = p;
+    else points.push(p);
     course.road.points = points;
-    course.bridge = [...course.bridge, deckJoin];
-    if (deckJoin)
+    if (!exact) course.bridge = [...course.bridge, deckJoin];
+    if (deckJoin && !exact)
       bridges.push({
         id: `${course.road.id}/junction-bridge`,
         road: course.road.id,
@@ -87,7 +93,7 @@ export function joinRoadProfiles(
         to: p,
         width: course.road.width,
       });
-    course.tunnel = [...course.tunnel, false];
+    if (!exact) course.tunnel = [...course.tunnel, false];
     // The target's exact junction vertex makes the connector part of its centreline too.
     // Projection onto an existing endpoint already has a junction; a duplicate makes a zero-length edge.
     if (targetPoints.some((q) => Math.hypot(q[0] - p[0], q[2] - p[2]) < 0.0001)) continue;
@@ -136,7 +142,7 @@ export function joinRoadProfiles(
         q = c.road.points[i],
         rise = GRADE[c.road.class] * Math.hypot(p[0] - q[0], p[2] - q[2]);
       if (bridgeFloor && c.bridge[i - 1]) {
-        const count = Math.max(1, Math.ceil(Math.hypot(p[0] - q[0], p[2] - q[2]) / 10));
+        const count = Math.max(1, Math.ceil(Math.hypot(p[0] - q[0], p[2] - q[2]) / 2));
         for (let k = 0; k <= count; k++)
           for (const side of [-1, 0, 1]) {
             const t = k / count,

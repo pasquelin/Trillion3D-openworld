@@ -3,8 +3,7 @@
  * out, mud-brick houses facing inward, wells and lanterns, palm gardens around. The town adds a
  * domed hall, a market square and a dirt track to the highway; villages are the same, smaller.
  * Around the houses, the palm gardens: groves of date palms (`props/stands.ts`) on every square
- * of the patch grid the ring holds.
- * Each stands on the flattest ground near its plan settlement's centre.
+ * of the patch grid the ring holds; each stands near its planned settlement.
  */
 import type { Settlement, Vec3 } from '../../plan/contract.ts';
 import { between, hash01, STAND_SIDE } from '../../props/index.ts';
@@ -13,6 +12,7 @@ import { GROVE } from './catalog.ts';
 import { standOffsets } from '../stands.ts';
 import type { Point } from './geometry2.ts';
 import { corners } from './site.ts';
+import { oasisRoadSafety } from './road-safety.ts';
 import { flattest, nearest, street } from './streets.ts';
 
 /** Ring street radius and street widths, metres: a lane each way in town, a wide track out. */
@@ -42,10 +42,12 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
     { edge } = layout,
     name = `desert/${home.id}`,
     seed = b.plan.subSeed(name),
+    { clear, suitable } = oasisRoadSafety(b, edge, layout.civic, highway, seed, RING, STREET),
     [cx, cz] = heart(
       b,
       name,
-      flattest(b, [home.centre[0], home.centre[2]], home.radius * 2, edge + 60),
+      flattest(b, [home.centre[0], home.centre[2]], home.radius * 2, edge + 60, suitable),
+      suitable,
     ),
     polar = (r: number, a: number): Point => [cx + r * Math.cos(a), cz + r * Math.sin(a)],
     join = layout.civic && highway ? nearest(highway, [cx, cz], 8000) : undefined,
@@ -62,7 +64,7 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
     const a = toward + (k * Math.PI) / 2;
     street(b, `${name}/street-${k}`, 'street', STREET, [polar(RING, a), polar(edge, a)]);
   }
-  if (join) track(b, name, polar(edge, toward), join);
+  if (join && clear(polar(edge, toward), join, TRACK)) track(b, name, polar(edge, toward), join);
   const hall = layout.civic ? civic(b, name, [cx, cz], polar, toward) : undefined;
   // Lanterns along the ring, their brackets over the street.
   for (let i = 0; i < layout.lanterns; i++) {
@@ -111,12 +113,18 @@ function groves(b: Build, seed: number, [cx, cz]: Point, edge: number) {
  * The pool, the settlement's heart: at `site`, or as near it as the ground and the plan's roads
  * allow (a village road ends at the settlement's centre). Returns where it stands.
  */
-function heart(b: Build, name: string, [x, z]: Point): Point {
+function heart(
+  b: Build,
+  name: string,
+  [x, z]: Point,
+  suitable: (x: number, z: number) => boolean,
+): Point {
   for (let k = 0; k < 80; k++) {
     const r = 12 * Math.sqrt(k),
       a = k * 2.39996,
       at: Point = [x + r * Math.cos(a), z + r * Math.sin(a)];
-    if (b.site.place('desert/pool', ...at, 0, { name: `${name}/pool` })) return at;
+    if (suitable(...at) && b.site.place('desert/pool', ...at, 0, { name: `${name}/pool` }))
+      return at;
   }
   return [x, z];
 }
