@@ -54,6 +54,12 @@ test('the airport spur reaches the generated terminal curbside on real graded pa
   assert.ok(hit && hit.distance < 0.01);
   assert.ok(Math.abs(world.plan.height(end[0], end[2]) - (end[1] - 1.7)) < 0.01);
 });
+test('the port spur traverses the authored port road to its settlement rather than stopping at the interchange', () => {
+  const port = world.plan.roads.find((r) => r.id === 'port/road')!,
+    end = manifest.routes.find((r) => r.id === 'D1-port')!.samples.at(-1)!.position;
+  assert.ok(Math.hypot(end[0] - port.points[0][0], end[2] - port.points[0][2]) < 0.01);
+  assert.ok(Math.hypot(end[0] - port.points.at(-1)![0], end[2] - port.points.at(-1)![2]) > 1);
+});
 test('long vistas frame their generated skyline and hinterland targets within declared real-camera optics', () => {
   for (const id of ['harbor', 'roof', 'summit']) {
     const route = manifest.routes.find((r) => r.id === `V1-${id}`)!,

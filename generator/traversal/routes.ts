@@ -74,8 +74,9 @@ export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
       failures.push(`D1: missing ${id} spur`);
       continue;
     }
+    const destination = id === 'port' ? targetRoad.points[0] : targetRoad.points.at(-1)!;
     const from = nearest(graph, stops[0]!, 150, true),
-      to = nearest(graph, targetRoad.points.at(-1)!, 1);
+      to = nearest(graph, destination, 1);
     const path = from >= 0 && to >= 0 ? graphPath(graph, from, to) : null;
     if (!path) failures.push(`D1: disconnected ${id} spur`);
     else
