@@ -38,12 +38,16 @@ proof of collision performance.
 
 ## Street block workloads
 
-Each block has four original six-storey buildings, both CC0 buildings, a pavement and surrounding
-streets. The original building uses the existing shape/transform kits for raised facade frames,
+Each block has fourteen original six-, seven- and eight-storey buildings, both CC0 buildings,
+a pavement and surrounding streets. Five adjoining facades line each north/south frontage;
+pairs complete the east/west sides. Flush party walls and roofs meet without volumetric overlap.
+Front/rear balconies leave 5.31 m corner passages and two unobstructed 4 m service alleys
+connecting the outer streets to a courtyard with supplemental CC0 lots. The original building uses the existing shape/transform kits for raised facade frames,
 projecting balconies with rails, parapets, rooftop HVAC with louvers and a chimney. These are
 visible geometry and silhouette changes, not arbitrary subdivision. Materials include plaster,
 glass, frames, concrete, steel, dark metal, painted metal and brick. Conservative footprints include
-balconies. Tests reject building/building and building/road intersection.
+balconies. Tests require adjoining party walls and clear service alleys and reject positive-volume
+building/building and building/road intersection.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -74,9 +78,9 @@ table and input triangle count. No internal reader is copied into the applicatio
 
 | Profile | Buildings | Total instances | Unique authored source triangles | Instance-expanded authored triangles | Unique materials |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| one-block | 6 | 8 | 20,151 | 73,107 | 11 |
-| four-blocks | 24 | 32 | 20,151 | 292,428 | 11 |
-| sixteen-blocks | 96 | 128 | 20,151 | 1,169,712 | 11 |
+| one-block | 16 | 18 | 34,287 | 144,507 | 13 |
+| four-blocks | 64 | 72 | 34,287 | 578,028 | 13 |
+| sixteen-blocks | 256 | 288 | 34,287 | 2,312,112 | 13 |
 
 All three small native cooks at engine `7f810cbe344ee10fdcc910a8f5659e1536edbc2d` reloaded 12
 primitives and two texture previews. Their output directories were below the 800 MiB cooked-disk

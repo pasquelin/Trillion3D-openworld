@@ -21,7 +21,7 @@ export function buildWorkload(name: WorkloadName) {
   const count = WORKLOADS[name];
   if (!Object.hasOwn(WORKLOADS, name)) throw new Error(`Unknown workload ${name}`);
   const side = Math.sqrt(count),
-    detailed = detailedBuilding(),
+    detailed = [0, 1, 2].map(detailedBuilding),
     instances: Instance[] = [],
     buildings: BuildingPlacement[] = [],
     roads: Bounds[] = [];
@@ -48,11 +48,12 @@ export function buildWorkload(name: WorkloadName) {
         max: readonly number[],
         scale: number,
         source: 'original' | 'CC0',
+        yaw = 0,
       ) => {
         const instance: Instance = {
           prop: id,
           position: [x + offset[0], 0.2, z + offset[2]],
-          yaw: 0,
+          yaw,
           name: `${name}/${row}-${col}/${id}/${offset[0]}-${offset[2]}`,
         };
         instances.push(instance);
@@ -66,29 +67,35 @@ export function buildWorkload(name: WorkloadName) {
           source,
           collision: 'cooked-static-mesh',
           footprint: {
-            minX: instance.position[0] + min[0] * scale,
-            maxX: instance.position[0] + max[0] * scale,
-            minZ: instance.position[2] + min[2] * scale,
-            maxZ: instance.position[2] + max[2] * scale,
+            minX: instance.position[0] + (yaw ? min[2] : min[0]) * scale,
+            maxX: instance.position[0] + (yaw ? max[2] : max[0]) * scale,
+            minZ: instance.position[2] + (yaw ? min[0] : min[2]) * scale,
+            maxZ: instance.position[2] + (yaw ? max[0] : max[2]) * scale,
           },
         });
       };
-      // Bounds include projecting balconies, not only the main building shell.
-      for (const dx of [-28, 28])
-        for (const dz of [-28, 28])
-          place(
-            detailed.id,
-            [dx, 0, dz],
-            [-10.69, 0, -10.69],
-            [10.69, 27.25, 10.69],
-            1,
-            'original',
-          );
+      // Flush party walls form continuous varied street fronts. Corner passages
+      // are 5.31 m clear including balconies, joining the courtyard to the streets.
+      const rowBuilding = (dx: number, dz: number, index: number, yaw = 0) => {
+        const variant = index % detailed.length;
+        place(
+          detailed[variant].id,
+          [dx, 0, dz],
+          [-9, 0, -10.69],
+          [9, 27.25 + variant * 4, 10.69],
+          1,
+          'original',
+          yaw,
+        );
+      };
+      for (const dz of [-34, 34]) for (let i = 0; i < 5; i++) rowBuilding(-36 + i * 18, dz, i);
+      for (const dx of [-34, 34])
+        for (let i = 0; i < 2; i++) rowBuilding(dx, -9 + i * 18, i, Math.PI / 2);
       BUILDING_ASSETS.forEach((a, i) =>
-        place(a.id, [i ? 28 : -28, 0, 0], a.bounds.min, a.bounds.max, a.metresPerSourceUnit, 'CC0'),
+        place(a.id, [i ? 11 : -11, 0, 0], a.bounds.min, a.bounds.max, a.metresPerSourceUnit, 'CC0'),
       );
     }
-  const meshes = [street, pavement, detailed],
+  const meshes = [street, pavement, ...detailed],
     triangles = new Map(
       meshes.map((m) => [m.id, m.parts.reduce((n, p) => n + p.indices.length / 3, 0)]),
     );
@@ -126,8 +133,12 @@ export function buildWorkload(name: WorkloadName) {
       },
       cameras: {
         facade: {
-          position: [-(side - 1) * 64 - 28, 1.7, -(side - 1) * 64 - 11],
-          target: [-(side - 1) * 64 - 28, 10, -(side - 1) * 64 - 28],
+          position: [-(side - 1) * 64 - 18, 1.7, -(side - 1) * 64 - 49],
+          target: [-(side - 1) * 64 - 18, 10, -(side - 1) * 64 - 34],
+        },
+        alley: {
+          position: [-(side - 1) * 64 - 49, 1.7, -(side - 1) * 64 - 20.65],
+          target: [-(side - 1) * 64 + 35, 1.7, -(side - 1) * 64 - 20.65],
         },
         skyline: { position: [side * 95, 85, side * 95], target: [0, 12, 0] },
       },

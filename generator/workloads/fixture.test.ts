@@ -10,8 +10,8 @@ test('identical detail scales by block instances, without building or road overl
   for (const name of Object.keys(WORKLOADS) as (keyof typeof WORKLOADS)[]) {
     const fixture = buildWorkload(name),
       n = WORKLOADS[name];
-    assert.equal(fixture.buildings.length, 6 * n);
-    assert.equal(fixture.report.totalInstances, 8 * n);
+    assert.equal(fixture.buildings.length, 16 * n);
+    assert.equal(fixture.report.totalInstances, 18 * n);
     assert.equal(fixture.report.uniqueSourceTriangles, one.report.uniqueSourceTriangles);
     assert.equal(
       fixture.report.instanceExpandedTriangles,
@@ -38,4 +38,21 @@ test('original facade contains raised frames, projecting balconies and roof equi
   assert.ok(Math.max(...positions.filter((_, i) => i % 3 === 1)) > 27);
   assert.ok(Math.max(...positions.filter((_, i) => i % 3 === 2)) > 10.6);
   assert.ok(fixture.report.uniqueSourceTriangles > 600 + 1885);
+});
+
+test('party walls touch in continuous rows while service passages stay unobstructed', () => {
+  const fixture = buildWorkload('one-block');
+  for (const z of [-34, 34]) {
+    const row = fixture.buildings
+      .filter((b) => b.source === 'original' && b.instance.position[2] === z)
+      .sort((a, b) => a.footprint.minX - b.footprint.minX);
+    assert.equal(row.length, 5);
+    for (let i = 1; i < row.length; i++)
+      assert.equal(row[i - 1].footprint.maxX, row[i].footprint.minX);
+    assert.equal(new Set(row.map((b) => b.height)).size, 3);
+  }
+  for (const z of [-20.65, 20.65]) {
+    const passage = { minX: -52, maxX: 52, minZ: z - 2, maxZ: z + 2 };
+    assert.ok(fixture.buildings.every((b) => !intersects(passage, b.footprint)));
+  }
 });
