@@ -41,7 +41,7 @@ proof of collision performance.
 Each block has fourteen original six-, seven- and eight-storey buildings, both CC0 buildings,
 a pavement and surrounding streets. Five adjoining facades line each north/south frontage;
 pairs complete the east/west sides. Flush party walls and roofs meet without volumetric overlap.
-Front/rear balconies leave 5.31 m corner passages and two unobstructed 4 m service alleys
+Front/rear balconies leave 5.30 m corner passages and two unobstructed 4 m service alleys
 connecting the outer streets to a courtyard with supplemental CC0 lots. The original building uses the existing shape/transform kits for raised facade frames,
 projecting balconies with rails, parapets, rooftop HVAC with louvers and a chimney. These are
 visible geometry and silhouette changes, not arbitrary subdivision. Materials include plaster,

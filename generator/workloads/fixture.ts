@@ -75,14 +75,14 @@ export function buildWorkload(name: WorkloadName) {
         });
       };
       // Flush party walls form continuous varied street fronts. Corner passages
-      // are 5.31 m clear including balconies, joining the courtyard to the streets.
+      // are 5.30 m clear including balconies, joining the courtyard to the streets.
       const rowBuilding = (dx: number, dz: number, index: number, yaw = 0) => {
         const variant = index % detailed.length;
         place(
           detailed[variant].id,
           [dx, 0, dz],
-          [-9, 0, -10.69],
-          [9, 27.25 + variant * 4, 10.69],
+          [-9, 0, -10.7],
+          [9, 27.25 + variant * 4, 10.7],
           1,
           'original',
           yaw,
