@@ -60,7 +60,8 @@ function fitStand(
           burial,
         })),
         y = Math.min(low, ...roots.map((r) => r.rise));
-      if (roots.some((r) => r.rise - y > r.burial)) continue;
+      if (roots.some((r) => r.rise - y > r.burial) || rise.some((h) => h - y > variant.tolerance))
+        continue;
       span = miss;
       best = { variant, x, z, y, yaw };
     }

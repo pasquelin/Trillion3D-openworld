@@ -91,13 +91,9 @@ export function createPlan(
   const water = waterCarver(rivers, lakes, naturalGrid),
     level = levelAirfields(airfields),
     urban = urbanGround(natural),
-    carved = (x: number, z: number) =>
-      preserveShore(
-        natural(x, z),
-        level(x, z, water(x, z, urban(x, z, natural(x, z)))),
-        natural(x, z),
-        0.5,
-      ),
+    carvedAt = (x: number, z: number, base: number) =>
+      preserveShore(base, level(x, z, water(x, z, urban(x, z, base))), base, 0.5),
+    carved = (x: number, z: number) => carvedAt(x, z, natural(x, z)),
     ground: Ground = {
       grid: heightGrid(carved),
       height: carved,
@@ -115,8 +111,10 @@ export function createPlan(
     ),
     network = planNetwork(ground, settlements, lakes, platform, airfields),
     roads = roadLeveller(network.courses),
-    height = (x: number, z: number) =>
-      preserveShore(natural(x, z), roads(x, z, carved(x, z)), natural(x, z), 0.5),
+    height = (x: number, z: number) => {
+      const base = natural(x, z);
+      return preserveShore(base, roads(x, z, carvedAt(x, z, base)), base, 0.5);
+    },
     budgets = regionBudgets();
   const biomeWeights = new Float64Array(REGIONS.length);
   const biome = (x: number, z: number) => {

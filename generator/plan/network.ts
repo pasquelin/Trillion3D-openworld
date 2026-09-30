@@ -90,7 +90,7 @@ export function planNetwork(
     interchange,
     find('coast-town'),
     find('countryside-town'),
-    find('mountains-town'),
+    find('city-northeast'),
     find('desert-town'),
   ].flatMap((stop) =>
     !stop ? [] : Array.isArray(stop) ? [stop as Point2] : [xz(stop as Settlement)],
@@ -112,6 +112,7 @@ export function planNetwork(
   }
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
+  if (mountainTown) road('mountain-town-access', 'pass', xz(mountainTown), 'network');
   if (resort && mountainTown) road('pass', 'pass', xz(mountainTown), xz(resort));
   const mountainBounds = REGION_BOUNDS.mountains;
   const summit = groundSummits(

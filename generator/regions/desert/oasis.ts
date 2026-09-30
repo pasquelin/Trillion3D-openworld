@@ -45,7 +45,7 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
     [cx, cz] = heart(
       b,
       name,
-      flattest(b, [home.centre[0], home.centre[2]], home.radius / 2, edge + 60),
+      flattest(b, [home.centre[0], home.centre[2]], home.radius * 2, edge + 60),
     ),
     polar = (r: number, a: number): Point => [cx + r * Math.cos(a), cz + r * Math.sin(a)],
     join = layout.civic && highway ? nearest(highway, [cx, cz], 8000) : undefined,
@@ -74,8 +74,8 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
       Math.atan2(Math.sin(a), -Math.cos(a)),
     );
   }
-  houses(b, seed, [cx, cz], edge, polar);
   groves(b, seed, [cx, cz], edge);
+  houses(b, seed, [cx, cz], edge, polar);
   if (hall) teleport(b, 'desert/oasis', ...polar(44, toward - Math.PI * 0.75), hall, -0.02);
 }
 
@@ -87,7 +87,7 @@ function groves(b: Build, seed: number, [cx, cz]: Point, edge: number) {
     for (let j = first(cz); (j - 0.5) * STAND_SIDE < cz + outer; j++) {
       const [x, z] = [(i + 0.5) * STAND_SIDE, (j + 0.5) * STAND_SIDE],
         r = Math.hypot(x - cx, z - cz);
-      if (r < edge + STAND_SIDE || r > outer) continue;
+      if (r < RING + STAND_SIDE || r > outer) continue;
       const grove = b.site.place(
         GROVE,
         x,

@@ -51,6 +51,7 @@ const key = (i: number, j: number) => i * 100_003 + j;
 
 export class Site {
   readonly instances: Instance[] = [];
+  readonly meshes = new Map<string, PropMesh>();
   readonly footprints = new Map<string, Local>();
   private readonly taken = new Map<number, Rect[]>();
   private readonly lines = new Map<number, Segment[]>();
@@ -72,7 +73,10 @@ export class Site {
 
   /** Footprints of props this site may place. */
   register(props: readonly PropMesh[]) {
-    for (const p of props) this.footprints.set(p.id, localFootprint(p));
+    for (const p of props) {
+      this.meshes.set(p.id, p);
+      this.footprints.set(p.id, localFootprint(p));
+    }
   }
 
   /** A road of the region's own: later placements keep off it. */

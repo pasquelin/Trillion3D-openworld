@@ -10,8 +10,8 @@ import { fieldEdges, CROPS, type Field } from './fields.ts';
 import { frame, nearestRoad, scatter, type Land } from './land.ts';
 import type { Site } from './site.ts';
 
-/** Distance between farms, metres: a farm works about a square kilometre and a half. */
-const FARM_SPACING = 1_250;
+/** Distance between farms, metres: small farms occupy selected dry rural clearings. */
+const FARM_SPACING = 600;
 /** Longest dirt track a farm lays to reach a road, metres. */
 const TRACK_REACH = 2_500;
 /** One field slot: pitch along the farm's X and Z, and the lane left between two fields. */

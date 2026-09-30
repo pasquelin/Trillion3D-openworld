@@ -53,6 +53,14 @@ function mainDistances(main: Bounds, x: number, z: number) {
       Math.max(0, Math.abs(x - (originX + 15)) - 305),
       Math.max(0, Math.abs(z - centreZ) - 650),
     ) - 35,
+    // Maintenance and freight aprons follow their actual authored paved footprints.
+    ...[-1_085, 1_130].map(
+      (offset) =>
+        Math.hypot(
+          Math.max(0, Math.abs(x - (originX - 180)) - 100),
+          Math.max(0, Math.abs(z - centreZ - offset) - 330),
+        ) - 25,
+    ),
     ...[-1_230, 0, 1_230].map(
       (offset) =>
         Math.hypot(Math.max(0, Math.abs(x - (originX - 585)) - 315), z - centreZ - offset) - 25,

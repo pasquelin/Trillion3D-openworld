@@ -21,7 +21,7 @@ const SPEED = 6;
 
 /** Places a station near (x, z), its front turned toward (tx, tz); tries a spiral around it. */
 function station(placer: Placer, x: number, z: number, tx: number, tz: number, name: string) {
-  for (let k = 0; k < 1_920; k++) {
+  for (let k = 0; k < 6_000; k++) {
     const r = Math.sqrt(k) * 16.3,
       [sx, sz] = [x + Math.cos(k * 2.4) * r, z + Math.sin(k * 2.4) * r],
       yaw = headingYaw(tx - sx, tz - sz),
@@ -69,45 +69,77 @@ export function placeCableway(placer: Placer, from: Vec3, summit: Vec3): Cablewa
   const lights = [...placeLamps(STATION_LAMPS, low), ...placeLamps(STATION_LAMPS, high)],
     [a, b] = [exit(low, 1), exit(high, -1)],
     length = Math.hypot(b[0] - a[0], b[2] - a[2]),
-    spans = Math.max(1, Math.ceil(length / SPAN)),
+    nominal = Math.max(1, Math.ceil(length / SPAN)),
+    spans = nominal + 2,
     at = (t: number) => [a[0] + (b[0] - a[0]) * t, a[2] + (b[2] - a[2]) * t] as const,
     heights = Array.from({ length: spans - 1 }, () => 0),
-    stops = Array.from({ length: spans + 1 }, (_, i) => i / spans);
-  // Raise the pylons, lowest first, until every span clears the ground under its sag.
-  const top = (i: number) =>
-    i === 0
-      ? a[1]
-      : i === spans
-        ? b[1]
-        : plan.height(...at(stops[i])) + PYLON_HEIGHTS[heights[i - 1]] + SHEAVE;
-  for (let round = 0; round < spans * PYLON_HEIGHTS.length; round++) {
-    const failing = Array.from({ length: spans }, (_, i) => i).find((i) =>
-      Array.from({ length: 19 }, (_, k) => (k + 1) / 20).some((u) => {
-        const t = (i + u) / spans,
-          cable = top(i) + (top(i + 1) - top(i)) * u - (length / spans) * SAG * 4 * u * (1 - u);
-        return cable - plan.height(...at(t)) < CLEARANCE;
-      }),
-    );
+    stops = [
+      0,
+      40 / length,
+      ...Array.from({ length: nominal - 1 }, (_, i) => (i + 1) / nominal),
+      1 - 40 / length,
+      1,
+    ];
+  const yaw = headingYaw(b[0] - a[0], b[2] - a[2]);
+  // Settle supports first: shore searches change span lengths and terrain under the cable.
+  const supports = heights.map((_, i) => {
+    for (let k = 0; k < 39; k++) {
+      const shift = k ? Math.ceil(k / 2) * 15 * (k % 2 ? 1 : -1) : 0,
+        t = stops[i + 1] + shift / length;
+      if (
+        t <= stops[i] + (i === 0 ? 20 : 60) / length ||
+        t >= stops[i + 2] - (i === spans - 2 ? 20 : 60) / length
+      )
+        continue;
+      const placed = placer.place(`mountains/cable-pylon-${PYLON_HEIGHTS[0]}`, ...at(t), {
+        yaw,
+        name: `mountains/pylon-${i}`,
+      });
+      if (placed) {
+        stops[i + 1] = t;
+        return placed;
+      }
+    }
+    return undefined;
+  });
+  const missing = supports.filter((p) => !p).length,
+    top = (i: number) =>
+      i === 0
+        ? a[1]
+        : i === spans
+          ? b[1]
+          : (supports[i - 1]?.position[1] ?? plan.height(...at(stops[i]))) +
+            PYLON_HEIGHTS[heights[i - 1]] +
+            SHEAVE,
+    failingSpan = () =>
+      Array.from({ length: spans }, (_, i) => i).find((i) => {
+        const span = (stops[i + 1] - stops[i]) * length,
+          steps = Math.ceil(span / 10);
+        return [1, -1].some((side) => {
+          const aa = exit(low, side),
+            bb = exit(high, -side);
+          return Array.from({ length: steps + 1 }, (_, k) => k / steps).some((u) => {
+            const t = stops[i] + u * (stops[i + 1] - stops[i]),
+              x = aa[0] + (bb[0] - aa[0]) * t,
+              z = aa[2] + (bb[2] - aa[2]) * t,
+              y = top(i) + (top(i + 1) - top(i)) * u - span * SAG * 4 * u * (1 - u),
+              required = Math.min(CLEARANCE, 6.5 + (Math.min(t, 1 - t) * length) / 8);
+            return y - plan.height(x, z) < required;
+          });
+        });
+      });
+  for (let round = 0; round <= spans * PYLON_HEIGHTS.length; round++) {
+    const failing = failingSpan();
     if (failing === undefined) break;
     const raise = [failing, failing + 1].filter(
-      (p) => p >= 1 && p < spans && heights[p - 1] + 1 < PYLON_HEIGHTS.length,
+      (p) => p >= 1 && p < spans && supports[p - 1] && heights[p - 1] + 1 < PYLON_HEIGHTS.length,
     );
-    if (!raise.length) break;
-    for (const p of raise) heights[p - 1]++;
+    if (!raise.length) throw new Error(`Cable clearance incompatible at span ${failing}`);
+    for (const p of raise) {
+      heights[p - 1]++;
+      supports[p - 1]!.prop = `mountains/cable-pylon-${PYLON_HEIGHTS[heights[p - 1]]}`;
+    }
   }
-  const yaw = headingYaw(b[0] - a[0], b[2] - a[2]);
-  // A pylon the ground refuses (a road, a building) moves along the line, up to 60 m.
-  const missing = heights.filter((h, i) =>
-    [0, 15, -15, 30, -30, 45, -45, 60, -60].every((shift) => {
-      const t = (i + 1) / spans + shift / length,
-        placed = placer.place(`mountains/cable-pylon-${PYLON_HEIGHTS[h]}`, ...at(t), {
-          yaw,
-          name: `mountains/pylon-${i}`,
-        });
-      if (placed) stops[i + 1] = t;
-      return !placed;
-    }),
-  ).length;
   const lines = [1, -1].map((side) => cable(stops, top, exit(low, side), exit(high, -side)));
   const loop = [...lines[0], ...[...lines[1]].reverse()],
     half = loop.length >> 1;
@@ -147,13 +179,13 @@ export function placeCableway(placer: Placer, from: Vec3, summit: Vec3): Cablewa
   };
 }
 
-/** One cable from `a` to `b` over the pylon tops at `stops` (0…1), sagging between, every 25 m. */
+/** One cable from `a` to `b` over the pylon tops at `stops` (0…1), sagging between, every 10 m. */
 function cable(stops: readonly number[], top: (i: number) => number, a: Vec3, b: Vec3): Vec3[] {
   const points: Vec3[] = [a],
     length = Math.hypot(b[0] - a[0], b[2] - a[2]);
   for (let i = 0; i + 1 < stops.length; i++) {
     const span = (stops[i + 1] - stops[i]) * length,
-      steps = Math.max(2, Math.ceil(span / 25));
+      steps = Math.max(2, Math.ceil(span / 10));
     for (let k = 1; k <= steps; k++) {
       const u = k / steps,
         t = stops[i] + (stops[i + 1] - stops[i]) * u,

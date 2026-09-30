@@ -1,6 +1,6 @@
 /**
  * The cable car's props: a station (valley and summit share it: concrete base, glass hall, the
- * bullwheel turning the two lines out of its +Z front), tubular pylons in three heights with
+ * bullwheel turning the two lines out of its +Z front), tubular pylons in six heights with
  * their sheave trains and ladders, and the cabin hanging from its grip. Two lines run `GAUGE`
  * apart; the cable passes `CABLE_HEIGHT` above a station's floor and `SHEAVE` above a pylon top.
  */
@@ -22,7 +22,7 @@ import { MOUNTAIN_SURFACES as S } from './surfaces.ts';
 export const GAUGE = 6;
 export const CABLE_HEIGHT = 9;
 export const SHEAVE = 1.1;
-export const PYLON_HEIGHTS = [16, 26, 38] as const;
+export const PYLON_HEIGHTS = [16, 26, 38, 60, 90, 120] as const;
 const ACROSS = Math.PI / 2;
 
 /** A horizontal wheel of radius `r` at height `y`: rim, spokes, hub. */

@@ -68,11 +68,11 @@ export function dressSummit(placer: Placer, plan: WorldPlan, summit: Vec3): Mark
   };
 }
 
-/** The observatory on the highest top above the tree line at least 2 km from the summit. */
+/** The observatory on the highest top above the tree line at least 1 km from the summit. */
 export function placeObservatory(placer: Placer, tops: readonly Vec3[]): Landmark {
   const summit = tops[0];
   for (const top of tops.slice(1)) {
-    if (top[1] < TREE_LINE || Math.hypot(top[0] - summit[0], top[2] - summit[2]) < 2_000) continue;
+    if (top[1] < TREE_LINE || Math.hypot(top[0] - summit[0], top[2] - summit[2]) < 1_000) continue;
     for (let k = 0; k < 640; k++) {
       const [x, z] = [
           top[0] + Math.cos(k * 2.399963) * Math.sqrt(k) * 9.25,
