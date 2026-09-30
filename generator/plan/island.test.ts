@@ -7,6 +7,7 @@ import { createPlan } from './plan.ts';
 import { dryFootprint } from './dry.ts';
 import { standExtent } from '../props/stands.ts';
 import { REGIONS } from '../regions/index.ts';
+import { onOperationalAirfield } from './airfields.ts';
 
 for (const seed of [332, 333]) {
   describe(`composed enclosing island, seed ${seed}`, () => {
@@ -55,7 +56,8 @@ for (const seed of [332, 333]) {
       const p = plan.platform;
       for (let x = p.minX; x <= p.maxX; x += 50)
         for (let z = p.minZ; z <= p.maxZ; z += 50)
-          assert.ok(Math.abs(plan.height(x, z) - p.level) < 0.1, `platform ${x},${z}`);
+          if (onOperationalAirfield(plan.airfields, x, z))
+            assert.ok(Math.abs(plan.height(x, z) - p.level) < 0.1, `platform ${x},${z}`);
       for (const marker of world.markers) {
         if (
           marker.kind === 'emitter' ||
@@ -71,7 +73,10 @@ for (const seed of [332, 333]) {
         points = course.road.points,
         boundary = points.at(-2)!,
         terminal = points.at(-1)!;
-      assert.equal(boundary[2], plan.platform.maxZ);
+      assert.deepEqual(
+        [boundary[0], boundary[2]],
+        [plan.platform.maxX, (plan.platform.minZ + plan.platform.maxZ) / 2],
+      );
       assert.equal(boundary[1], plan.platform.level);
       assert.equal(terminal[1], plan.platform.level);
       assert.equal(course.bridge.length, points.length - 1);

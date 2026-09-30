@@ -8,7 +8,12 @@ import { islandCensus } from './island.ts';
 it('rejects interior and rotated shoreline pockets missed by corner and center checks', () => {
   const height = (x: number, z: number) => (Math.hypot(x - 20, z - 20) < 8 ? -1 : 2);
   const site = new Site(
-    { height, roads: [], rivers: [] } as unknown as WorldPlan,
+    {
+      height,
+      roads: [],
+      rivers: [],
+      biome: () => ({ owner: 'countryside' }),
+    } as unknown as WorldPlan,
     { minX: -1000, maxX: 1000, minZ: -1000, maxZ: 1000 },
     [],
   );

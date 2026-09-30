@@ -125,7 +125,8 @@ export function land(b: Build, sites: readonly Tableland[]) {
   );
   const top = own.sort((p, q) => q.height - p.height)[0] ?? sites[0];
   if (!sites.some((t) => t.kind === 'plateau')) ridgeTurbines(b, 6);
-  if (top) {
+  const rimX = top && top.x - (rimRadius(top, Math.PI) - 12);
+  if (top && rimX !== undefined && b.plan.height(rimX, top.z) > 0) {
     // The west rim, looking west into the sunset.
     const a = Math.PI,
       r = rimRadius(top, a) - 12;

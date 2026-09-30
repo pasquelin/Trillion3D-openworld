@@ -16,7 +16,6 @@ import { joinRoadProfiles } from './junctions.ts';
 import { groundSummits } from '../regions/mountains/peaks.ts';
 import { FIELD, siteFrame } from '../regions/airport/site.ts';
 import { avenues } from './avenues.ts';
-
 export type Network = {
   courses: RoadCourse[];
   bridges: Bridge[];
@@ -24,7 +23,6 @@ export type Network = {
   viewpoints: Vec3[];
   failedConnections: string[];
 };
-
 export function planNetwork(
   ground: Ground,
   settlements: readonly Settlement[],
@@ -84,7 +82,6 @@ export function planNetwork(
     }
     keep(built, joins);
   };
-
   // The western field's terminal faces east; the interchange keeps clear of both approaches.
   const centreZ = (platform.minZ + platform.maxZ) / 2,
     interchange: Point2 = [platform.maxX + 300, centreZ];
@@ -132,7 +129,6 @@ export function planNetwork(
   for (const s of settlements)
     if (s.kind === 'village' || (s.region === 'city' && (s.kind === 'port' || s.kind === 'town')))
       road(`${s.id}/road`, 'secondary', xz(s), 'network');
-
   for (const city of settlements.filter(
     (s) => s.region === 'city' && (s.kind === 'city' || s.kind === 'town'),
   ))
@@ -151,7 +147,6 @@ export function planNetwork(
       linked.add(key);
       road(`trail/${key}`, 'dirt', xz(v), xz(o), false);
     }
-    // A viewpoint: the highest ground within 3 km that a walker can still stand on.
     const view = best(ground.grid, around(v.centre[0], v.centre[2], 3_000), (x, z, h) =>
       slopeAt(ground.grid, x, z) < 0.5 && !ground.wet(x, z) ? h : -Infinity,
     );
@@ -180,15 +175,23 @@ export function planNetwork(
       shore: Point2 = [lake.x + lake.radius + ROAD_STEP, lake.z];
     if (village) road(`trail/${lake.id}`, 'dirt', xz(village), shore, false);
   }
-  const joinedTunnels = joinRoadProfiles(courses, bridges, ground.height, (x, z) =>
-    (airfields && onOperationalAirfield(airfields, x, z)) ||
-    settlements.some(
-      (site) =>
-        CITY_CORES.some((core) => core.id === site.id) &&
-        Math.hypot(x - site.centre[0], z - site.centre[2]) < STEP,
-    )
-      ? ground.height(x, z)
-      : undefined,
+  const joinedTunnels = joinRoadProfiles(
+    courses,
+    bridges,
+    ground.height,
+    (x, z) =>
+      (airfields && onOperationalAirfield(airfields, x, z)) ||
+      settlements.some(
+        (site) =>
+          CITY_CORES.some((core) => core.id === site.id) &&
+          Math.hypot(x - site.centre[0], z - site.centre[2]) < 0.1,
+      )
+        ? ground.height(x, z)
+        : undefined,
+    (x, z) => {
+      const water = overRiver(x, z);
+      return water !== null && ground.height(x, z) <= water + 1 ? water + 6 : 0.5;
+    },
   );
   return { courses, bridges, tunnels: joinedTunnels, viewpoints, failedConnections };
 }

@@ -18,5 +18,6 @@ export function enclosingCoast(seed: number) {
 
 /** Fade terrain shaping at sea level; no later platform/refinement/road can reclaim the sea. */
 export function preserveShore(base: number, shaped: number, inland = base, band = 0.5) {
-  return base + smoothstep(0, band, inland) * (shaped - base);
+  const land = base > 0 ? Math.max(shaped, Math.min(base, band)) : shaped;
+  return base + smoothstep(0, band, inland) * (land - base);
 }

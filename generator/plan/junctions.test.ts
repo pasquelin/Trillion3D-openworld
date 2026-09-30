@@ -108,3 +108,47 @@ test('a fixed low urban junction permits mountain cuts without sacrificing a rea
   assert.equal(bridge.road.points[0][1], 40);
   assert.ok(land.tunnel.some(Boolean));
 });
+
+test('physical channel clearance allows a high dry-bank profile to meet a low urban anchor', () => {
+  const road = course('bank', [
+    [0, 100, 0],
+    [100, 100, 0],
+    [200, 10, 0],
+    [500, 10, 0],
+  ]);
+  road.bridge = [true, false, false];
+  joinRoadProfiles(
+    [road],
+    [],
+    () => 2,
+    (x) => (x === 500 ? 10 : undefined),
+    (x) => (x === 0 ? 6 : 0.5),
+  );
+  assert.equal(road.road.points.at(-1)![1], 10);
+  assert.ok(road.road.points[0][1] >= 6);
+  assert.ok(road.road.points[1][1] < 100);
+  for (let i = 1; i < road.road.points.length; i++) {
+    const a = road.road.points[i - 1],
+      b = road.road.points[i];
+    assert.ok(Math.abs(a[1] - b[1]) <= 0.080001 * Math.hypot(a[0] - b[0], a[2] - b[2]));
+  }
+});
+
+test('dry bridge endpoints retain clearance over a wet channel between vertices', () => {
+  const road = course('channel', [
+    [0, 20, 0],
+    [50, 20, 0],
+    [500, 12, 0],
+  ]);
+  road.bridge = [true, false];
+  joinRoadProfiles(
+    [road],
+    [],
+    (x) => (x > 15 && x < 35 ? 0 : 20),
+    (x) => (x === 500 ? 12 : undefined),
+    (x) => (x > 15 && x < 35 ? 16 : 0.5),
+  );
+  assert.ok(road.road.points[0][1] >= 16);
+  assert.ok(road.road.points[1][1] >= 16);
+  assert.equal(road.road.points.at(-1)![1], 12);
+});

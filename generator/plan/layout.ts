@@ -30,7 +30,7 @@ export const REGION_BOUNDS: Record<RegionName, Bounds> = {
 };
 
 /** Regional transition distance, metres. Airport geometry itself retains exact clearances. */
-export const BAND = 400;
+const BAND = 400;
 
 /** Smooth land weights, including rural ground between centres and around the whole massif. */
 export function landWeights(

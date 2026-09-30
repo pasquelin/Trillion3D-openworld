@@ -21,6 +21,7 @@ export function joinRoadProfiles(
   bridges: Bridge[],
   ground: (x: number, z: number) => number,
   anchor?: (x: number, z: number) => number | undefined,
+  bridgeFloor?: (x: number, z: number) => number,
 ) {
   const index = new SegmentIndex(),
     segments: { course: RoadCourse; at: number; a: Vec3; b: Vec3 }[] = [];
@@ -97,12 +98,12 @@ export function joinRoadProfiles(
       id = height.length;
       ids.set(key, id);
       height.push(p[1]);
-      floors.push(bridge ? p[1] : 0.5);
+      floors.push(bridge ? (bridgeFloor?.(p[0], p[2]) ?? p[1]) : 0.5);
       anchors.push(bridge ? undefined : anchor?.(p[0], p[2]));
       links.push([]);
     } else {
       height[id] = Math.max(height[id], p[1]);
-      if (bridge) floors[id] = Math.max(floors[id], p[1]);
+      if (bridge) floors[id] = Math.max(floors[id], bridgeFloor?.(p[0], p[2]) ?? p[1]);
     }
     return id;
   };
@@ -118,6 +119,15 @@ export function joinRoadProfiles(
         p = c.road.points[i - 1],
         q = c.road.points[i],
         rise = GRADE[c.road.class] * Math.hypot(p[0] - q[0], p[2] - q[2]);
+      if (bridgeFloor && c.bridge[i - 1]) {
+        const count = Math.max(1, Math.ceil(Math.hypot(p[0] - q[0], p[2] - q[2]) / 10));
+        for (let k = 0; k <= count; k++) {
+          const t = k / count,
+            floor = bridgeFloor(p[0] + t * (q[0] - p[0]), p[2] + t * (q[2] - p[2]));
+          floors[a] = Math.max(floors[a], floor);
+          floors[b] = Math.max(floors[b], floor);
+        }
+      }
       links[a].push({ to: b, rise });
       links[b].push({ to: a, rise });
     }

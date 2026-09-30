@@ -8,7 +8,8 @@ import type { Site } from './site.ts';
 
 const harbour = (height: (x: number, z: number) => number) =>
   new Placer({
-    plan: { height } as WorldPlan,
+    plan: { height, biome: () => ({ owner: 'city' }) } as unknown as WorldPlan,
+    city: { id: 'city' },
     bounds: { minX: 0, maxX: 1000, minZ: -100, maxZ: 100 },
     roads: new Occupancy<string>(100),
   } as Site);
