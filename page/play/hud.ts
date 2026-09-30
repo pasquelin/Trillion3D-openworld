@@ -5,7 +5,7 @@ import type { Mode, Road } from './types.ts';
 
 /**
  * The heads-up display, on the kit's overlay layer: the mode and the speed, then on
- * foot the stamina, in the plane the altitude and the throttle (nothing more in the car), what the E key would do here, the keys of the mode, and the map.
+ * the plane altitude and throttle, the action of E, the keys of the mode, and the map.
  */
 export type HudState = {
   mode: Mode;
@@ -14,7 +14,6 @@ export type HudState = {
   /** Metres above the sea, and above the ground when the ground is known. */
   altitude: number;
   aboveGround: number | null;
-  stamina: number;
   throttle: number;
   stalled: boolean;
   loading: boolean;
@@ -36,7 +35,6 @@ const LABEL: Record<Mode, string> = {
 /** The readings as lines of text: pure, so the wording is tested. */
 export function readings(state: HudState): string[] {
   const lines = [`${LABEL[state.mode]} · ${Math.round(state.speed * 3.6)} km/h`];
-  if (state.mode === 'foot') lines.push(`Stamina ${Math.round(state.stamina * 100)} %`);
   if (state.mode === 'plane') {
     const ground =
       state.aboveGround === null ? '' : ` · ${Math.round(state.aboveGround)} m above ground`;

@@ -10,54 +10,19 @@ import {
 } from './math3.ts';
 import type { CameraNode, Mode, Vec3 } from './types.ts';
 
-/**
- * The camera of each mode. On foot: the eye at 1.7 m (1.1 m crouched, eased between the two),
- * turned by the mouse, with a head bob whose rhythm is the stride's: two steps per cycle, each
- * as long as the walker's pace makes it, a little higher and quicker running, nothing standing
- * still. In a vehicle: a chase view that follows with a short lag, or the driver's seat.
- */
+/** Vehicle cameras; the engine's character controller owns the view on foot. */
 export type CameraState = {
-  eye: number;
-  /** Stride phase, radians: one full turn is two steps. */
-  phase: number;
-  /** How much the head bobs, eased in and out as walking starts and stops. */
-  bob: number;
   chase: [number, number, number] | null;
   cockpit: boolean;
 };
 
-export const cameraState = (): CameraState => ({
-  eye: 1.7,
-  phase: 0,
-  bob: 0,
-  chase: null,
-  cockpit: false,
-});
-
-/** Stride length at a walking pace, metres; it grows with speed, as a person's does. */
-export const strideAt = (speed: number) => 0.62 + 0.16 * speed;
-
-/** The head bob's offset (up, sideways) in metres at `phase`, for a bob weight `bob`. */
-export function headBob(phase: number, bob: number, running: boolean): [number, number] {
-  const height = running ? 0.045 : 0.022;
-  return [
-    -Math.abs(Math.sin(phase)) * height * bob * 2 + height * bob,
-    Math.sin(phase) * height * 0.5 * bob,
-  ];
-}
+export const cameraState = (): CameraState => ({ chase: null, cockpit: false });
 
 export type Frame = {
   mode: Mode;
-  /** The player: feet on foot, the body in a vehicle. */
   at: [number, number, number];
-  /** The vehicle's orientation (car, plane). */
   turn: Q;
-  speed: number;
-  crouched: boolean;
-  running: boolean;
-  grounded: boolean;
   look: { yaw: number; pitch: number };
-  /** The vehicle's eye anchor, in its own frame. */
   seat: Vec3 | null;
 };
 
@@ -70,17 +35,6 @@ export function placeCamera(camera: CameraNode, state: CameraState, frame: Frame
   const { at, look } = frame;
   if (frame.mode === 'foot') {
     state.chase = null;
-    state.eye = lerp(state.eye, frame.crouched ? 1.1 : 1.7, approach(dt, 0.12));
-    const moving = frame.grounded && frame.speed > 0.3;
-    state.bob = lerp(state.bob, moving ? Math.min(1, frame.speed / 1.4) : 0, approach(dt, 0.2));
-    state.phase += (frame.speed / strideAt(frame.speed)) * Math.PI * dt;
-    const [up, side] = headBob(state.phase, state.bob, frame.running);
-    camera.position.set(
-      at[0] + Math.cos(look.yaw) * side,
-      at[1] + state.eye + up,
-      at[2] - Math.sin(look.yaw) * side,
-    );
-    camera.quaternion.set(...yawPitchRoll(look.yaw, look.pitch));
     return;
   }
   if (state.cockpit && frame.seat) {

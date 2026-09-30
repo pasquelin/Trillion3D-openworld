@@ -42,6 +42,11 @@ pnpm run serve             # http://localhost:4180/
 
 A browser with WebGPU plays it; the engine falls back to WebGL2 elsewhere.
 
+On foot, Trillion3D's native physical character owns movement, jumps, collisions and the
+camera: W A S D or the arrow keys move, Shift runs and Space jumps. Click the canvas to
+look with the mouse; Escape releases it. E enters or leaves a nearby vehicle. Crouching
+and a separate stamina system are not provided; character behavior follows the engine.
+
 ## Commands
 
 | Command                        | What it does                                                                |
