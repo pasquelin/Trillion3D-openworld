@@ -126,11 +126,16 @@ export function flightRoute(plan: TerrainPlan, markers: readonly Marker[]) {
     }
   }
   path.push(corners.at(-1)!, airport.position);
+  if (path.some(([x, y, z]) => Math.abs(x) > 4000 || Math.abs(z) > 4000 || y > 3200))
+    return {
+      routes: [],
+      failures: ['F1: generated flight exceeds the declared playable envelope'],
+    };
   return {
     routes: [
       {
         ...sampleRoute('F1', 'Island flight', 'flight', path, [40, 100, 160]),
-        camera: { fov: 75, far: 12_000 },
+        camera: { fov: 75, far: 60_000 },
         subjects: [
           { name: 'terminal foreground', range: 'near' as const, position: airport.position },
           { name: 'city', range: 'mid' as const, position: city.centre },

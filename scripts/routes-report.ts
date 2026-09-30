@@ -34,6 +34,9 @@ const encoded = JSON.stringify(
   {
     ...manifest,
     sourceHead: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+    sourceDirty: Boolean(
+      execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
+    ),
     observations: {
       walkMaxCollisionFloorError: maxFloorError,
       walkCollisionRampCount: ramps.length,

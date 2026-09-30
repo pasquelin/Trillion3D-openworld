@@ -38,7 +38,7 @@ export function buildTraversal(
       ...view.routes,
       ...flight.routes,
       ...summit.routes,
-    ].map((route) => ({ ...route, camera: route.camera ?? { fov: 50, far: 12_000 } })),
+    ].map((route) => ({ ...route, camera: route.camera ?? { fov: 50, far: 60_000 } })),
     rejectedRoadSegments: drive.rejectedRoadSegments,
     failures: [
       ...walk.failures,

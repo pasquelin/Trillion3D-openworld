@@ -54,7 +54,7 @@ export function cameraReplay(world: PlayWorld, applyTime: (night: boolean) => vo
       world.physics.paused = true;
       if (next.camera) {
         world.camera.fov = next.camera.fov;
-        world.camera.far = next.camera.far;
+        world.camera.far = Math.max(previous.far, next.camera.far);
       }
       route = next;
       elapsed = 0;

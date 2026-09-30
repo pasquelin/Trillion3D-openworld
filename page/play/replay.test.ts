@@ -33,20 +33,26 @@ test('replay owns camera while active and restores pose/control/physics after st
       [2],
       true,
     ),
-    camera: { fov: 90, far: 12_000 },
+    camera: { fov: 90, far: 60_000 },
   });
   replay.update(2);
   assert.equal(night, true);
   assert.equal(world.camera.position.x, 4);
   assert.equal(world.physics.paused, true);
   assert.equal(world.camera.fov, 90);
-  assert.equal(world.camera.far, 12_000);
+  assert.equal(world.camera.far, 60_000);
   replay.stop();
   assert.equal(world.camera.position.x, 2);
   assert.equal(world.controls.kind, 'character');
   assert.equal(world.physics.paused, false);
   assert.equal(world.camera.fov, 60);
   assert.equal(world.camera.far, 5000);
+  world.camera.far = 100_000;
+  const wide = sampleRoute('V1', 'Wide host', 'vista', [[0, 2, 0]], [1]);
+  replay.start({ ...wide, camera: { fov: 50, far: 60_000 } });
+  assert.equal(world.camera.far, 100_000);
+  replay.stop();
+  assert.equal(world.camera.far, 100_000);
   replay.dispose();
   assert.equal(replay.active, false);
   assert.throws(

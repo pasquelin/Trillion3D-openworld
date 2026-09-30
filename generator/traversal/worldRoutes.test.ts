@@ -103,3 +103,14 @@ test('every W1 camera sample has a real upward collision floor within 0.1 m of i
     );
   }
 });
+test('the generated fast flight keeps its declared altitude and island envelope without a runtime clamp', () => {
+  const flight = manifest.routes.find((r) => r.id === 'F1')!;
+  for (const {
+    position: [x, y, z],
+  } of flight.samples) {
+    assert.ok(
+      Math.abs(x) <= manifest.envelope.halfSize && Math.abs(z) <= manifest.envelope.halfSize,
+    );
+    assert.ok(y <= manifest.envelope.maxAltitude);
+  }
+});

@@ -73,7 +73,7 @@ export function vistas(plan: TerrainPlan, markers: readonly Marker[]) {
       duration: 60,
       samples: [pose, { ...pose, seconds: 60 }],
       subjects,
-      camera: { fov: id === 'roof' ? 90 : 50, far: 12_000 },
+      camera: { fov: id === 'roof' ? 90 : 50, far: 60_000 },
     });
   }
   return { routes, failures };
