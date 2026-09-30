@@ -8,6 +8,8 @@ export type ReplayRoute = {
   length: number;
   duration: number;
   samples: Pose[];
+  camera?: { fov: number; far: number };
+  subjects?: { name: string; range: 'near' | 'mid' | 'far'; position: Vec3 }[];
 };
 export type Traversal = {
   version: 1;

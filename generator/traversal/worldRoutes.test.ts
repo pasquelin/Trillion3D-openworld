@@ -4,6 +4,7 @@ import { placeWorld } from '../build/world.ts';
 import { solidIndex } from '../build/solids.ts';
 import { buildTraversal } from './build.ts';
 import { nearestRoad, roadIndex } from '../../page/play/roads.ts';
+import { rotate, yawPitchRoll } from '../../page/play/math3.ts';
 
 const world = placeWorld(),
   roads = [...world.plan.roads, ...world.placed.flatMap((o) => o.roads)],
@@ -52,6 +53,29 @@ test('the airport spur reaches the generated terminal curbside on real graded pa
     hit = nearestRoad(roadIndex(curbside), end[0], end[2]);
   assert.ok(hit && hit.distance < 0.01);
   assert.ok(Math.abs(world.plan.height(end[0], end[2]) - (end[1] - 1.7)) < 0.01);
+});
+test('long vistas frame their generated skyline and hinterland targets within declared real-camera optics', () => {
+  for (const id of ['harbor', 'roof', 'summit']) {
+    const route = manifest.routes.find((r) => r.id === `V1-${id}`)!,
+      pose = route.samples[0],
+      q = yawPitchRoll(pose.yaw, pose.pitch),
+      vertical = Math.tan((route.camera!.fov * Math.PI) / 360);
+    assert.deepEqual(
+      route.subjects!.map((s) => s.range),
+      ['near', 'mid', 'far'],
+    );
+    for (const subject of route.subjects!.filter((s) => s.range !== 'near')) {
+      const delta = subject.position.map((v, k) => v - pose.position[k]),
+        p = rotate([-q[0], -q[1], -q[2], q[3]], delta);
+      assert.ok(p[2] < 0, `${id}: ${subject.name} behind camera`);
+      assert.ok(
+        Math.abs(p[0]) < (-p[2] * vertical * 1280) / 720,
+        `${id}: ${subject.name} horizontal field`,
+      );
+      assert.ok(Math.abs(p[1]) < -p[2] * vertical, `${id}: ${subject.name} vertical field`);
+      assert.ok(Math.hypot(...delta) < route.camera!.far);
+    }
+  }
 });
 test('every W1 camera sample has a real upward collision floor within 0.1 m of its feet', () => {
   const walk = manifest.routes.find((r) => r.id === 'W1')!,

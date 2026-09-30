@@ -12,8 +12,13 @@ export function cameraReplay(world: PlayWorld, applyTime: (night: boolean) => vo
     position: [number, number, number];
     quaternion: [number, number, number, number];
   } | null = null;
-  let previous: { kind: PlayWorld['controls']['kind']; enabled: boolean; paused: boolean } | null =
-    null;
+  let previous: {
+    kind: PlayWorld['controls']['kind'];
+    enabled: boolean;
+    paused: boolean;
+    fov: number;
+    far: number;
+  } | null = null;
   const stop = () => {
     route = null;
     if (!previous) return;
@@ -25,6 +30,8 @@ export function cameraReplay(world: PlayWorld, applyTime: (night: boolean) => vo
     world.controls.kind = previous.kind;
     world.controls.enabled = previous.enabled;
     world.physics.paused = previous.paused;
+    world.camera.fov = previous.fov;
+    world.camera.far = previous.far;
     previous = null;
   };
   return {
@@ -39,10 +46,16 @@ export function cameraReplay(world: PlayWorld, applyTime: (night: boolean) => vo
         kind: world.controls.kind,
         enabled: world.controls.enabled,
         paused: world.physics.paused,
+        fov: world.camera.fov,
+        far: world.camera.far,
       };
       world.controls.kind = 'none';
       world.controls.enabled = false;
       world.physics.paused = true;
+      if (next.camera) {
+        world.camera.fov = next.camera.fov;
+        world.camera.far = next.camera.far;
+      }
       route = next;
       elapsed = 0;
       sample = 0;

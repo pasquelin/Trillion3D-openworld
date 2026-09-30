@@ -86,6 +86,7 @@ export class Placer {
     );
     const high = Math.max(...ground),
       low = Math.min(...ground);
+    if (layer === 'solid' && high - low > reach * sy + 0.3) return false;
     let y = high,
       finalScale = scale;
     if (layer === 'paint') y = this.groundAt(x, z) + 0.03;

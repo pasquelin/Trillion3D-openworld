@@ -1,6 +1,7 @@
 import type { Marker, Road } from '../plan/contract.ts';
 import type { TerrainPlan } from '../plan/plan.ts';
-import { drivingRoutes, flightRoute, vistas } from './routes.ts';
+import { drivingRoutes, flightRoute } from './routes.ts';
+import { vistas } from './views.ts';
 import { summitAccess } from './summit.ts';
 import { walkingRoutes } from './walk.ts';
 import type { buildCity } from '../regions/city/index.ts';
@@ -14,7 +15,7 @@ export function buildTraversal(
 ): Traversal {
   const walk = city ? walkingRoutes(city) : { routes: [], failures: ['W1: no city metadata'] };
   const drive = drivingRoutes(plan, roads),
-    view = vistas(markers),
+    view = vistas(plan, markers),
     flight = flightRoute(plan, markers),
     summit = summitAccess(plan, roads, markers);
   return {
@@ -31,7 +32,13 @@ export function buildTraversal(
       pedestrians: 60,
       time: 12,
     },
-    routes: [...walk.routes, ...drive.routes, ...view.routes, ...flight.routes, ...summit.routes],
+    routes: [
+      ...walk.routes,
+      ...drive.routes,
+      ...view.routes,
+      ...flight.routes,
+      ...summit.routes,
+    ].map((route) => ({ ...route, camera: route.camera ?? { fov: 50, far: 12_000 } })),
     rejectedRoadSegments: drive.rejectedRoadSegments,
     failures: [
       ...walk.failures,

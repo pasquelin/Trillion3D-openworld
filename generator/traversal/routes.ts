@@ -92,42 +92,6 @@ export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
   return { routes, failures, rejectedRoadSegments: graph.rejected };
 }
 
-export function vistas(markers: readonly Marker[]) {
-  const groups = [
-    ['summit', /summit-viewpoint/],
-    ['roof', /roof|rooftop/i],
-    ['harbor', /harbour|harbor|port/i],
-    ['beach', /beach/],
-    ['desert', /mesa-sunset/],
-    ['woodland', /countryside\/village|countryside\/.*overlook/],
-  ] as const;
-  const routes: ReplayRoute[] = [],
-    failures: string[] = [];
-  for (const [id, pattern] of groups) {
-    const marker = markers.find((m) => m.kind === 'teleport' && pattern.test(m.name));
-    if (!marker || marker.kind !== 'teleport') {
-      failures.push(`V1: missing ${id}`);
-      continue;
-    }
-    const pose = {
-      seconds: 0,
-      position: marker.position,
-      yaw: marker.yaw,
-      pitch: marker.pitch ?? 0,
-    };
-    routes.push({
-      id: `V1-${id}`,
-      name: `${id} vista`,
-      kind: 'vista',
-      night: false,
-      length: 0,
-      duration: 60,
-      samples: [pose, { ...pose, seconds: 60 }],
-    });
-  }
-  return { routes, failures };
-}
-
 export function flightRoute(plan: TerrainPlan, markers: readonly Marker[]) {
   const airport = markers.find((m) => m.kind === 'teleport' && /terminal/i.test(m.name));
   const summit = markers.find((m) => m.kind === 'teleport' && /summit-viewpoint/.test(m.name));
@@ -161,7 +125,18 @@ export function flightRoute(plan: TerrainPlan, markers: readonly Marker[]) {
   }
   path.push(corners.at(-1)!, airport.position);
   return {
-    routes: [sampleRoute('F1', 'Island flight', 'flight', path, [40, 100, 160])],
+    routes: [
+      {
+        ...sampleRoute('F1', 'Island flight', 'flight', path, [40, 100, 160]),
+        camera: { fov: 75, far: 12_000 },
+        subjects: [
+          { name: 'terminal foreground', range: 'near' as const, position: airport.position },
+          { name: 'city', range: 'mid' as const, position: city.centre },
+          { name: 'mountain summit', range: 'far' as const, position: summit.position },
+          { name: 'coast beach', range: 'mid' as const, position: beach.position },
+        ],
+      },
+    ],
     failures: [],
   };
 }
