@@ -50,8 +50,16 @@ export function crossingPath(a: Vec3, b: Vec3, height: (x: number, z: number) =>
   }
   // Carry actual pavement support across the approach at the same physical ramp grade.
   for (let k = 1; k <= n; k++)
-    points[k][1] = Math.max(points[k][1], points[k - 1][1] - (length / n) * 0.25);
+    points[k] = [
+      points[k][0],
+      Math.max(points[k][1], points[k - 1][1] - (length / n) * 0.25),
+      points[k][2],
+    ];
   for (let k = n - 1; k >= 0; k--)
-    points[k][1] = Math.max(points[k][1], points[k + 1][1] - (length / n) * 0.25);
+    points[k] = [
+      points[k][0],
+      Math.max(points[k][1], points[k + 1][1] - (length / n) * 0.25),
+      points[k][2],
+    ];
   return points;
 }
