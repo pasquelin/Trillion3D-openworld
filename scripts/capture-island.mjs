@@ -4,7 +4,6 @@ import { spawn } from 'node:child_process';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-
 const args = Object.fromEntries(
   process.argv.slice(2).map((arg) => {
     const at = arg.indexOf('=');
@@ -18,9 +17,11 @@ if (!output || !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url))
   throw Error('Set --out=DIR and a local --url=http://127.0.0.1:PORT/');
 const route = args.route ?? 'V1-summit';
 const waitMs = Math.min(180_000, Number(args.wait ?? 10_000));
-const timeoutMs = Math.min(240_000, Number(args.timeout ?? Math.max(90_000, waitMs + 60_000)));
-if (![waitMs, timeoutMs].every(Number.isFinite) || waitMs < 0 || timeoutMs < waitMs + 30_000)
-  throw Error('Timeout must leave at least 30 seconds for loading before --wait');
+const timeoutMs = Math.min(1_800_000, Number(args.timeout ?? Math.max(90_000, waitMs + 60_000)));
+const rpcTimeoutMs = Math.min(900_000, Number(args['rpc-timeout'] ?? 10_000));
+if (![waitMs, timeoutMs, rpcTimeoutMs].every(Number.isFinite) || waitMs < 0 ||
+    rpcTimeoutMs < 1_000 || timeoutMs < waitMs + rpcTimeoutMs + 20_000)
+  throw Error('Timeout must leave RPC timeout plus 20 seconds for loading before --wait');
 await mkdir(output, { recursive: true });
 const profile = join(output, `chrome-profile-${process.pid}`);
 const child = spawn(
@@ -65,7 +66,7 @@ const call = (method, params = {}) =>
       pending.set(key, { resolve, reject });
       socket.send(JSON.stringify({ id: key, method, params }));
     }),
-    10_000,
+    rpcTimeoutMs,
     method,
   );
 const evaluate = async (expression) => {
@@ -77,7 +78,6 @@ const evaluate = async (expression) => {
   if (reply.exceptionDetails) throw Error(reply.exceptionDetails.text);
   return reply.result.value;
 };
-
 try {
   const match = await bounded(
     (async () => {

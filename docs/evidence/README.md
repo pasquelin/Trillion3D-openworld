@@ -4,6 +4,11 @@ Issue #22 has two separate gates. A software browser can prove that the **actual
 world** loads and draws a selected route. Only a named hardware run can establish the
 island's frame times, memory behavior and game performance. Keep their results separate.
 
+The [October 2026 checkpoint](full-island-checkpoint.md) records the completed #15
+full cook, its disk budget miss, a bounded full-world browser attempt, and the
+separate downtown preview. It is an input to this protocol, not a passing full-island
+render or performance result.
+
 ## Capture the cooked world
 
 1. From a final, clean application commit, record `git rev-parse HEAD`, the engine pin
@@ -19,8 +24,9 @@ island's frame times, memory behavior and game performance. Keep their results s
 
    Repeat with `V1-roof` for the city, `V1-harbor` for the coast, and `F2` for the
    airport-to-airfield departure. Confirm each ID exists in the actual page selector.
-   Set `--wait=10000` milliseconds for each pose
-   and `--timeout=90000` for the bounded attempt. A screenshot is saved only after the
+   Start with `--wait=10000` milliseconds and `--timeout=90000` for a bounded
+   attempt. For a slow but progressing full-world load, record the reason and use
+   a larger overall timeout plus `--rpc-timeout=120000` (milliseconds). A screenshot is saved only after the
    loading overlay is gone, the route is selected, no uncaught exception was captured,
    and the page reports a positive count of **selected** triangles. Inspect the PNG
    by eye as well: a positive counter alone does not prove visible geometry.
@@ -35,8 +41,10 @@ render path. It does not synthesize geometry or draw a diagram. It requires a br
 where Chromium DevTools and local sockets work. This managed cloud currently fails
 Chromium's crashpad `setsockopt` inside its filesystem sandbox. Its unsandboxed
 `--dump-dom` probe timed out, but DevTools successfully reached a local browser page.
-An earlier smoke image had zero selected triangles and is **not** full-island 3D
-evidence. The final cooked island still needs a valid inspected capture.
+An earlier smoke image had zero selected triangles. A later full-world attempt
+remained blocked for over 13 minutes even with HTTP Range support and ended at a
+120-second DevTools evaluation timeout. Neither is full-island 3D evidence. The
+final cooked island still needs a valid inspected capture.
 
 ## Named hardware measurement
 
