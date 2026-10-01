@@ -19,7 +19,6 @@ import {
   tube,
   type PropLamp,
 } from '../../props/index.ts';
-import { PLINTH } from './houses.ts';
 import { DESERT } from './palette.ts';
 import { domedHall } from './hall.ts';
 
