@@ -22,79 +22,31 @@
         "texturePoolBytes": 268435456,
         "lighting": {
           "sun": {
-            "color": [
-              1,
-              0.95,
-              0.88
-            ],
+            "color": [1, 0.95, 0.88],
             "intensity": 3,
-            "position": [
-              -50,
-              100,
-              50
-            ],
-            "target": [
-              0,
-              0,
-              0
-            ],
+            "position": [-50, 100, 50],
+            "target": [0, 0, 0],
             "castShadow": true
           },
           "fill": {
-            "color": [
-              0.55,
-              0.7,
-              1
-            ],
-            "groundColor": [
-              0.22,
-              0.18,
-              0.13
-            ],
+            "color": [0.55, 0.7, 1],
+            "groundColor": [0.22, 0.18, 0.13],
             "intensity": 0.8
           },
-          "background": [
-            0.16,
-            0.23,
-            0.31
-          ]
+          "background": [0.16, 0.23, 0.31]
         },
         "cameras": {
           "facade": {
-            "position": [
-              -18,
-              1.7,
-              -49
-            ],
-            "target": [
-              -18,
-              10,
-              -34
-            ]
+            "position": [-18, 1.7, -49],
+            "target": [-18, 10, -34]
           },
           "alley": {
-            "position": [
-              -49,
-              1.7,
-              -20.65
-            ],
-            "target": [
-              35,
-              1.7,
-              -20.65
-            ]
+            "position": [-49, 1.7, -20.65],
+            "target": [35, 1.7, -20.65]
           },
           "skyline": {
-            "position": [
-              95,
-              85,
-              95
-            ],
-            "target": [
-              0,
-              12,
-              0
-            ]
+            "position": [95, 85, 95],
+            "target": [0, 12, 0]
           }
         },
         "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
@@ -108,10 +60,7 @@
         }
       },
       "metadata": {
-        "viewport": [
-          1280,
-          720
-        ],
+        "viewport": [1280, 720],
         "dpr": 1,
         "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
         "worldKeys": [
@@ -154,10 +103,7 @@
           "awaitPages",
           "dispose"
         ],
-        "canvas": [
-          1280,
-          720
-        ]
+        "canvas": [1280, 720]
       },
       "facade": {
         "frame": {
@@ -344,11 +290,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          -18,
-          1.7,
-          -49
-        ]
+        "camera": [-18, 1.7, -49]
       },
       "alley": {
         "frame": {
@@ -535,11 +477,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          -49,
-          1.7,
-          -20.65
-        ]
+        "camera": [-49, 1.7, -20.65]
       },
       "skyline": {
         "frame": {
@@ -726,11 +664,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          95,
-          85,
-          95
-        ]
+        "camera": [95, 85, 95]
       }
     }
   ],

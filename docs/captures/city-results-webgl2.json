@@ -22,28 +22,12 @@
         "texturePoolBytes": 268435456,
         "cameras": {
           "facade": {
-            "position": [
-              -28,
-              1.7,
-              -11
-            ],
-            "target": [
-              -28,
-              10,
-              -28
-            ]
+            "position": [-28, 1.7, -11],
+            "target": [-28, 10, -28]
           },
           "skyline": {
-            "position": [
-              95,
-              85,
-              95
-            ],
-            "target": [
-              0,
-              12,
-              0
-            ]
+            "position": [95, 85, 95],
+            "target": [0, 12, 0]
           }
         },
         "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
@@ -57,10 +41,7 @@
         }
       },
       "metadata": {
-        "viewport": [
-          1280,
-          720
-        ],
+        "viewport": [1280, 720],
         "dpr": 1,
         "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
         "worldKeys": [
@@ -103,10 +84,7 @@
           "awaitPages",
           "dispose"
         ],
-        "canvas": [
-          1280,
-          720
-        ]
+        "canvas": [1280, 720]
       },
       "facade": {
         "frame": {
@@ -293,11 +271,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          -28,
-          1.7,
-          -11
-        ]
+        "camera": [-28, 1.7, -11]
       },
       "skyline": {
         "frame": {
@@ -484,11 +458,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          95,
-          85,
-          95
-        ]
+        "camera": [95, 85, 95]
       }
     },
     {
@@ -513,28 +483,12 @@
         "texturePoolBytes": 268435456,
         "cameras": {
           "facade": {
-            "position": [
-              -92,
-              1.7,
-              -75
-            ],
-            "target": [
-              -92,
-              10,
-              -92
-            ]
+            "position": [-92, 1.7, -75],
+            "target": [-92, 10, -92]
           },
           "skyline": {
-            "position": [
-              190,
-              85,
-              190
-            ],
-            "target": [
-              0,
-              12,
-              0
-            ]
+            "position": [190, 85, 190],
+            "target": [0, 12, 0]
           }
         },
         "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
@@ -548,10 +502,7 @@
         }
       },
       "metadata": {
-        "viewport": [
-          1280,
-          720
-        ],
+        "viewport": [1280, 720],
         "dpr": 1,
         "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
         "worldKeys": [
@@ -594,10 +545,7 @@
           "awaitPages",
           "dispose"
         ],
-        "canvas": [
-          1280,
-          720
-        ]
+        "canvas": [1280, 720]
       },
       "facade": {
         "frame": {
@@ -784,11 +732,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          -92,
-          1.7,
-          -75
-        ]
+        "camera": [-92, 1.7, -75]
       },
       "skyline": {
         "frame": {
@@ -975,11 +919,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          190,
-          85,
-          190
-        ]
+        "camera": [190, 85, 190]
       }
     },
     {
@@ -1004,28 +944,12 @@
         "texturePoolBytes": 268435456,
         "cameras": {
           "facade": {
-            "position": [
-              -220,
-              1.7,
-              -203
-            ],
-            "target": [
-              -220,
-              10,
-              -220
-            ]
+            "position": [-220, 1.7, -203],
+            "target": [-220, 10, -220]
           },
           "skyline": {
-            "position": [
-              380,
-              85,
-              380
-            ],
-            "target": [
-              0,
-              12,
-              0
-            ]
+            "position": [380, 85, 380],
+            "target": [0, 12, 0]
           }
         },
         "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
@@ -1039,10 +963,7 @@
         }
       },
       "metadata": {
-        "viewport": [
-          1280,
-          720
-        ],
+        "viewport": [1280, 720],
         "dpr": 1,
         "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
         "worldKeys": [
@@ -1085,10 +1006,7 @@
           "awaitPages",
           "dispose"
         ],
-        "canvas": [
-          1280,
-          720
-        ]
+        "canvas": [1280, 720]
       },
       "facade": {
         "frame": {
@@ -1275,11 +1193,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          -220,
-          1.7,
-          -203
-        ]
+        "camera": [-220, 1.7, -203]
       },
       "skyline": {
         "frame": {
@@ -1466,11 +1380,7 @@
             "hizCulled": null
           }
         },
-        "camera": [
-          380,
-          85,
-          380
-        ]
+        "camera": [380, 85, 380]
       }
     }
   ],

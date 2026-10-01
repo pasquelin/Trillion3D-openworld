@@ -1,15 +1,7 @@
 {
   "initialReady": true,
-  "facadeCamera": [
-    -28,
-    1.7,
-    -11
-  ],
-  "skylineCamera": [
-    95,
-    85,
-    95
-  ],
+  "facadeCamera": [-28, 1.7, -11],
+  "skylineCamera": [95, 85, 95],
   "afterPresetReady": true,
   "afterPreset": {
     "url": "http://localhost:4192/workload.html?preset=four-blocks&renderer=webgl2",
