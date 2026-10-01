@@ -46,4 +46,4 @@ createServer(async (request, response) => {
   createReadStream(file, { start, end })
     .on('error', (error) => response.destroy(error))
     .pipe(response);
-}).listen(port, () => console.log(`http://localhost:${port}/`));
+}).listen(port, '127.0.0.1', () => console.log(`http://127.0.0.1:${port}/`));
