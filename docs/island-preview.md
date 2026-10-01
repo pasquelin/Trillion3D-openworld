@@ -45,16 +45,23 @@ island geometry renders; it is not a substitute for a full-world visual review.
 For seed 332, the primary downtown's conservative building footprint rose from 37,000 m²
 (13.93% of its dry block catchment) to 107,336 m² (40.41%). Shared streetwall meshes form
 continuous frontages around tower courts, with narrow corner passages and clear twin-office
-plots. Dry fragments beside authored avenues gained 150 road-facing terrace rows with
-81,900 m² of building footprint and 309 mature-oak instances. These are checked against
-terrain height, water, roads, and existing solid footprints. Primary city instances rose from
-6,157 to 6,616; unique city prop triangles rose by about 1.3%.
+plots. Partial parcels beside connected grid streets gained 236 street-facing terrace rows with
+128,856 m² of building footprint and 77 mature-oak instances. These are checked against
+terrain height, water, roads, and existing solid footprints. Primary city instances changed
+from 6,157 before density work to 6,470; unique city prop triangles rose by about 1.3%.
 
-The density-only four-tile district capture rendered 18,080 objects, 775 resident pages and
-1,679,598 selected triangles. Its rows follow the diagonal avenues, but broad grassy pockets
-are still visible. The combined local-street surface diagnostic then rendered the same 18,080
+The earlier density-only four-tile district capture rendered 18,080 objects, 775 resident pages
+and 1,679,598 selected triangles. The combined local-street surface diagnostic rendered 18,080
 objects, 775 resident pages and 1,679,685 selected triangles with paved block streets visible.
 Its strict capture result is invalid because one network request ended with `ERR_ABORTED`; the
 WebGL2 renderer was ready and reported no JavaScript exception. Software-rendered screenshots
-establish appearance and loading, not interactive frame rate. Grassy parcels, dark distant tower
-crowns and segmented shafts remain visible limitations.
+establish appearance and loading, not interactive frame rate. Both captures predate the grid-street
+parcel alignment in `8bf2005`.
+
+The [grid-street district capture](captures/coherent-world-district.png) on source head
+`239b3d7` is valid in WebGL2: 17,925 selected objects, 775 resident pages, 1,500,478 selected
+triangles, and no JavaScript exceptions or failed requests. The adjacent
+[capture record](captures/coherent-world-district-capture.json) includes the PNG SHA-256 and
+records the optional favicon 404. It shows frontage rows aligned to visible local streets.
+Large grassy parcels and distant tower crown artifacts remain visible. This regional subset
+does not establish whole-island startup or hardware frame performance.

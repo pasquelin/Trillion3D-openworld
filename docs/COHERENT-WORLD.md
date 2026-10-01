@@ -82,35 +82,35 @@ records the source cook key, engine pin, census hash and map/PNG SHA-256 hashes.
 
 ## Integrated source measurements
 
-The measured source checkpoint is `3cb49bf`,
-with cook key `32fb331f98244021`. Both censuses include the #15 city density and
+The measured source checkpoint is `239b3d7`,
+with cook key `5ed3a2e1ef403447`. Both censuses include the #15 city density and
 local-street surface changes as well as #19, #20 and the tested local #21 route
 source. These are source-generation observations; GPU performance
 requires a separate check.
 
 | Seed | Placed nodes | Unique mesh triangles | Mesh buffers | Homes | Eligible samples ≤10 m | Eligible samples ≥30 m | Generation |   Peak RSS |
 | ---- | -----------: | --------------------: | -----------: | ----: | ---------------------: | ---------------------: | ---------: | ---------: |
-| 332  |      150,246 |             2,499,303 |   100.93 MiB |   671 |                 85.76% |                  0.46% |   115.38 s | 745.45 MiB |
-| 333  |      145,905 |             2,228,852 |    88.93 MiB |   496 |                 85.74% |                  1.59% |   121.40 s | 735.18 MiB |
+| 332  |      149,963 |             2,499,303 |   100.93 MiB |   671 |                 85.31% |                  0.47% |   113.95 s | 749.68 MiB |
+| 333  |      145,524 |             2,228,852 |    88.93 MiB |   496 |                 85.19% |                  1.60% |   127.12 s | 733.31 MiB |
 
-The 90th-percentile distance is 11.07 m / 11.24 m; the 95th percentile is
-13.30 m / 14.13 m. Operational fields, roads, water and steep cliffs are excluded
-and counted separately. Seeds 332 / 333 retain 239 / 850 eligible cells at least 30 m from
+The 90th-percentile distance is 11.13 m / 11.33 m; the 95th percentile is
+13.30 m / 14.17 m. Operational fields, roads, water and steep cliffs are excluded
+and counted separately. Seeds 332 / 333 retain 247 / 854 eligible cells at least 30 m from
 retained mesh witnesses. Airport and coast node allowances remain saturated at
 15,000 and 40,000 respectively. The separate gap map displays this residual;
 the approximately 10 m target is not achieved everywhere.
 
 | Seed 332 centre | Buildings | Maximum building height | Maximum roof altitude | Building footprint union | Dry urban blocks | Roads |
 | --------------- | --------: | ----------------------: | --------------------: | -----------------------: | ---------------: | ----: |
-| Primary south   |     1,448 |                 315.5 m |               332.3 m |               395,532 m² |        2.203 km² |   263 |
-| West            |       314 |                 125.4 m |               150.6 m |                66,181 m² |        0.438 km² |    60 |
-| Interior        |       553 |                 125.4 m |               257.2 m |               132,482 m² |        0.828 km² |    94 |
-| Northeast       |       326 |                 125.4 m |               267.5 m |                72,900 m² |        0.469 km² |    63 |
-| East            |       343 |                 125.4 m |               143.6 m |                84,604 m² |        0.516 km² |    76 |
+| Primary south   |     1,534 |                 315.5 m |               332.3 m |               395,532 m² |        2.203 km² |   263 |
+| West            |       318 |                 125.4 m |               150.6 m |                66,181 m² |        0.438 km² |    60 |
+| Interior        |       555 |                 125.4 m |               257.2 m |               132,482 m² |        0.828 km² |    94 |
+| Northeast       |       325 |                 125.4 m |               267.5 m |                72,900 m² |        0.469 km² |    63 |
+| East            |       385 |                 125.4 m |               143.6 m |                84,604 m² |        0.516 km² |    76 |
 
 The footprint column sums designated dry district catchments; the primary core
-also has 150 road-facing terraces outside those catchments, with 81,900 m² of
-additional physical footprint and 309 boulevard oaks. Its Bay Center downtown
+also has 236 grid-street-facing terraces outside those catchments, with 128,856 m²
+of additional physical footprint and 77 boulevard oaks. Its Bay Center downtown
 catchment now has 107,336 m² of building footprint across 0.266 km² of dry blocks,
 or 40.41% coverage, versus 13.93% before the density change. Every centre has a
 connected street component and physical buildings. Composed
@@ -138,13 +138,16 @@ The versioned [source map](captures/coherent-world.png),
 [333](captures/coherent-world-census-333.json) record this exact source checkpoint.
 The main map displays composed relief, five centres, physical building footprints,
 roads, both airfields, water and actual vegetation roots.
+The [district WebGL2 capture](captures/coherent-world-district.png) and its
+[capture record](captures/coherent-world-district-capture.json) show the current
+2 × 2 km preview on source head `239b3d7`.
 
 ## Validation
 
-The exact seed-332/333 source census above ran on `3cb49bf` and passed road-water,
+The exact seed-332/333 source census above ran on `239b3d7` and passed road-water,
 bridge-deck and traversal audits on both seeds. The local #15 density tests,
 TypeScript, ESLint, Prettier and line-count gate passed on the immediately prior
-city commit `f143cbb`; the road-surface change was checked by its focused tests
+city commit `8bf2005`; the road-surface change was checked by its focused tests
 before `3cb49bf`. At historical source commit `a8e7fe1`, the direct Prettier,
 ESLint, TypeScript, Knip, line-count and build gates passed. The 281-test full suite
 passed on the preceding `4d5a489` checkpoint; vegetation, stand and countryside

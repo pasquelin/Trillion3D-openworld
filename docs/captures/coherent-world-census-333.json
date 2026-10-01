@@ -1,7 +1,7 @@
 {
   "seed": 333,
-  "sourceCookKey": "32fb331f98244021",
-  "sourceHead": "3cb49bf18f1134000235d97c6c419d6ff70dff0e",
+  "sourceCookKey": "5ed3a2e1ef403447",
+  "sourceHead": "239b3d7f6e801d00ff95708cbc520595f611542c",
   "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
   "traversalFailures": [],
   "physicalBridgeDecks": {
@@ -102,7 +102,7 @@
     "regions": {
       "coast": {
         "cells": 9629,
-        "within10m": 8179
+        "within10m": 8176
       },
       "desert": {
         "cells": 1863,
@@ -110,32 +110,32 @@
       },
       "city": {
         "cells": 14916,
-        "within10m": 12786
+        "within10m": 12502
       },
       "countryside": {
         "cells": 15851,
-        "within10m": 14599
+        "within10m": 14596
       },
       "mountains": {
         "cells": 3255,
-        "within10m": 2864
+        "within10m": 2862
       },
       "airport": {
         "cells": 7931,
         "within10m": 5873
       }
     },
-    "within10mFraction": 0.8574048086818225,
-    "beyond30mFraction": 0.01590420058003555,
+    "within10mFraction": 0.8519412480119749,
+    "beyond30mFraction": 0.015979043876882777,
     "quantilesM": {
-      "p50": 4.668976157583144,
-      "p90": 11.244498526904056,
-      "p95": 14.134032250558768
+      "p50": 4.788106497182595,
+      "p90": 11.326693404670372,
+      "p95": 14.16867689942903
     }
   },
-  "initialEmptyCells": 58099,
+  "initialEmptyCells": 57994,
   "initialEligibleCells": 97963,
-  "infillInstances": 51445,
+  "infillInstances": 51313,
   "airfields": {
     "main": {
       "minX": -2450,
@@ -164,7 +164,7 @@
   "centres": [
     {
       "id": "city",
-      "buildings": 1369,
+      "buildings": 1494,
       "maxBuildingHeightM": 315.5,
       "maxRoofAltitudeM": 332.43400387616464,
       "roads": 269,
@@ -205,9 +205,8 @@
             11.479999542236328
           ],
           "rejections": {
-            "road": 131,
-            "bounds": 1,
-            "overlap": 20
+            "road": 167,
+            "bounds": 1
           },
           "roadConnections": [
             {
@@ -4522,7 +4521,7 @@
     },
     {
       "id": "city-west",
-      "buildings": 343,
+      "buildings": 347,
       "maxBuildingHeightM": 125.4000015258789,
       "maxRoofAltitudeM": 162.91701489898998,
       "roads": 64,
@@ -4563,8 +4562,7 @@
             11.479999542236328
           ],
           "rejections": {
-            "road": 4,
-            "overlap": 2
+            "road": 8
           },
           "roadConnections": [
             {
@@ -5898,7 +5896,7 @@
     },
     {
       "id": "city-interior",
-      "buildings": 543,
+      "buildings": 555,
       "maxBuildingHeightM": 125.4000015258789,
       "maxRoofAltitudeM": 282.74735820461154,
       "roads": 92,
@@ -5939,8 +5937,7 @@
             11.479999542236328
           ],
           "rejections": {
-            "overlap": 2,
-            "road": 4
+            "road": 6
           },
           "roadConnections": [
             {
@@ -8006,7 +8003,7 @@
     },
     {
       "id": "city-northeast",
-      "buildings": 256,
+      "buildings": 275,
       "maxBuildingHeightM": 125.4000015258789,
       "maxRoofAltitudeM": 363.91865898186234,
       "roads": 56,
@@ -8047,8 +8044,7 @@
             11.479999542236328
           ],
           "rejections": {
-            "road": 19,
-            "overlap": 1
+            "road": 12
           },
           "roadConnections": [
             {
@@ -9088,7 +9084,7 @@
     },
     {
       "id": "city-east",
-      "buildings": 438,
+      "buildings": 448,
       "maxBuildingHeightM": 125.4000015258789,
       "maxRoofAltitudeM": 147.62321340162384,
       "roads": 86,
@@ -9129,8 +9125,7 @@
             11.479999542236328
           ],
           "rejections": {
-            "road": 5,
-            "overlap": 2
+            "road": 8
           },
           "roadConnections": [
             {
@@ -10818,8 +10813,8 @@
     {
       "name": "city",
       "limit": 80000,
-      "placed": 12290,
-      "infill": 9553
+      "placed": 12041,
+      "infill": 9421
     },
     {
       "name": "airport",
@@ -10846,12 +10841,12 @@
       "infill": 3526
     }
   ],
-  "nodes": 145905,
+  "nodes": 145524,
   "uniqueMeshTriangles": 2228852,
   "geometryBufferBytes": 93252888,
-  "computationSeconds": 121.430823786,
-  "peakRssKiB": 752808,
+  "computationSeconds": 127.120063725,
+  "peakRssKiB": 750908,
   "maxTerrainAltitude40mSample": 1898.771620820261,
   "note": "Placement source census; cache size and GPU performance require their separate build/runtime checks",
-  "contentHash": "08aa8948367fbff478fa6b8bcd9e5f7ce040a79724cc25e193b86d6c517d7205"
+  "contentHash": "e74018d9b437d7dd146dd651ca78ec6305b0a6d9dbafb2cd7765887453eb467d"
 }
