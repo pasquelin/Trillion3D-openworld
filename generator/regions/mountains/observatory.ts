@@ -15,11 +15,11 @@ import {
   tube,
   type PropLamp,
 } from '../../props/index.ts';
-import { BASEMENT } from './chalet.ts';
 import { boxAt } from './parts.ts';
 import { MOUNTAIN_SURFACES as S } from './surfaces.ts';
 
 const DRUM = 7;
+export const OBS_BASEMENT = 4;
 export const DOME_HEIGHT = 8.2;
 const MAST: Vec3 = [-9.5, 0, -3];
 
@@ -32,8 +32,8 @@ const ring = (r: number, y: number, n: number): Vec3[] =>
 
 export function observatoryBase(): PropMesh {
   const parts: MeshPart[] = [
-    transform(cylinder(S.stoneWall, DRUM + 1, BASEMENT + 1, { segments: 48 }), {
-      at: [0, -BASEMENT, 0],
+    transform(cylinder(S.stoneWall, DRUM + 1, OBS_BASEMENT + 1, { segments: 48 }), {
+      at: [0, -OBS_BASEMENT, 0],
     }),
     transform(cylinder(S.domeWhite, DRUM, DOME_HEIGHT - 1, { segments: 48 }), { at: [0, 1, 0] }),
     lathe(

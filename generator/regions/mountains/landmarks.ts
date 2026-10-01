@@ -7,7 +7,7 @@ import type { LampLight, Marker, Mover, Vec3, WorldPlan } from '../../plan/contr
 import { placeLamps } from '../../props/index.ts';
 import { BASEMENT } from './chalet.ts';
 import type { Lake } from './lake.ts';
-import { DOME_HEIGHT, OBSERVATORY_LAMPS } from './observatory.ts';
+import { DOME_HEIGHT, OBS_BASEMENT, OBSERVATORY_LAMPS } from './observatory.ts';
 import { headingYaw } from './route.ts';
 import type { Placer } from './space.ts';
 import { SNOW_LINE, TREE_LINE } from './terrain.ts';
@@ -78,14 +78,14 @@ export function placeObservatory(placer: Placer, tops: readonly Vec3[]): Landmar
   const summit = tops[0];
   for (const top of tops.slice(1)) {
     if (top[1] < TREE_LINE || Math.hypot(top[0] - summit[0], top[2] - summit[2]) < 1_000) continue;
-    for (let k = 0; k < 640; k++) {
+    for (let k = 0; k < 3_000; k++) {
       const [x, z] = [
           top[0] + Math.cos(k * 2.399963) * Math.sqrt(k) * 9.25,
           top[2] + Math.sin(k * 2.399963) * Math.sqrt(k) * 9.25,
         ],
         base = placer.place('mountains/observatory', x, z, {
           seat: 'high',
-          basement: BASEMENT,
+          basement: OBS_BASEMENT,
           name: 'mountains/observatory',
         });
       if (!base) continue;

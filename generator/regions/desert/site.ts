@@ -133,17 +133,20 @@ export class Site {
     return clear;
   }
 
-  /** Places `prop` at (x, z) if its ground allows; returns the instance, or nothing. */
-  place(
+  /** Checks a complete footprint without claiming it, for settlement site selection. */
+  canPlace(prop: string, x: number, z: number, yaw: number, options: PlaceOptions = {}): boolean {
+    return this.footing(prop, x, z, yaw, options) !== undefined;
+  }
+
+  private footing(
     prop: string,
     x: number,
     z: number,
     yaw: number,
-    { scale, name, clearance }: PlaceOptions = {},
-  ) {
+    { scale, clearance }: PlaceOptions,
+  ): { shape: Point[]; height: number } | undefined {
     const fp = this.needs.get(prop);
     if (!fp) throw new Error(`desert: no footprint for "${prop}"`);
-    if (this.instances.length >= this.limit) return undefined;
     const [sx, sy, sz] = axes(scale),
       shape = corners(fp, x, z, yaw, sx, sz);
     if (!this.free(shape, clearance)) return undefined;
@@ -153,14 +156,28 @@ export class Site {
       max = Math.max(ground.max, this.plan.height(x, z));
     // Nothing stands in the sea, nor on ground steeper than its plinth absorbs.
     if (min < WORLD.seaLevel + 0.5 || max - min > fp.plinth * sy) return undefined;
+    return { shape, height: min - fp.sink * sy };
+  }
+
+  /** Places `prop` at (x, z) if its ground allows; returns the instance, or nothing. */
+  place(
+    prop: string,
+    x: number,
+    z: number,
+    yaw: number,
+    { scale, name, clearance }: PlaceOptions = {},
+  ) {
+    if (this.instances.length >= this.limit) return undefined;
+    const footing = this.footing(prop, x, z, yaw, { scale, clearance });
+    if (!footing) return undefined;
     const instance: Instance = {
       prop,
-      position: [x, min - fp.sink * sy, z],
+      position: [x, footing.height, z],
       yaw,
       ...(scale === undefined ? {} : { scale }),
       ...(name ? { name } : {}),
     };
-    this.claim(shape);
+    this.claim(footing.shape);
     this.instances.push(instance);
     return instance;
   }

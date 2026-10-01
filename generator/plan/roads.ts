@@ -52,10 +52,18 @@ function roadCost(ground: Ground, cls: RoadClass, strict: boolean) {
       az = nodeZ(from),
       bx = nodeX(to),
       bz = nodeZ(to),
-      samples = Math.ceil(length / 25);
+      samples = Math.ceil(length / (cls === 'pass' ? 8 : 25)),
+      half = cls === 'pass' ? ROAD_STYLE[cls].width / 2 + 2 : 0,
+      [nx, nz] = [((bz - az) / length) * half, (-(bx - ax) / length) * half];
     for (let k = 1; k <= samples; k++)
-      if (ground.wet(ax + ((bx - ax) * k) / samples, az + ((bz - az) * k) / samples))
-        return Infinity;
+      for (const side of half ? [-1, 0, 1] : [0])
+        if (
+          ground.wet(
+            ax + ((bx - ax) * k) / samples + side * nx,
+            az + ((bz - az) * k) / samples + side * nz,
+          )
+        )
+          return Infinity;
     return length * (1 + steep ** 4);
   };
 }

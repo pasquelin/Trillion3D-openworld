@@ -21,7 +21,7 @@ const VILLAGES: Partial<Record<RegionName, number>> = {
 /** Where each region's town is sought: a spot, searched within 1.2 km for flat dry land. */
 const TOWNS: Partial<Record<RegionName, [number, number]>> = {
   countryside: [1_000, 500],
-  desert: [-3_000, -1_200],
+  desert: [-3_300, -1_100],
   coast: [2_800, 2_000],
   mountains: [-2_500, -2_100],
 };
@@ -82,14 +82,24 @@ export function planSettlements(
     const centre = settle(
       ground.grid,
       spot,
-      1_200,
+      region === 'desert' ? 100 : 1_200,
       REGION_BOUNDS[region],
-      RADIUS.town,
+      region === 'desert' ? 500 : RADIUS.town,
       (x, z, h) =>
-        spaced(x, z, h) &&
+        (region === 'desert'
+          ? h > 3 &&
+            !ground.wet(x, z) &&
+            mainland(x, z) &&
+            out.every(
+              (s) =>
+                Math.hypot(s.centre[0] - x, s.centre[2] - z) >
+                (s.id === 'city-west' ? s.radius : s.id === 'airport' ? 1_200 : s.radius + 300),
+            )
+          : spaced(x, z, h)) &&
         owner(x, z) === region &&
         (region !== 'mountains' || h > 350) &&
-        h < (region === 'mountains' ? 700 : WORLD.peak * 0.75),
+        (region !== 'desert' || h < 200) &&
+        h < (region === 'mountains' ? 500 : WORLD.peak * 0.75),
     );
     if (centre) add(`${region}-town`, 'town', region, centre);
   }

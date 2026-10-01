@@ -63,13 +63,17 @@ export function planNetwork(
         : to,
       {
         ...ground,
-        wet: (x, z) =>
-          ground.wet(x, z) ||
-          (!!airfields && onAirfield(airfields, x, z, 60)) ||
-          (x > platform.minX - 60 &&
-            x < platform.maxX + 60 &&
-            z > platform.minZ - 60 &&
-            z < platform.maxZ + 60),
+        wet: (x, z) => {
+          return (
+            ground.wet(x, z) ||
+            (!!airfields && onAirfield(airfields, x, z, 60)) ||
+            (x > platform.minX - 60 &&
+              x < platform.maxX + 60 &&
+              z > platform.minZ - 60 &&
+              z < platform.maxZ + 60) ||
+            ((id === 'mountains-town/road' || id === 'pass') && overRiver(x, z) !== null)
+          );
+        },
       },
       overRiver,
     );

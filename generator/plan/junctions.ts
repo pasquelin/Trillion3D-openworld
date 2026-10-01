@@ -162,7 +162,24 @@ export function joinRoadProfiles(
       links[b].push({ to: a, rise });
     }
   });
-  const solved = boundedProfiles(height, links, floors, anchors);
+  let solved: number[];
+  try {
+    solved = boundedProfiles(height, links, floors, anchors);
+  } catch (error) {
+    const ids = [...String(error).matchAll(/(?:node|from) (\d+)/g)].map((m) => Number(m[1]));
+    const uses = ids.flatMap((id) =>
+      courses.flatMap((course, k) =>
+        course.road.points.flatMap((point, i) =>
+          nodes[k][i] === id
+            ? [
+                `${id}:${course.road.id}/${i}@${point[0]},${point[2]} y${point[1]} ground${ground(point[0], point[2])} floor${floors[id]} anchor${anchors[id]} bridge${course.bridge[i]}`,
+              ]
+            : [],
+        ),
+      ),
+    );
+    throw new Error(`${error}; roads ${uses.join(', ')}`, { cause: error });
+  }
   courses.forEach(
     (c, k) =>
       (c.road.points = c.road.points.map((p, i): Vec3 => [p[0], solved[nodes[k][i]], p[2]])),

@@ -15,7 +15,7 @@ export function flattest(
   suitable: (x: number, z: number) => boolean = () => true,
 ): Point {
   const { minX, minZ, maxX, maxZ } = b.site.bounds,
-    samples = 512;
+    samples = 4096;
   let best: Point = [hx, hz],
     score = Infinity;
   for (let k = 0; k < samples; k++) {

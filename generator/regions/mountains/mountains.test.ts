@@ -4,6 +4,7 @@ import type { Instance } from '../../plan/contract.ts';
 import { sharedProps, triangleCount } from '../../props/index.ts';
 import { propProblems } from '../../props/validate.ts';
 import { BASEMENT, TERRACES } from './chalet.ts';
+import { OBS_BASEMENT } from './observatory.ts';
 import { createPlan } from '../../plan/plan.ts';
 import { mountainsRegion } from './index.ts';
 import { AERIAL, layoutMountains } from './layout.ts';
@@ -134,7 +135,12 @@ test('nothing floats and nothing is buried', () => {
     if (AERIAL.has(inst.prop) || onRoad(inst) || stand(inst)) return false;
     const [x, y, z] = inst.position,
       ground = plan.height(x, z);
-    const lift = inst.prop === 'mountains/church' ? TERRACES.at(-1)! : BASEMENT;
+    const lift =
+      inst.prop === 'mountains/church'
+        ? TERRACES.at(-1)!
+        : inst.prop === 'mountains/observatory'
+          ? OBS_BASEMENT
+          : BASEMENT;
     return y - ground < -2.1 || y - ground > lift + 1e-6;
   });
   assert.deepEqual(

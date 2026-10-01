@@ -1,27 +1,16 @@
-/**
- * The oasis settlements: a raised pool under palms at the heart, a ring street, four streets
- * out, mud-brick houses facing inward, wells and lanterns, palm gardens around. The town adds a
- * domed hall, a market square and a dirt track to the highway; villages are the same, smaller.
- * Around the houses, the palm gardens: groves of date palms (`props/stands.ts`) on every square
- * of the patch grid the ring holds; each stands near its planned settlement.
- */
 import type { Settlement, Vec3 } from '../../plan/contract.ts';
-import { between, hash01, STAND_SIDE } from '../../props/index.ts';
+import { between, hash01 } from '../../props/index.ts';
 import { facing, placeLit, teleport, type Build } from './build.ts';
-import { GROVE } from './catalog.ts';
-import { standOffsets } from '../stands.ts';
 import type { Point } from './geometry2.ts';
 import { corners } from './site.ts';
 import { oasisRoadSafety } from './road-safety.ts';
+import { groveSite, groves } from './oasis-groves.ts';
 import { flattest, nearest, street } from './streets.ts';
 
 /** Ring street radius and street widths, metres: a lane each way in town, a wide track out. */
 const RING = 58,
   STREET = 6,
   TRACK = 7;
-
-/** Width of the ring of palm gardens beyond the houses, metres. */
-const GARDENS = 180;
 
 type Plan = { edge: number; palms: number; lanterns: number; civic: boolean };
 const TOWN: Plan = { edge: 260, palms: 60, lanterns: 20, civic: true };
@@ -42,11 +31,27 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
     { edge } = layout,
     name = `desert/${home.id}`,
     seed = b.plan.subSeed(name),
-    { clear, suitable } = oasisRoadSafety(b, edge, layout.civic, highway, seed, RING, STREET),
+    { clear, suitable: dryRoads } = oasisRoadSafety(
+      b,
+      edge,
+      layout.civic,
+      highway,
+      seed,
+      RING,
+      STREET,
+    ),
+    suitable = (x: number, z: number) =>
+      b.site.canPlace('desert/pool', x, z, 0) && groveSite(b, [x, z], edge) && dryRoads(x, z),
     [cx, cz] = heart(
       b,
       name,
-      flattest(b, [home.centre[0], home.centre[2]], home.radius * 2, edge + 60, suitable),
+      flattest(
+        b,
+        [home.centre[0], home.centre[2]],
+        Math.min(home.radius, 400),
+        edge + 60,
+        suitable,
+      ),
       suitable,
     ),
     polar = (r: number, a: number): Point => [cx + r * Math.cos(a), cz + r * Math.sin(a)],
@@ -64,7 +69,28 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
     const a = toward + (k * Math.PI) / 2;
     street(b, `${name}/street-${k}`, 'street', STREET, [polar(RING, a), polar(edge, a)]);
   }
-  if (join && clear(polar(edge, toward), join, TRACK)) track(b, name, polar(edge, toward), join);
+  if (join) {
+    if (!clear(polar(edge, toward), join, TRACK)) throw new Error(`${name}: track crosses water`);
+    track(b, name, polar(edge, toward), join);
+    const town: Point = [home.centre[0], home.centre[2]],
+      distance = Math.hypot(join[0] - town[0], join[1] - town[1]);
+    if (distance > 0.01) {
+      if (!clear(town, join, TRACK)) throw new Error(`${name}: town link crosses water`);
+      const n = Math.ceil(distance / 10),
+        samples = Array.from({ length: n + 1 }, (_, k) => {
+          const t = k / n;
+          return b.plan.height(
+            town[0] + (join[0] - town[0]) * t,
+            town[1] + (join[1] - town[1]) * t,
+          );
+        }),
+        grade = Math.max(
+          ...samples.slice(1).map((y, k) => (Math.abs(y - samples[k]) * n) / distance),
+        );
+      if (grade > 0.1) throw new Error(`${name}: town link grade ${grade.toFixed(3)}`);
+      street(b, `${name}/town-link`, 'dirt', TRACK, [town, join]);
+    }
+  }
   const hall = layout.civic ? civic(b, name, [cx, cz], polar, toward) : undefined;
   // Lanterns along the ring, their brackets over the street.
   for (let i = 0; i < layout.lanterns; i++) {
@@ -76,37 +102,9 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
       Math.atan2(Math.sin(a), -Math.cos(a)),
     );
   }
-  groves(b, seed, [cx, cz], edge);
+  if (!groves(b, seed, [cx, cz], edge, RING)) throw new Error(`${name}: no grounded palm grove`);
   houses(b, seed, [cx, cz], edge, polar);
   if (hall) teleport(b, 'desert/oasis', ...polar(44, toward - Math.PI * 0.75), hall, -0.02);
-}
-
-/** Palm groves on the patch-grid squares inside the garden ring, a quarter turn each at random. */
-function groves(b: Build, seed: number, [cx, cz]: Point, edge: number) {
-  const outer = edge + GARDENS,
-    first = (v: number) => Math.floor((v - outer) / STAND_SIDE);
-  for (let i = first(cx); (i - 0.5) * STAND_SIDE < cx + outer; i++)
-    for (let j = first(cz); (j - 0.5) * STAND_SIDE < cz + outer; j++) {
-      const [x, z] = [(i + 0.5) * STAND_SIDE, (j + 0.5) * STAND_SIDE],
-        r = Math.hypot(x - cx, z - cz);
-      if (r < RING + STAND_SIDE || r > outer) continue;
-      const grove = b.site.place(
-        GROVE,
-        x,
-        z,
-        (Math.floor(hash01(seed + 5, i, j) * 4) * Math.PI) / 2,
-      );
-      // A grove stands on the lowest ground under its whole square, not only under its corners.
-      if (grove)
-        grove.position = [
-          x,
-          Math.min(
-            grove.position[1],
-            ...standOffsets.map(([dx, dz]) => b.plan.height(x + dx, z + dz)),
-          ),
-          z,
-        ];
-    }
 }
 
 /**
@@ -126,7 +124,7 @@ function heart(
     if (suitable(...at) && b.site.place('desert/pool', ...at, 0, { name: `${name}/pool` }))
       return at;
   }
-  return [x, z];
+  throw new Error(`${name}: no grounded pool on dry streets`);
 }
 
 /** A dirt track from the town's edge to the highway, dust on its middle. */
