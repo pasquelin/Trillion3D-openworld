@@ -3,7 +3,8 @@ import test from 'node:test';
 import { createPlan } from '../../plan/plan.ts';
 import { REGIONS } from '../index.ts';
 import { buildCity } from './index.ts';
-import { turn } from './frame.ts';
+import { polylineDistance, turn } from './frame.ts';
+import { gridPoint } from './grid.ts';
 import { dryFootprint } from './dry-footprint.ts';
 import { groundUnder } from './site.ts';
 import { TOUCH } from './placement.ts';
@@ -36,27 +37,34 @@ test('avenue fragments hold grounded row houses and oaks clear of the carriagewa
   assert.equal(terraces.length, city.report.avenueInfill.terraceCount);
   assert.ok(terraces.length > 100);
   assert.ok(city.report.avenueInfill.boulevardTreeCount > 0);
+  const roads = [...city.site.roadList, ...city.output.roads];
   for (const item of terraces) {
-    const roadFacing = city.site.roadList.some((road) =>
-      road.points.slice(1).some((end, k) => {
-        const start = road.points[k],
-          dx = end[0] - start[0],
-          dz = end[2] - start[2],
-          length = Math.hypot(dx, dz),
-          x = item.box!.centre[0] - start[0],
-          z = item.box!.centre[1] - start[2];
-        if (!length) return false;
-        const along = (x * dx + z * dz) / length,
-          away = Math.abs(x * dz - z * dx) / length;
-        return (
-          along >= 0 &&
-          along <= length &&
-          Math.abs(away - road.width / 2 - 12.5) < 0.01 &&
-          Math.abs(Math.sin(item.instance.yaw - Math.atan2(-dz, dx))) < 0.001
-        );
-      }),
+    const [u, v] = turn(
+      [item.box!.centre[0] - city.site.origin[0], item.box!.centre[1] - city.site.origin[1]],
+      -city.site.yaw,
     );
-    assert.ok(roadFacing, item.instance.name);
+    const i = Math.floor(u / city.site.pitch),
+      j = Math.floor(v / city.site.pitch),
+      acrossX = Math.abs(item.box!.yaw - city.site.yaw) > 0.01,
+      offset = (acrossX ? u : v) - ((acrossX ? i : j) + 0.5) * city.site.pitch,
+      along = (acrossX ? v : u) - ((acrossX ? j : i) + 0.5) * city.site.pitch;
+    assert.ok(Math.abs(Math.abs(along) - 23) < 0.01, item.instance.name);
+    assert.ok([15, 38].some((n) => Math.abs(Math.abs(offset) - n) < 0.01));
+    const edge = (acrossX ? i : j) + (offset > 0 ? 1 : 0);
+    const samples = [0.25, 0.75].map((fraction) =>
+      gridPoint(
+        city.site,
+        acrossX
+          ? [edge * city.site.pitch, (j + fraction) * city.site.pitch]
+          : [(i + fraction) * city.site.pitch, edge * city.site.pitch],
+      ),
+    );
+    assert.ok(
+      roads.some((road) =>
+        samples.every((sample) => polylineDistance(sample, road.points) <= road.width / 2 + 1),
+      ),
+      item.instance.name,
+    );
   }
   for (const item of [...terraces, ...trees]) {
     assert.ok(item.box && dryFootprint(city.site, item.box));

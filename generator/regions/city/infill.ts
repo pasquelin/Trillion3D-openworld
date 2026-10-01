@@ -1,6 +1,6 @@
-/** Small, individually checked plots on cells cut by an authored diagonal avenue. */
+/** Connected partial parcels in blocks cut by the authored roads. */
 import { dryFootprint } from './dry-footprint.ts';
-import { corners, sidewaysOf, turn, type Obb } from './frame.ts';
+import { corners, polylineDistance, turn, type Obb } from './frame.ts';
 import { gridPoint, key, type Cell } from './grid.ts';
 import { KERB } from './ground-props.ts';
 import { RANK, TOUCH, type Placer } from './placement.ts';
@@ -15,6 +15,24 @@ function level(placer: Placer, box: Obb, limit: number) {
   const low = Math.min(...heights),
     high = Math.max(...heights);
   return high - low <= limit ? (high + low) / 2 : undefined;
+}
+
+/** A frontage must follow a continuous, already emitted road along its grid edge. */
+function hasStreet(placer: Placer, i: number, j: number, axis: 'h' | 'v') {
+  const id = `city/avenue-${axis}${i}_${j}`;
+  if (placer.roads.some((road) => road.id === id)) return true;
+  const site = placer.site;
+  const samples = [0.25, 0.75].map((fraction) =>
+    gridPoint(
+      site,
+      axis === 'h'
+        ? [(i + fraction) * site.pitch, j * site.pitch]
+        : [i * site.pitch, (j + fraction) * site.pitch],
+    ),
+  );
+  return site.roadList.some((road) =>
+    samples.every((sample) => polylineDistance(sample, road.points) <= road.width / 2 + 1),
+  );
 }
 
 export function fillAvenueGaps(placer: Placer, cells: Map<string, Cell>) {
@@ -35,63 +53,50 @@ export function fillAvenueGaps(placer: Placer, cells: Map<string, Cell>) {
       const inside = (box: Obb) =>
         corners(box).every((p) => {
           const [u, v] = turn([p[0] - centre[0], p[1] - centre[1]], -site.yaw);
-          // A frontage may continue a few metres across a grid seam. Complete footprints
-          // still pass the placer's road, water and building checks.
-          return Math.abs(u) <= block.half[0] + 8 && Math.abs(v) <= block.half[1] + 8;
+          return Math.abs(u) <= block.half[0] && Math.abs(v) <= block.half[1];
         });
-      // Sample the actual avenue centerline every 46 m. A 6 m setback leaves a walkable verge;
-      // each row faces the road, and neighbouring 42 m terraces leave a 4 m passage.
-      for (const road of site.roadList)
-        for (let segment = 1; segment < road.points.length; segment++) {
-          const a = road.points[segment - 1],
-            b = road.points[segment],
-            dx = b[0] - a[0],
-            dz = b[2] - a[2],
-            length = Math.hypot(dx, dz);
-          if (!length) continue;
-          const tangent: [number, number] = [dx / length, dz / length],
-            normal: [number, number] = [-tangent[1], tangent[0]],
-            yaw = sidewaysOf(tangent),
-            setback = road.width / 2 + 6 + TERRACE_HALF[1];
-          for (let distance = 23; distance < length; distance += 46)
-            for (const side of [-1, 1]) {
-              const x = a[0] + tangent[0] * distance + normal[0] * side * setback,
-                z = a[2] + tangent[1] * distance + normal[1] * side * setback,
-                box: Obb = { centre: [x, z], half: TERRACE_HALF, yaw };
-              if (inside(box)) {
-                const base = level(placer, box, FOUNDATION - KERB);
-                if (base !== undefined)
-                  placer.place(
-                    'city/terrace',
-                    [x, base + KERB, z],
-                    yaw + (side > 0 ? Math.PI : 0),
-                    'solid',
-                    RANK.structure,
-                    box,
-                    { support: base + KERB - FOUNDATION },
-                  );
-              }
-              // Mature oaks mark alternate passages on the road verge, with broad crowns
-              // but only one tree node per 92 m on each side.
-              if (Math.round((distance - 23) / 46) % 2) continue;
-              const along = distance + 23,
-                offset = road.width / 2 + 4,
-                tx = a[0] + tangent[0] * along + normal[0] * side * offset,
-                tz = a[2] + tangent[1] * along + normal[1] * side * offset,
-                tree: Obb = { centre: [tx, tz], half: [2, 2], yaw: site.yaw };
-              if (along >= length || !inside(tree)) continue;
-              const ground = level(placer, tree, 1.5);
-              if (ground !== undefined)
-                placer.place(
-                  'tree-oak-large',
-                  [tx, ground, tz],
-                  site.yaw,
-                  'solid',
-                  RANK.garden,
-                  tree,
-                  { scale: [1.5, 1.25, 1.5] },
-                );
-            }
-        }
+      const horizontal = [hasStreet(placer, i, j, 'h'), hasStreet(placer, i, j + 1, 'h')],
+        vertical = [hasStreet(placer, i, j, 'v'), hasStreet(placer, i + 1, j, 'v')],
+        useHorizontal = horizontal.filter(Boolean).length >= vertical.filter(Boolean).length,
+        edges = useHorizontal ? horizontal : vertical;
+      // Two fronts flank a four-metre service passage; their second row uses the
+      // ten-metre passage behind the street-facing row. Each group reaches its existing street.
+      for (let edge = 0; edge < 2; edge++) {
+        if (!edges[edge]) continue;
+        const sign = edge ? 1 : -1;
+        for (const setback of [38, 15])
+          for (const along of [-23, 23]) {
+            const [u, v] = useHorizontal ? [along, sign * setback] : [sign * setback, along];
+            const [x, z] = gridPoint(site, [
+              (i + 0.5) * site.pitch + u,
+              (j + 0.5) * site.pitch + v,
+            ]);
+            const yaw = site.yaw + (useHorizontal ? 0 : Math.PI / 2);
+            const box: Obb = { centre: [x, z], half: TERRACE_HALF, yaw };
+            if (!inside(box)) continue;
+            const base = level(placer, box, FOUNDATION - KERB);
+            if (base !== undefined)
+              placer.place(
+                'city/terrace',
+                [x, base + KERB, z],
+                yaw + (sign > 0 ? Math.PI : 0),
+                'solid',
+                RANK.structure,
+                box,
+                { support: base + KERB - FOUNDATION },
+              );
+          }
+        const [x, z] = gridPoint(site, [
+          (i + 0.5) * site.pitch + (useHorizontal ? 0 : sign * 47),
+          (j + 0.5) * site.pitch + (useHorizontal ? sign * 47 : 0),
+        ]);
+        const tree: Obb = { centre: [x, z], half: [2, 2], yaw: site.yaw };
+        if (!inside(tree)) continue;
+        const ground = level(placer, tree, 1.5);
+        if (ground !== undefined)
+          placer.place('tree-oak-large', [x, ground, z], site.yaw, 'solid', RANK.garden, tree, {
+            scale: [1.5, 1.25, 1.5],
+          });
+      }
     }
 }
