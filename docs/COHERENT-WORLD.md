@@ -7,7 +7,8 @@ retain the 8 km frame, ocean margin and three detached islets. A smooth summit
 ceiling bounds natural relief; the final composed altitude remains separately
 measured. The intermediate 40 m census found 1,891 m; only 0.2096 km²
 exceeded 1,800 m. These rare crests retain the existing `WORLD.peak = 2000`
-contract and long-view geometry. The engine pin and 800 MiB envelope remain unchanged.
+contract and long-view geometry. The engine pin is unchanged. The completed native
+cache exceeds the published 800 MiB cooked-disk envelope; measured sizes follow.
 
 `geography.ts` owns five anchors and two airfield reservations. The richer #19 city
 builder consumes all five settlements, with a single shared catalogue, qualified
@@ -44,19 +45,144 @@ water, operational fields, roads and steep cliffs are reported separately.
 Approximately 10 m coverage is a local target, not a proved whole-island promise.
 The initial `fill.empty` count is separate from the final proximity observations.
 
-Full composed marker, route, collision and cache gates remain required before
-publication. Final map/route validation must include #20 and #21. Source maps and
-cook-time timing/memory are not native GPU captures or frame-performance evidence;
-the user deferred that native verification. No engine source is modified.
+The final source census includes #19, #20 and the tested local #21 route source.
+The 281-test source suite passed at the preceding world checkpoint; targeted
+vegetation, stand and countryside checks pass after the tree-mesh reduction.
+Source maps and cook-time timing/memory are not native GPU
+captures or frame-performance evidence. No engine source is modified.
 
-The integrated road solver preserves authored bridge clearance but permits cuts and
-real tunnels where terrestrial profiles need lowering. Fixed urban arterial
+The integrated road solver preserves 6 m clearance above actual water surfaces,
+including positive-altitude rivers. It permits cuts and real tunnels where
+terrestrial profiles need lowering. Bridge decks follow graded road segments;
+their barriers open at shared T junctions on both branches. Fixed urban arterial
 junctions and operational airfield anchors prevent a mountain road from lifting
-all lowland junctions. Incompatible bridge/anchor grade intervals fail explicitly.
+all lowland junctions. The west city access uses a southern lowland corridor and
+the mountain village sits on an accessible foothill; both remain connected within
+the 10% road grade limit. Incompatible bridge/anchor grade intervals fail explicitly.
+The generated road water census samples the centre and edges of complete road
+segments every 10 m against the exact emitted ocean, river and lake surfaces.
 Coastal component labeling uses the largest land component, so an island enclosed
 by sea retains a real mainland beach and its F1/V1 landmarks.
+
+The desert town is planned beside, but outside, the western runway reservation.
+Its compact oasis follows natural ground: a pool, a level palm grove, a 25 m ring,
+two local streets and a track reaching an existing highway vertex. Candidate
+sites are checked for water and at most 10% grade every 5 m along the centre and
+both shoulders. A bounded contour search supplies a route where a direct track
+would climb a dune face. The pool has a visible six-metre stone foundation. The mountain
+town is sought on the foothill below 500 m. Churches use masonry retaining
+terraces up to 17.5 m where the terrain and authored routes leave no flatter
+footing; the placed floors and terraces satisfy the regional ground tests.
 
 `python3 scripts/world-map.py REPORT_DIRECTORY docs/captures/coherent-world.png`
 renders the final source map from the census inputs, actual building footprints,
 shared stand tree roots and the same organic lake outline. Its adjacent JSON
 records the source cook key, engine pin, census hash and map/PNG SHA-256 hashes.
+
+## Integrated source measurements
+
+The measured source checkpoint is `a8e7fe1`,
+with cook key `54fa54fd3fcc34f9`. Both censuses include #19, #20 and the tested local
+#21 route source. These are source-generation observations; GPU performance
+requires a separate check.
+
+| Seed | Placed nodes | Unique mesh triangles | Mesh buffers | Homes | Eligible samples ≤10 m | Eligible samples ≥30 m | Generation |   Peak RSS |
+| ---- | -----------: | --------------------: | -----------: | ----: | ---------------------: | ---------------------: | ---------: | ---------: |
+| 332  |      150,705 |             2,494,671 |   100.67 MiB |   671 |                 84.32% |                  0.47% |   113.92 s | 743.85 MiB |
+| 333  |      146,364 |             2,224,220 |    88.67 MiB |   496 |                 83.86% |                  1.63% |   119.03 s | 702.07 MiB |
+
+The 90th-percentile distance is 11.34 m / 11.63 m; the 95th percentile is
+13.47 m / 14.42 m. Operational fields, roads, water and steep cliffs are excluded
+and counted separately. Seeds 332 / 333 retain 248 / 870 eligible cells at least 30 m from
+retained mesh witnesses. Airport and coast node allowances remain saturated at
+15,000 and 40,000 respectively. The separate gap map displays this residual;
+the approximately 10 m target is not achieved everywhere.
+
+| Seed 332 centre | Buildings | Maximum building height | Maximum roof altitude | Building footprint union | Dry urban blocks | Roads |
+| --------------- | --------: | ----------------------: | --------------------: | -----------------------: | ---------------: | ----: |
+| Primary south   |     1,238 |                 315.5 m |               332.3 m |               325,196 m² |        2.203 km² |   263 |
+| West            |       300 |                 125.4 m |               150.6 m |                54,277 m² |        0.438 km² |    60 |
+| Interior        |       523 |                 125.4 m |               257.2 m |               106,946 m² |        0.828 km² |    94 |
+| Northeast       |       277 |                 125.4 m |               267.5 m |                56,452 m² |        0.469 km² |    63 |
+| East            |       309 |                 125.4 m |               143.6 m |                68,156 m² |        0.516 km² |    76 |
+
+Every centre has a connected street component and physical buildings. Composed
+40 m relief samples reach 1,890 m / 1,899 m. Both seeds report no traversal
+validation failures. Road-water checks find 0 submerged samples out of 1,275
+wet samples on seed 332 and 659 on seed 333. The 34 / 21 emitted bridge bays
+match their graded road decks with no mismatch. D1 uses the actual graded
+mountain pass off the lowland ring; its connector joins the authored centreline.
+F2 is a camera replay with exact
+separate airfield endpoints, source terrain clearance and an 8% maximum vertical
+gradient. Piloted flight and native GPU validation remain deferred.
+
+The cableway settles its physical supports before solving the final sagging spans.
+Both emitted cable lines and cabin paths are checked at intervals no greater than
+10 m on both composed seeds. The stations have bounded boarding clearance; away
+from them the cable remains at least 14.5 m above terrain. Real pylon variants
+extend to 120 m for the concave mountain/lake crossing. Refused supports remain
+counted separately; incompatible clearance fails explicitly.
+
+The versioned [source map](captures/coherent-world.png),
+[gap map](captures/coherent-world-gaps.png),
+[provenance](captures/coherent-world.json) and source censuses for
+[332](captures/coherent-world-census-332.json) /
+[333](captures/coherent-world-census-333.json) record this exact source checkpoint.
+The main map displays composed relief, five centres, physical building footprints,
+roads, both airfields, water and actual vegetation roots.
+
+## Validation
+
+At source commit `a8e7fe1`, the direct Prettier, ESLint, TypeScript, Knip,
+line-count and build gates passed. The 281-test full suite passed on the preceding
+`4d5a489` checkpoint; vegetation, stand and countryside tests pass on `a8e7fe1`. The
+seed-332 desert test separately checks that each local street follows the true
+ground at intervals no greater than 5 m, stays below 10% longitudinal grade,
+and reaches a real highway node through the walking travel graph. The complete
+source census repeats road-water, bridge-deck and authored traversal audits on
+both seeds; neither seed has a reported failure.
+
+The first official full cache attempt at `4d5a489` reached 97% of native
+compilation but exhausted this environment's 32 GiB memory limit while expanding
+155,342 drawn mesh nodes into the scene proxy. A second native-only attempt with
+one thread also exhausted memory. The repeated tree and bush meshes were then
+reduced while keeping their placement rules, species and measured canopy dimensions.
+On the previous glTF node distribution, the sum of per-mesh triangles multiplied
+by placement counts falls from 1.863 billion to an estimated 494.5 million
+(73.5% lower). This is an input-load estimate, not a GPU frame measurement.
+
+The official `a8e7fe1` cook completed with the pinned native compiler after
+4,576.7 s (including 1,529.9 s in native compilation). It selected 150,747
+drawn mesh nodes and 479,030,012 instance-expanded triangles. Its scene proxy
+has 247,787 triangles and reached 12.76 GB native peak RSS. The engine's
+`cache/` directory occupies **2,577.01 MiB**, versus the 800 MiB contract;
+the whole `dist/assets/54fa54fd3fcc34f9/` folder including source, heights,
+colliders and page JSON occupies 2,795.96 MiB. The largest cache products are
+`world-roots.bin` (1,574.68 MiB) and `world-roots.json` (309.60 MiB). These
+measurements expose a remaining cooked-disk bottleneck despite successful
+compilation; they do not establish runtime frame rate or residency.
+
+The `world-roots.json` table contains 675,869 page records (199.19 MB) and
+333,571 placed-primitive dependency records across 315 cells (120.57 MB). The
+compiler builds world-space super-roots for every placed primitive, so repeated
+instances still contribute pages and dependency lists. The browser reads this
+entire JSON table at scene open. It fetches only requested ranges of the
+1,651,175,180-byte binary when the host supports HTTP Range. The local
+`scripts/serve.ts` now responds with `206 Partial Content` for such requests;
+without Range support it sent the whole binary. A local 64-byte request returned
+exactly 64 bytes, and an out-of-bounds request returned `416`. This fixes the
+local transport but does not reduce the published 800 MiB cache contract miss or
+the full-table startup cost.
+
+## Terrain evaluation experiment
+
+Factoring repeated pure `natural(x,z)` evaluations preserves arithmetic and
+resolution. On the same local source, an isolated tile 4,5 bake decreased from
+61.04 s to 34.30 s (43.8%). The 25 m sampled raw-height digest and the exact
+terrain-mesh plus texture-byte hash were identical before and after:
+
+- Height digest: `3f2e2d077f59caee5177849997e411f776e2801f3bc680c22c7a61e20ce496f2`.
+- Mesh/texture hash: `c57db1e74ad80e9dce4d124755c2c3c96a8472092b01ea9f4e7db6101ed1e8c0`.
+
+The tile retained 399 triangles and a 2,612² texture. This is a measured source
+bake improvement; it does not establish frame-rate or cache performance.

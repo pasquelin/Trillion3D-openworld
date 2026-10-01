@@ -1,0 +1,12 @@
+{
+  "sourceHead": "a8e7fe1ae5fe38c52853692fa4b8ef3af9fe27ef",
+  "sourceCookKey": "54fa54fd3fcc34f9",
+  "censusContentHash": "c59169bb85d9b07aa56c81975ee36ce56023ac713ecbc3b93fe5a2717e617c40",
+  "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
+  "seed": 332,
+  "mapInputSha256": "079f9977c3639d549307a96d24944002fa996b16c72718fa704623c6cc9c4c4b",
+  "pngSha256": "1ae894636426e2563b5dd04a39672363dfb865b227b5cac107befd1889079457",
+  "renderer": "scripts/world-map.py",
+  "rendererSha256": "7719bad1d42664c9d206bd3894f04691d261a7b291bce3df7524c7ce316560c4",
+  "scope": "Actual source placements; no native GPU capture"
+}
