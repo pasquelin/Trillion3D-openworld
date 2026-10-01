@@ -1,15 +1,61 @@
 # Full-island cook and browser checkpoint — 2026-10-01
 
 Open World #15 finished at source commit `f2ea51f`. Its latest measured source
-checkpoint is `239b3d7`, seed 332/333, cook key `5ed3a2e1ef403447`. The
-completed full cook, cache measurements and failed full-world browser attempt
-below belong to the earlier `a8e7fe1` checkpoint, seed 332, cook key
-`54fa54fd3fcc34f9`. They do **not** measure the final source. Both checkpoints
-use engine pin `7f810cbe344ee10fdcc910a8f5659e1536edbc2d`. The #15
+census is `239b3d7`, seed 332/333, cook key `5ed3a2e1ef403447`. The current
+main commit `fb9be1b` has a successful full cook and deployment at cook key
+`a63aadebd81238bc`; its full-world browser capture is still invalid. The
+measured cache sizes below belong to the earlier `a8e7fe1` checkpoint, seed
+332, cook key `54fa54fd3fcc34f9`. They do **not** measure the final source.
+These checkpoints use engine pin `7f810cbe344ee10fdcc910a8f5659e1536edbc2d`. The #15
 `docs/COHERENT-WORLD.md` and `docs/island-preview.md` describe the source and
 previews; the local #15 cook log and browser `capture-roof-range` diagnostics
 record the historical attempts. Repeat the full cook and capture after source,
 engine pin or cook input changes.
+
+## Current full cook and published-site attempt
+
+The [Site workflow for `fb9be1b`](https://github.com/pasquelin/Trillion3D-openworld/actions/runs/36852410322)
+completed on 1 October 2026. Its `build` job succeeded in 1 h 27 min 8 s,
+including the official full `pnpm run cook`, the three separate block workload
+cooks, the page build and output checks. Its `deploy` job succeeded in 3 min
+35 s. These are job durations, not isolated full-cook timings. The current
+published `world.json` responded HTTP 200 with 3,424,707 bytes and SHA-256
+`f39d9233770fdfd4d05b61557d006ec7c6394661a7eb68f530b7991428968b74`.
+The native full manifest responded HTTP 200 with 236 bytes and SHA-256
+`b6d86464a28c5c7901f713dfe4ba6f6c4c6adf2ccbb5c1df2f98f44fece9675d`.
+The site, runtime and current cache are deployed. Published current
+`world-roots.json` is 326,512,069 bytes (311.39 MiB) and `world-roots.bin` is
+1,647,400,232 bytes (1,571.08 MiB); together they are 1,882.47 MiB. A
+64-byte HTTP Range request to the binary returned 206,
+`Content-Range: bytes 0-63/1647400232` and exactly 64 bytes. Current **aggregate** cache bytes
+were not recovered from the CI logs. The earlier 2,577.01 MiB must not be
+presented as the current aggregate cache size.
+
+A bounded Chromium 151 / Debian 13 attempt used the published site, 1600 × 900,
+WebGL2 SwiftShader requested, `V1-roof`, `--wait=10000`, `--timeout=420000`
+and `--rpc-timeout=120000`. A temporary copy of `capture-island.mjs` allowed
+only the official HTTPS origin and replaced `--no-proxy-server` with the cloud
+HTTP proxy; its readiness, selected-triangle, exception and PNG checks were
+otherwise unchanged. The initial readiness `Runtime.evaluate` call timed out
+after 120 s. The runner never selected the route or wrote a validated PNG.
+One renderer process was sampled above 5.5 GiB RSS during the attempt. This
+software-browser failure does not establish the root cause or hardware frame
+performance. Its `failure.txt` SHA-256 is
+`9b274851aec030a5c02056ad84b545600af84f651ec0c24ddb65ecb9e5e540f0`;
+its Chromium log SHA-256 is
+`c2f744803249becc103f7db4cb5b0dcda9b7ab0206bc64178de8f866654b7e29`.
+The local diagnostics remain outside Git. A second 150-second SwiftShader run
+reached the `Starting the physics` overlay, while the engine warned that no
+frame had drawn and its session was still at `backend-preparation-start`.
+DevTools counted 50,216 requests, 42,149 `ERR_INSUFFICIENT_RESOURCES` failures,
+and 42,279 failed fetches for the same `world-roots.bin` URL (including aborted
+requests). The engine bundle emitted `RangeError: Maximum call stack size
+exceeded`. No route selector, selected-triangle count or valid image resulted.
+The [upstream engine issue #1457](https://github.com/pasquelin/Trillion3D/issues/1457)
+tracks the request storm and stack overflow. A cloud proxy contribution has
+not been ruled out, and hardware performance remains unmeasured. Compare the
+same cache under direct/local serving and named hardware before assigning the
+precise failure cause.
 
 ## Latest source and preview
 
@@ -142,9 +188,9 @@ views and compare captures before accepting a byte or timing improvement.
    performance change as an improvement.
 
 The current disposition is **latest source census and regional preview capture
-passed; smooth regional switching failed in the software prototype; final-source
-full cook, full-world render and hardware performance unverified**.
-The earlier full cook completed at 2,577.01 MiB. Its largest measured products
-were the world-roots files. Retest the final source for cache size, appearance, loading
-and residency before accepting any improvement. No engine change or hardware
-FPS claim is made here.
+passed; current full cook and deployment passed; smooth regional switching
+failed in the software prototype; published full-world browser capture failed;
+hardware performance remains unverified**. The earlier full cook measured
+2,577.01 MiB, dominated by world-roots files. Measure the current cache size,
+then diagnose startup and capture the full scene on named hardware. No engine
+change or hardware FPS claim is made here.

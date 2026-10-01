@@ -4,10 +4,10 @@ Issue #22 has two separate gates. A software browser can prove that the **actual
 world** loads and draws a selected route. Only a named hardware run can establish the
 island's frame times, memory behavior and game performance. Keep their results separate.
 
-The [October 2026 checkpoint](full-island-checkpoint.md) separates the final #15
-source census and downtown diagnostic from an earlier completed full cook, its
-disk budget miss and a bounded full-world browser attempt. It is an input to
-this protocol, not a passing full-island render or performance result.
+The [October 2026 checkpoint](full-island-checkpoint.md) records a successful
+current full cook and deployment, a failed published-site browser attempt,
+the final #15 source census and an earlier measured cache size. It is an input
+to this protocol, not a passing full-island render or performance result.
 
 ## Capture the cooked world
 
@@ -43,8 +43,10 @@ Chromium's crashpad `setsockopt` inside its filesystem sandbox. Its unsandboxed
 `--dump-dom` probe timed out, but DevTools successfully reached a local browser page.
 An earlier smoke image had zero selected triangles. A later full-world attempt
 remained blocked for over 13 minutes even with HTTP Range support and ended at a
-120-second DevTools evaluation timeout. Neither is full-island 3D evidence. The
-final cooked island still needs a valid inspected capture.
+120-second DevTools evaluation timeout. The current published full world also
+completed its native cook, but a cloud SwiftShader readiness evaluation timed out
+after 120 seconds without a valid screenshot. None is full-island 3D evidence.
+The current island still needs a valid inspected capture.
 
 ## Named hardware measurement
 
