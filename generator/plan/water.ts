@@ -3,7 +3,7 @@
  * discs at their level, rivers as ribbons on their water line, and roads as ribbons on the
  * levelled ground. Each piece goes to the tile holding its middle, in that tile's local frame.
  */
-import { WORLD, type River, type Surface, type Vec3 } from './contract.ts';
+import { WORLD, type River, type Road, type Surface, type Vec3 } from './contract.ts';
 import type { Lake } from './carve.ts';
 import type { TerrainPlan } from './plan.ts';
 import { roadSurface, SURFACE } from './surfaces.ts';
@@ -103,7 +103,11 @@ export function aquaticParts(rivers: readonly River[], lakes: readonly Lake[]): 
 }
 
 /** Water and road surfaces share their authored geometry with placement audits. */
-export function flatParts(plan: TerrainPlan, lift: number): FlatParts {
+export function flatParts(
+  plan: TerrainPlan,
+  lift: number,
+  localRoads: readonly Road[] = [],
+): FlatParts {
   const parts = aquaticParts(plan.rivers, plan.lakes);
   for (const { road, bridge, tunnel } of plan.courses)
     ribbon(
@@ -112,6 +116,15 @@ export function flatParts(plan: TerrainPlan, lift: number): FlatParts {
       () => road.width / 2,
       roadSurface(road.class),
       (k) => bridge[k] || tunnel[k],
+      lift,
+    );
+  for (const road of localRoads)
+    ribbon(
+      parts,
+      road.points,
+      () => road.width / 2,
+      roadSurface(road.class),
+      () => false,
       lift,
     );
   return parts;

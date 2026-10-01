@@ -75,7 +75,13 @@ export function placeWorld(seed: number = WORLD.seed, regions: readonly RegionMo
 
 export function buildWorld(seed: number = WORLD.seed, regions: readonly RegionModule[] = REGIONS) {
   const { plan, placed, meshes, instances, solids, markers, city } = placeWorld(seed, regions),
-    terrain = terrainTiles(plan, regions),
+    terrain = terrainTiles(
+      plan,
+      regions,
+      undefined,
+      true,
+      placed.flatMap((output) => output.roads),
+    ),
     lights = placed.flatMap((output) => output.lights);
   const data: WorldRuntimeData = {
     seed,

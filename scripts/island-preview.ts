@@ -29,7 +29,13 @@ const first = (position: number) => Math.max(0, Math.min(tiles - 2, tileAt(posit
 const minTx = first(camera.position[0]);
 const minTz = first(camera.position[2]);
 const window = { minTx, minTz, maxTx: minTx + 1, maxTz: minTz + 1 };
-const terrain = terrainTiles(plan, REGIONS, window);
+const terrain = terrainTiles(
+  plan,
+  REGIONS,
+  window,
+  true,
+  placed.flatMap((region) => region.roads),
+);
 const margin = 120;
 const within = (position: readonly number[]) =>
   position[0] >= minTx * WORLD.tile - WORLD.size / 2 - margin &&
