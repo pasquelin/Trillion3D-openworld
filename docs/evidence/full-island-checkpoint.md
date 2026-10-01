@@ -1,7 +1,7 @@
 # Full-island cook and browser checkpoint — 2026-10-01
 
-Open World #15 finished at source commit `41c64a0`. Its latest measured source
-checkpoint is `3cb49bf`, seed 332/333, cook key `32fb331f98244021`. The
+Open World #15 finished at source commit `f2ea51f`. Its latest measured source
+checkpoint is `239b3d7`, seed 332/333, cook key `5ed3a2e1ef403447`. The
 completed full cook, cache measurements and failed full-world browser attempt
 below belong to the earlier `a8e7fe1` checkpoint, seed 332, cook key
 `54fa54fd3fcc34f9`. They do **not** measure the final source. Both checkpoints
@@ -15,17 +15,19 @@ engine pin or cook input changes.
 
 | Seed | Placed nodes | Unique mesh triangles | Eligible samples within 10 m | Road-water, bridge-deck and route failures |
 | --- | ---: | ---: | ---: | ---: |
-| 332 | 150,246 | 2,499,303 | 85.76% | 0 |
-| 333 | 145,905 | 2,228,852 | 85.74% | 0 |
+| 332 | 149,963 | 2,499,303 | 85.31% | 0 |
+| 333 | 145,524 | 2,228,852 | 85.19% | 0 |
 
-These are source census and validation results at `3cb49bf`, not a native cook
-or GPU benchmark. The generated 2 × 2 km downtown diagnostic with local-street
-surfaces showed paved block roads and reported 18,080 objects, 775 resident pages
-and 1,679,685 selected triangles in WebGL2/SwiftShader. Its strict capture was
-invalid because one network request ended with `ERR_ABORTED`; the renderer was
-ready and reported no JavaScript exception. Large green gaps and X-shaped roads
-remain visible. This diagnostic does not pass the full-world render
-gate or establish interactive performance.
+These are source census and validation results at `239b3d7`, not a native cook
+or GPU benchmark. The earlier 2 × 2 km downtown diagnostic with local-street
+surfaces reported 18,080 objects, 775 resident pages and 1,679,685 selected
+triangles in WebGL2/SwiftShader, but its strict capture was invalid after one
+`ERR_ABORTED` request. The later #15 district capture at `239b3d7` was valid:
+17,925 selected objects, 775 resident pages, 1,500,478
+selected triangles, no JavaScript exceptions or failed requests. The visible
+frontages align with local streets; large grassy parcels and distant tower
+artifacts remain. Neither regional capture passes the full-world render gate
+or establishes interactive performance.
 
 ## Earlier completed full cook
 
@@ -80,8 +82,14 @@ the public `scene.load` / `scene.remove` path to change active regions. Predict
 regions ahead of vehicle and flight cameras; retain recently visited regions
 with distance and time hysteresis so a boundary crossing does not unload and
 reload them repeatedly. Changing the loaded model set currently reopens the
-engine session, so batch transitions and measure their pause. If reopening is
-too costly, record that limitation for an upstream streaming API request.
+engine session. The [regional prototype](../regional-prototype.md) compiled an
+8 km proxy and two tiny sectors (12.03, 7.90 and 9.70 MiB respectively). In one
+headless WebGL2/SwiftShader run, west/east loads returned in 45/86 ms, but
+new drawn frames arrived after 7,891/7,359 ms because two session reopens took
+7,842.5/7,270.7 ms. This proves the public API can switch small models; it does
+not demonstrate smooth streaming. A production regional system needs an SDK
+path to mount and remove compiled models without reopening the session. That
+engine capability must be resolved upstream; this application does not patch it.
 
 This separates two budgets. **Active** transfer and residency can fall when
 only nearby region data is loaded. **Total** cooked disk size will not fall just
@@ -93,10 +101,10 @@ trees/buildings, and compact procedural seeds where reconstruction preserves
 appearance and collision. Count bytes and dependencies after each change; any
 compiler-format or engine API change belongs upstream, not in this application.
 
-Prototype the smallest downtown region first, with its coarse proxy and one
-adjacent region. Compare identical camera poses and a boundary crossing before
-expanding to the island. Proposed acceptance targets on a named hardware profile
-at the fixed settings in [the protocol](README.md#named-hardware-measurement):
+The small proxy-and-two-sector prototype isolates the reopen cost. Next compare
+identical camera poses and a boundary crossing with final-source region data
+before expanding to the island. Proposed acceptance targets on a named hardware
+profile at the fixed settings in [the protocol](README.md#named-hardware-measurement):
 
 | Gate | Proposed target |
 | --- | --- |
@@ -131,9 +139,10 @@ views and compare captures before accepting a byte or timing improvement.
    `unavailable`. Compare quality at the same camera poses before treating a
    performance change as an improvement.
 
-The current disposition is **latest source census passed; latest strict preview
-capture invalid; final-source full cook, disk budget, full-world render and
-hardware performance unverified**. The earlier full cook completed but missed
+The current disposition is **latest source census and regional preview capture
+passed; smooth regional switching failed in the software prototype; final-source
+full cook, disk budget, full-world render and hardware performance unverified**.
+The earlier full cook completed but missed
 the disk budget by more than 3×. Its largest measured products were the
 world-roots files. Retest the final source for cache size, appearance, loading
 and residency before accepting any improvement. No engine change or hardware
