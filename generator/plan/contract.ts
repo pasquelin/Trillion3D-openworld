@@ -92,7 +92,7 @@ export type MeshPart = {
 };
 
 /** A mesh written once and placed by many nodes: that is how the engine shares its pages. */
-export type PropMesh = { id: string; parts: readonly MeshPart[] };
+export type PropMesh = { id: string; parts: readonly MeshPart[]; collision?: 'exact' };
 
 /** One placed node of a shared mesh. `yaw` in radians about +Y. */
 export type Instance = {
@@ -187,6 +187,7 @@ export type RegionOutput = {
  * (`heights/<tx>_<tz>.bin`: Float32, `(samples+1)²` values, row-major from the tile's -X,-Z corner).
  */
 export type WorldRuntimeData = {
+  traversal?: import('../traversal/types.ts').Traversal;
   seed: number;
   size: number;
   tile: number;

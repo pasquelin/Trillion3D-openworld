@@ -16,6 +16,9 @@ import { REGIONS } from '../regions/index.ts';
 import { solidColliders } from './colliders.ts';
 import { fillEmptyLand } from './fill.ts';
 import { settleMarkers } from './markers.ts';
+import { buildTraversal } from '../traversal/build.ts';
+import { buildCity } from '../regions/city/index.ts';
+import { walkingRoutes } from '../traversal/walk.ts';
 
 /** Keeps the first mesh of each id: regions may hand back the shared props they place. */
 function uniqueMeshes(lists: readonly (readonly PropMesh[])[]) {
@@ -32,7 +35,17 @@ function uniqueMeshes(lists: readonly (readonly PropMesh[])[]) {
  */
 export function placeWorld(seed: number = WORLD.seed, regions: readonly RegionModule[] = REGIONS) {
   const plan = createPlan(seed, regions),
-    placed = regions.map((region) => region.generate(plan)),
+    city = regions.some((r) => r.name === 'city') ? buildCity(plan) : undefined,
+    walk = city ? walkingRoutes(city) : null,
+    placed = regions.map((region) =>
+      region.name === 'city' && city
+        ? {
+            ...city.output,
+            props: [...city.output.props, ...walk!.ramps.map((r) => r.mesh)],
+            instances: [...city.output.instances, ...walk!.ramps.map((r) => r.instance)],
+          }
+        : region.generate(plan),
+    ),
     regionInstances = placed.flatMap((output) => output.instances),
     used = new Set(regionInstances.map((instance) => instance.prop)),
     meshes = uniqueMeshes([
@@ -54,11 +67,11 @@ export function placeWorld(seed: number = WORLD.seed, regions: readonly RegionMo
       { plan, meshes, instances, solids },
       placed.flatMap((output) => output.markers),
     );
-  return { plan, placed, meshes, instances, solids, markers, fill };
+  return { plan, placed, meshes, instances, solids, markers, fill, city };
 }
 
 export function buildWorld(seed: number = WORLD.seed, regions: readonly RegionModule[] = REGIONS) {
-  const { plan, placed, meshes, instances, solids, markers } = placeWorld(seed, regions),
+  const { plan, placed, meshes, instances, solids, markers, city } = placeWorld(seed, regions),
     terrain = terrainTiles(plan, regions),
     lights = placed.flatMap((output) => output.lights);
   const data: WorldRuntimeData = {
@@ -72,5 +85,6 @@ export function buildWorld(seed: number = WORLD.seed, regions: readonly RegionMo
     movers: placed.flatMap((output) => output.movers),
     lights,
   };
+  data.traversal = buildTraversal(plan, data.roads, markers, city);
   return { plan, terrain, objects: { meshes, instances, lights }, solids, data };
 }

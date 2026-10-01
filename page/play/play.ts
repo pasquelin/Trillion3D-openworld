@@ -1,4 +1,5 @@
 import { client } from './client.ts';
+import { traversalControls } from './traversal.ts';
 import { cameraState, placeCamera } from './camera.ts';
 import { trafficPhysics } from './bodies.ts';
 import { hud as createHud } from './hud.ts';
@@ -41,6 +42,8 @@ export function createPlay(options: PlayOptions) {
     scene.traffic.map((built) => built.root),
   );
   const player = createPlayer({ ...options, models }, scene);
+  const traversal = traversalControls(world, data, player, (on) => scene.night(on));
+  const replay = traversal.replay;
   let mode: Mode = 'foot';
   const keys = createInput(world.canvas, () => mode !== 'foot');
   const hud = createHud(data.roads, data.size);
@@ -62,6 +65,13 @@ export function createPlay(options: PlayOptions) {
     30000,
   );
   const unhook = world.beforeFrame(({ delta }) => {
+    if (replay.active) {
+      replay.update(delta);
+      const p = world.camera.position;
+      sim.send({ type: 'focus', x: p.x, z: p.z, vx: 0, vz: 0 });
+      if (sim.received()) scene.update(sim, sim.blend(), delta);
+      return;
+    }
     const dt = Math.min(delta, 1 / 15);
     const mouse = keys.take();
     look.yaw -= mouse.dx * 0.0022;
@@ -110,6 +120,7 @@ export function createPlay(options: PlayOptions) {
       },
       dt,
     );
+    traversal.observe();
     const forward = rotate(turn, [0, 0, -1]);
     hud.update({
       mode,
@@ -126,41 +137,51 @@ export function createPlay(options: PlayOptions) {
     });
     world.invalidate();
   });
-  return {
-    ready,
-    get mode() {
-      return mode;
+  return withTraversal(
+    {
+      ready,
+      get mode() {
+        return mode;
+      },
+      teleports: data.markers.flatMap((m) => (m.kind === 'teleport' ? [m.name] : [])),
+      teleport: (name: string) => {
+        replay.stop();
+        player.teleport(name);
+      },
+      set night(on: boolean) {
+        scene.night(on);
+      },
+      get state() {
+        return {
+          mode,
+          stepMs: world.physics.stats.stepMs,
+          bodies: world.physics.stats.bodies,
+          traffic: sim.next[H.traffic],
+          pedestrians: sim.next[H.pedestrians],
+          missingModels: scene.missing,
+        };
+      },
+      dispose() {
+        if (disposed) return;
+        disposed = true;
+        clearTimeout(timeout);
+        rejectReady(new Error('Play disposed before becoming ready'));
+        unhook();
+        traversal.dispose();
+        sim.dispose();
+        keys.dispose();
+        hud.dispose();
+        traffic.dispose();
+        player.dispose();
+        scene.dispose();
+        world.physics.enabled = previousPhysics.enabled;
+        world.physics.simulationRange = previousPhysics.range;
+      },
     },
-    teleports: data.markers.flatMap((m) => (m.kind === 'teleport' ? [m.name] : [])),
-    teleport: (name: string) => player.teleport(name),
-    set night(on: boolean) {
-      scene.night(on);
-    },
-    get state() {
-      return {
-        mode,
-        stepMs: world.physics.stats.stepMs,
-        bodies: world.physics.stats.bodies,
-        traffic: sim.next[H.traffic],
-        pedestrians: sim.next[H.pedestrians],
-        missingModels: scene.missing,
-      };
-    },
-    dispose() {
-      if (disposed) return;
-      disposed = true;
-      clearTimeout(timeout);
-      rejectReady(new Error('Play disposed before becoming ready'));
-      unhook();
-      sim.dispose();
-      keys.dispose();
-      hud.dispose();
-      traffic.dispose();
-      player.dispose();
-      scene.dispose();
-      world.physics.enabled = previousPhysics.enabled;
-      world.physics.simulationRange = previousPhysics.range;
-    },
-  };
+    traversal.api,
+  );
+}
+function withTraversal<A extends object, B extends object>(a: A, b: B): A & B {
+  return Object.defineProperties(a, Object.getOwnPropertyDescriptors(b)) as A & B;
 }
 export type Play = ReturnType<typeof createPlay>;

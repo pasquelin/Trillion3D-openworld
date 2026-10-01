@@ -10,6 +10,7 @@
  * ```
  */
 export { createPlay, type Play } from './play/play.ts';
+export { createTraversalPanel } from './play/traversalPanel.ts';
 export { DEFAULT_MODELS } from './play/specs.ts';
 export type { ColliderInstance, CollisionMesh } from './play/collision.ts';
 export type {

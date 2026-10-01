@@ -33,7 +33,7 @@
        */
       import { createWorld, geometry, material, object, light, math, buffer, blending, side, texture, metric, vehicle } from './runtime/engine.js';
       import { controls, readout } from './runtime/kit.js';
-      import { createPlay, createSky, beamHeading } from './runtime/openworld.js';
+      import { createPlay, createSky, beamHeading, createTraversalPanel } from './runtime/openworld.js';
 
       // The cooked world, under its key (`scripts/cook-key.ts`), written in by `pnpm build`.
       const assets = './assets/';
@@ -62,6 +62,7 @@
 
       // One compiled world, under fixed memory pools the panel can change.
       const world = createWorld('view', { physics: { budget: { bodies: 4096, memoryBytes: 128 * 2 ** 20 }, simulationRange: 2500 } });
+      world.camera.far = 60_000;
       world.budget.geometryPool = 512 * 2 ** 20;
       world.budget.texturePool = 256 * 2 ** 20;
       const model = await world.scene.load(`${assets}cache/native/full/manifest.json`, {
@@ -90,6 +91,15 @@
       play.teleport(play.teleports.includes('Airport — terminal') ? 'Airport — terminal' : play.teleports[0]);
       await drawn('Streaming what stands around you');
       document.getElementById('loading').remove();
+      let previousTime = null;
+      const traversalPanel = createTraversalPanel(play, (night) => {
+        if (night === null) { if (previousTime) { sky.time = previousTime.time; sky.paused = previousTime.paused; previousTime = null; } return; }
+        previousTime ??= { time: sky.time, paused: sky.paused };
+        sky.time = night ? 22 : 12; sky.paused = true;
+        world.camera.far = 60_000;
+      world.budget.geometryPool = 512 * 2 ** 20; world.budget.texturePool = 256 * 2 ** 20;
+      });
+      window.addEventListener('pagehide', () => traversalPanel.dispose(), { once: true });
 
       // Lamps the regions declared on their fixtures light up with the night.
       const nightLamps = data.lights.filter((lamp) => lamp.night);

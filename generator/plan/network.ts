@@ -1,7 +1,6 @@
 /**
- * The road network (Trillion3D#332): a highway ring through every region, secondaries from each village to
- * the nearest road, the mountain pass to the ski resort, the city's avenue grid, the airport
- * access, and dirt trails for walkers between villages, viewpoints, lakes and beaches.
+ * The road network (Trillion3D#332): the regional highway ring, village links, city avenues,
+ * airport access, mountain pass, and walking trails between named landmarks.
  */
 import type { Bridge, RoadClass, Settlement, Vec3 } from './contract.ts';
 import type { Lake, Platform, RoadCourse } from './carve.ts';
@@ -11,9 +10,10 @@ import type { Tunnel } from './tunnels.ts';
 import { layRoad, buildRoad, riverIndex, ROAD_STEP, type Ground } from './roads.ts';
 import { node, STEP } from './route.ts';
 import { around, best, slopeAt } from './sites.ts';
-
-/** Avenue spacing in the city, metres: a block of avenues the city region fills with streets. */
-const AVENUE = 500;
+import { joinRoadProfiles } from './junctions.ts';
+import { groundSummits } from '../regions/mountains/peaks.ts';
+import { FIELD, siteFrame } from '../regions/airport/site.ts';
+import { avenues } from './avenues.ts';
 
 export type Network = {
   courses: RoadCourse[];
@@ -46,7 +46,14 @@ export function planNetwork(
     tunnels.push(...built.tunnels);
     if (joinsNetwork) for (const [x, , z] of built.course.road.points) onNetwork.add(node(x, z));
   };
-  const road = (id: string, cls: RoadClass, from: Point2, to: Point2 | 'network', joins = true) => {
+  const road = (
+    id: string,
+    cls: RoadClass,
+    from: Point2,
+    to: Point2 | 'network',
+    joins = true,
+    destination?: readonly Vec3[],
+  ) => {
     if (to === 'network' && onNetwork.has(node(from[0], from[1]))) return;
     const built = buildRoad(
       id,
@@ -65,6 +72,12 @@ export function planNetwork(
       overRiver,
     );
     if (!built) failedConnections.push(id);
+    if (built && destination) {
+      // Preserve the exact landmark beyond the terrain router's rounded grid endpoint.
+      built.course.road.points = [...built.course.road.points.slice(0, -1), ...destination];
+      built.course.bridge = [...built.course.bridge, ...destination.slice(1).map(() => false)];
+      built.course.tunnel = [...built.course.tunnel, ...destination.slice(1).map(() => false)];
+    }
     keep(built, joins);
   };
 
@@ -84,10 +97,30 @@ export function planNetwork(
   ring.forEach((stop, index) =>
     road(`highway-${index}`, 'highway', stop, ring[(index + 1) % ring.length]),
   );
-  road('airport-access', 'secondary', interchange, [centreX, platform.maxZ + 100]);
+  const terminal = siteFrame(REGION_BOUNDS.airport, platform, 0, interchange).world(
+    0,
+    FIELD.curbside,
+  );
+  road('airport-access', 'secondary', interchange, [centreX, platform.maxZ + 100], true, [
+    [centreX, platform.level, platform.maxZ],
+    [terminal[0], platform.level, terminal[1]],
+  ]);
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
   if (resort && mountainTown) road('pass', 'pass', xz(mountainTown), xz(resort));
+  const mountainBounds = REGION_BOUNDS.mountains;
+  const summit = groundSummits(
+    ground.height,
+    mountainBounds,
+    (x, z, margin) =>
+      !ground.wet(x, z) &&
+      x > mountainBounds.minX + margin &&
+      x < mountainBounds.maxX - margin &&
+      z > mountainBounds.minZ + margin &&
+      z < mountainBounds.maxZ - margin,
+  )[0];
+  if (summit && (resort || mountainTown))
+    road('summit-trail', 'dirt', xz((resort || mountainTown)!), xz(summit), false, [summit]);
   for (const s of settlements)
     if (s.kind === 'village' || (s.kind === 'port' && s.region === 'city'))
       road(`${s.id}/road`, 'secondary', xz(s), 'network');
@@ -96,7 +129,6 @@ export function planNetwork(
   if (city)
     avenues(city, ground, (id, path) => keep(layRoad(id, 'avenue', path, ground, overRiver)));
 
-  // Trails: every village to its two nearest villages, to a viewpoint, lakes and beaches.
   const villages = settlements.filter((s) => s.kind === 'village' || s.kind === 'resort'),
     linked = new Set<string>();
   for (const v of villages) {
@@ -139,35 +171,8 @@ export function planNetwork(
       shore: Point2 = [lake.x + lake.radius + ROAD_STEP, lake.z];
     if (village) road(`trail/${lake.id}`, 'dirt', xz(village), shore, false);
   }
-  return { courses, bridges, tunnels, viewpoints, failedConnections };
+  const joinedTunnels = joinRoadProfiles(courses, bridges, ground.height);
+  return { courses, bridges, tunnels: joinedTunnels, viewpoints, failedConnections };
 }
 
 const dist = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[2] - b[2]);
-
-/**
- * The city's avenues: a grid of straight lines through its footprint, cut where they meet the sea
- * or leave the city's rectangle.
- */
-function avenues(city: Settlement, ground: Ground, lay: (id: string, path: Point2[]) => void) {
-  const b = REGION_BOUNDS.city,
-    inside = (x: number, z: number) => x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ,
-    [cx, , cz] = city.centre,
-    r = city.radius,
-    lines = Math.floor(r / AVENUE);
-  for (const axis of [0, 1])
-    for (let k = -lines; k <= lines; k++) {
-      let run: Point2[] = [],
-        part = 0;
-      const flush = () => {
-        if (run.length * ROAD_STEP >= AVENUE) lay(`avenue-${axis ? 'z' : 'x'}${k}-${part++}`, run);
-        run = [];
-      };
-      const half = Math.sqrt(Math.max(0, r * r - (k * AVENUE) ** 2));
-      for (let s = -half; s <= half; s += ROAD_STEP) {
-        const [x, z] = axis ? [cx + s, cz + k * AVENUE] : [cx + k * AVENUE, cz + s];
-        if (ground.wet(x, z) || !inside(x, z)) flush();
-        else run.push([x, z]);
-      }
-      flush();
-    }
-}

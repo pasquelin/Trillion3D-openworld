@@ -7,6 +7,7 @@ import { propProblems } from '../../props/validate.ts';
 import { inBounds, outputBytes, outputPoints } from '../testing.ts';
 import { airportRegion, layout } from './index.ts';
 import { corners, inside, overlaps, type Rect } from './rect.ts';
+import { Placer } from './placer.ts';
 
 /** The lead's target of unique triangles for a region (the plan's figure is 200 000; see report). */
 const TRIANGLE_TARGET = 400_000;
@@ -154,9 +155,9 @@ test('props are sound, placed by known ids, and the region reads as an airport',
   assert.deepEqual([...new Set(output.roads.map((r) => r.class))].sort(), [
     'avenue',
     'runway',
-    'secondary',
     'taxiway',
   ]);
+  assert.ok(plan.roads.some((road) => road.id === 'airport-access' && road.class === 'secondary'));
   assert.ok(airportRegion.ground.length > 0);
   assert.ok(Math.abs(airportRegion.refine!(1234, 5678, 100)) <= 1.2);
 });
@@ -168,4 +169,10 @@ test('rectangles overlap when they share area, not when they touch or pass diago
   // Two diamonds whose bounding boxes overlap but whose sides do not.
   assert.ok(!overlaps(square(0, 0, Math.PI / 4), square(2.6, 0.9, Math.PI / 4)));
   assert.ok(inside(square(0, 0, 0.3), 0.5, 0.5) && !inside(square(0, 0), 1.2, 0));
+});
+test('airport solids require enough foundation reach to bridge their actual terrain slope', () => {
+  const placer = new Placer({ ...plan, height: (x) => x }, []),
+    footprint = [[0, 0, 1, 1]] as const;
+  assert.equal(placer.place('tree', [0, 0], 0, footprint, 'solid'), false);
+  assert.equal(placer.place('foundation', [0, 0], 0, footprint, 'solid', { reach: 2 }), true);
 });
