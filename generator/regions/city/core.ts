@@ -13,6 +13,7 @@ import { EYE } from '../../build/markers.ts';
 import { cityReport } from './report.ts';
 import { segments } from './segments.ts';
 import { segmentId, streetAccessGraph } from './access-graph.ts';
+import { fillAvenueGaps } from './infill.ts';
 
 /** Everything the city builds from the plan, with what the tests check besides the output. */
 export type CityOptions = { settlement?: Settlement; budget?: Budget; catalog?: CityCatalog };
@@ -47,6 +48,7 @@ export function buildCity(plan: WorldPlan, options: CityOptions = {}) {
   const street = layStreets(placer, cells),
     deck = fillCells(placer, cells, catalog, plan.subSeed(`${site.city.id}/blocks`), primary),
     towardSea = facing(harbour ? harbour.out : turn([1, 0], site.yaw));
+  fillAvenueGaps(placer, cells);
   if (deck)
     placer.markers.push({
       kind: 'teleport',

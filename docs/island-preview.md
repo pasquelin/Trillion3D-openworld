@@ -39,3 +39,20 @@ look detached from distant towers, pale gaps remain around some downtown plinths
 housing district has large green spaces between developed blocks. The
 capture artifacts and cooked cache stay out of Git. The preview is evidence that generated
 island geometry renders; it is not a substitute for a full-world visual review.
+
+## City density source check
+
+For seed 332, the primary downtown's conservative building footprint rose from 37,000 m²
+(13.93% of its dry block catchment) to 107,336 m² (40.41%). Shared streetwall meshes form
+continuous frontages around tower courts, with narrow corner passages and clear twin-office
+plots. Dry fragments beside authored avenues gained 150 road-facing terrace rows with
+81,900 m² of building footprint and 309 mature-oak instances. These are checked against
+terrain height, water, roads, and existing solid footprints. Primary city instances rose from
+6,157 to 6,616; unique city prop triangles rose by about 1.3%.
+
+The density-only four-tile district capture rendered 18,080 objects, 775 resident pages and
+1,679,598 selected triangles. Its rows follow the diagonal avenues, but broad grassy pockets
+are still visible. It predates the local-street surface fix and a later tower-source cleanup;
+the combined scene needs its own capture. Software-rendered screenshots establish appearance
+and loading, not interactive frame rate. Distant dark tower crowns and segmented shafts remain
+visible in the tower diagnostic image.

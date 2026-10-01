@@ -19,6 +19,7 @@ import { rooftop } from './mounts.ts';
 import { park } from './park.ts';
 import { FOUNDATION } from './tower-kit.ts';
 import { towerPair } from './tower-pair.ts';
+import { placeStreetwalls } from './streetwall.ts';
 
 export function fillCells(
   placer: Placer,
@@ -49,9 +50,10 @@ export function fillCells(
       { support },
     );
     if (!plinth) continue;
-    if (cell.district === 'downtown')
+    if (cell.district === 'downtown') {
+      placeStreetwalls(placer, cell, downtown);
       deck = tower(placer, cell, catalog, downtown++, seed, primary) ?? deck;
-    else if (cell.district === 'midrise') midriseBlock(placer, cell, catalog, seed);
+    } else if (cell.district === 'midrise') midriseBlock(placer, cell, catalog, seed);
     else if (cell.district === 'park') park(placer, cell, y, support);
     else {
       for (let lot = 0; lot < 16; lot++) house(placer, cell, catalog, lot, seed);
