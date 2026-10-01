@@ -1,0 +1,58 @@
+{
+  "kind": "named-hardware-island-run",
+  "applicationCommit": "fill-with-40-character-sha",
+  "engineCommit": "fill-from-package-json",
+  "cookKey": "fill",
+  "seed": "fill",
+  "worldJsonSha256": "fill",
+  "nativeManifestSha256": "fill",
+  "hardware": {
+    "cpu": "fill",
+    "gpu": "fill",
+    "ramBytes": "fill",
+    "os": "fill",
+    "driver": "fill",
+    "browser": "fill",
+    "backend": "fill"
+  },
+  "profile": {
+    "width": 1600,
+    "height": 900,
+    "renderScale": 1,
+    "detail": "fill",
+    "geometryPoolBytes": 536870912,
+    "texturePoolBytes": 268435456,
+    "traffic": 40,
+    "pedestrians": 60,
+    "targetFrameMs": "fill-for-named-hardware"
+  },
+  "run": {
+    "route": "fill-W1-D1-V1-F1-N1-or-fixture",
+    "repeat": "fill-1-2-or-3",
+    "temperature": "cold-or-warm",
+    "order": "fill",
+    "frameMs": {
+      "p50": "unavailable",
+      "p95": "unavailable",
+      "p99": "unavailable",
+      "max": "unavailable"
+    },
+    "cpuMs": "unavailable",
+    "gpuMs": "unavailable",
+    "selectedTriangles": "unavailable",
+    "renderedTriangles": "unavailable",
+    "instanceExpandedTriangles": "unavailable",
+    "liveInstances": "unavailable",
+    "residentPages": "unavailable",
+    "geometryResidentBytes": "unavailable",
+    "textureResidentBytes": "unavailable",
+    "transferredBytes": "unavailable",
+    "processMemoryBytes": "unavailable",
+    "gpuMemoryBytes": "unavailable",
+    "streamingLatencyMs": "unavailable",
+    "colliderReadyMs": "unavailable",
+    "stills": [],
+    "video": "unavailable",
+    "observations": []
+  }
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Regional cache prototype</title>
+<style>body{margin:0;background:#101820;color:white;font:14px system-ui}canvas{width:100vw;height:100vh;display:block}#status{position:absolute;top:1rem;left:1rem;background:#000b;padding:1rem}</style>
+<canvas id="view"></canvas><div id="status">Opening proxy…</div>
+<script type="module">
+  import { createWorld, diagnostic } from './engine.js';
+  const status = document.getElementById('status');
+  const channel = diagnostic.createChannel();
+  const reopens = [];
+  channel.observe((event) => {
+    if (event.kind === 'session-reopen') reopens.push(event);
+  });
+  const world = createWorld('view');
+  const frame = () => Promise.race([
+    new Promise((done) => { const stop = world.onFrame(() => { stop(); done(); }); }),
+    new Promise((_, fail) => setTimeout(() => fail(Error('No drawn frame within 10 seconds')), 10000)),
+  ]);
+  world.camera.far = 9000;
+  world.scene.background = null;
+  const proxy = await world.scene.load('./proxy/cache/native/full/manifest.json');
+  world.camera.position.set(-650, 290, 500);
+  world.camera.lookAt(-450, 0, 0);
+  await world.awaitPages();
+  await frame();
+  const samples = [];
+  let active = null;
+  async function switchTo(id) {
+    const started = performance.now();
+    const next = await world.scene.load(`./${id}/cache/native/full/manifest.json`);
+    const loadedMs = performance.now() - started;
+    if (active) world.scene.remove(active);
+    active = next;
+    world.camera.position.set(id === 'west' ? -650 : 650, 290, 500);
+    world.camera.lookAt(id === 'west' ? -450 : 450, 0, 0);
+    await world.awaitPages();
+    await frame();
+    const settledMs = performance.now() - started;
+    const sample = {
+      id, loadedMs, settledMs,
+      proxyPresent: world.scene.children.includes(proxy),
+    };
+    samples.push(sample);
+    status.textContent = JSON.stringify(sample);
+    window.regionalSamples = samples;
+    window.regionalReopens = reopens;
+    return sample;
+  }
+  window.switchRegion = switchTo;
+  await switchTo('west');
+  await switchTo('east');
+</script>
+</html>

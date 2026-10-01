@@ -1,0 +1,175 @@
+{
+  "files": {
+    "dist/workload.html": {
+      "sha256": "6e41b5d61793b6b997f08a4838a31b7d620693bf20a41bcd61c10e5620ce598b"
+    },
+    "dist/workloads/one-block/report.json": {
+      "sha256": "8e0e0bc51a6cfa23bf4fde9a50abc4e48ca7ead90f7a12a2a2547579684153d8",
+      "report": {
+        "name": "one-block",
+        "blocks": 1,
+        "buildingInstances": 16,
+        "totalInstances": 18,
+        "uniqueSourceTriangles": 34287,
+        "instanceExpandedTriangles": 144507,
+        "uniqueMaterials": 13,
+        "renderedTriangles": null,
+        "selectedTriangles": null,
+        "units": "metres",
+        "cacheEnvelopeBytes": 838860800,
+        "geometryPoolBytes": 536870912,
+        "texturePoolBytes": 268435456,
+        "lighting": {
+          "sun": {
+            "color": [1, 0.95, 0.88],
+            "intensity": 3,
+            "position": [-50, 100, 50],
+            "target": [0, 0, 0],
+            "castShadow": true
+          },
+          "fill": {
+            "color": [0.55, 0.7, 1],
+            "groundColor": [0.22, 0.18, 0.13],
+            "intensity": 0.8
+          },
+          "background": [0.16, 0.23, 0.31]
+        },
+        "cameras": {
+          "facade": {
+            "position": [-18, 1.7, -49],
+            "target": [-18, 10, -34]
+          },
+          "alley": {
+            "position": [-49, 1.7, -20.65],
+            "target": [35, 1.7, -20.65]
+          },
+          "skyline": {
+            "position": [95, 85, 95],
+            "target": [0, 12, 0]
+          }
+        },
+        "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
+        "sourceHash": "e74caad3b90c3de5950ddbd2936a52ea592d70f9dd2797c07574ddef76ba9b6c",
+        "sourceBytes": 2125229,
+        "cookedBytes": 12564370,
+        "reload": {
+          "primitives": 28,
+          "compilerInstanceExpandedTriangles": 144507,
+          "texturePreviews": 2
+        }
+      }
+    },
+    "dist/workloads/four-blocks/report.json": {
+      "sha256": "3399f2cc748012e3ec742ac56f8c70a3f95d9b08227e8cc344425970a24790bd",
+      "report": {
+        "name": "four-blocks",
+        "blocks": 4,
+        "buildingInstances": 64,
+        "totalInstances": 72,
+        "uniqueSourceTriangles": 34287,
+        "instanceExpandedTriangles": 578028,
+        "uniqueMaterials": 13,
+        "renderedTriangles": null,
+        "selectedTriangles": null,
+        "units": "metres",
+        "cacheEnvelopeBytes": 838860800,
+        "geometryPoolBytes": 536870912,
+        "texturePoolBytes": 268435456,
+        "lighting": {
+          "sun": {
+            "color": [1, 0.95, 0.88],
+            "intensity": 3,
+            "position": [-50, 100, 50],
+            "target": [0, 0, 0],
+            "castShadow": true
+          },
+          "fill": {
+            "color": [0.55, 0.7, 1],
+            "groundColor": [0.22, 0.18, 0.13],
+            "intensity": 0.8
+          },
+          "background": [0.16, 0.23, 0.31]
+        },
+        "cameras": {
+          "facade": {
+            "position": [-82, 1.7, -113],
+            "target": [-82, 10, -98]
+          },
+          "alley": {
+            "position": [-113, 1.7, -84.65],
+            "target": [-29, 1.7, -84.65]
+          },
+          "skyline": {
+            "position": [190, 85, 190],
+            "target": [0, 12, 0]
+          }
+        },
+        "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
+        "sourceHash": "6fc7ec1d4ff4a3fc05752db48ff2f4feec879ff9df96a0643d7241b2f26c0583",
+        "sourceBytes": 2131129,
+        "cookedBytes": 10307996,
+        "reload": {
+          "primitives": 28,
+          "compilerInstanceExpandedTriangles": 578028,
+          "texturePreviews": 2
+        }
+      }
+    },
+    "dist/workloads/sixteen-blocks/report.json": {
+      "sha256": "4cc2ee8c7b13e2929a545a14ab098c91b36cd99c0bcb5955b4e93ba00e21f928",
+      "report": {
+        "name": "sixteen-blocks",
+        "blocks": 16,
+        "buildingInstances": 256,
+        "totalInstances": 288,
+        "uniqueSourceTriangles": 34287,
+        "instanceExpandedTriangles": 2312112,
+        "uniqueMaterials": 13,
+        "renderedTriangles": null,
+        "selectedTriangles": null,
+        "units": "metres",
+        "cacheEnvelopeBytes": 838860800,
+        "geometryPoolBytes": 536870912,
+        "texturePoolBytes": 268435456,
+        "lighting": {
+          "sun": {
+            "color": [1, 0.95, 0.88],
+            "intensity": 3,
+            "position": [-50, 100, 50],
+            "target": [0, 0, 0],
+            "castShadow": true
+          },
+          "fill": {
+            "color": [0.55, 0.7, 1],
+            "groundColor": [0.22, 0.18, 0.13],
+            "intensity": 0.8
+          },
+          "background": [0.16, 0.23, 0.31]
+        },
+        "cameras": {
+          "facade": {
+            "position": [-210, 1.7, -241],
+            "target": [-210, 10, -226]
+          },
+          "alley": {
+            "position": [-241, 1.7, -212.65],
+            "target": [-157, 1.7, -212.65]
+          },
+          "skyline": {
+            "position": [380, 85, 380],
+            "target": [0, 12, 0]
+          }
+        },
+        "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
+        "sourceHash": "e7d7c71258c2150bb106332249d5d384d51382e77f51282371e2c70a370c868f",
+        "sourceBytes": 2155757,
+        "cookedBytes": 11710104,
+        "reload": {
+          "primitives": 28,
+          "compilerInstanceExpandedTriangles": 2312112,
+          "texturePreviews": 2
+        }
+      }
+    }
+  }
+}
