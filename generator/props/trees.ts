@@ -8,7 +8,7 @@ import type { PropMesh } from '../plan/contract.ts';
 import { foliage, grow, wood, type GrowthRule } from './branches.ts';
 import { palm } from './palm.ts';
 import { SURFACES } from './surfaces.ts';
-import { prop } from './transform.ts';
+import { prop, transform } from './transform.ts';
 
 export type TreeSpecies = 'pine' | 'oak' | 'birch' | 'palm';
 export type TreeSize = 'small' | 'large';
@@ -19,25 +19,27 @@ const RULES: Record<Exclude<TreeSpecies, 'palm'>, Record<TreeSize, GrowthRule>> 
     large: {
       length: [24, 6.5, 1.6],
       radius: [0.42, 0.11, 0.03],
-      children: [56, 6],
+      children: [20, 3],
       start: [0.22, 0.2],
       spread: [1.35, 0.7],
       bend: [-0.35, -0.2],
-      sides: [14, 6, 3],
+      sides: [10, 5, 3],
+      stations: [7, 4, 3],
       apical: 0.92,
-      leaves: 14,
+      leaves: 5,
       leaf: [0.55, 0.22],
     },
     small: {
       length: [9, 2.6, 0.9],
       radius: [0.16, 0.05, 0.02],
-      children: [30, 5],
+      children: [12, 3],
       start: [0.15, 0.2],
       spread: [1.3, 0.7],
       bend: [-0.3, -0.2],
-      sides: [10, 5, 3],
+      sides: [8, 4, 3],
+      stations: [6, 4, 3],
       apical: 0.9,
-      leaves: 12,
+      leaves: 5,
       leaf: [0.4, 0.16],
     },
   },
@@ -45,25 +47,27 @@ const RULES: Record<Exclude<TreeSpecies, 'palm'>, Record<TreeSize, GrowthRule>> 
     large: {
       length: [7.5, 10, 4, 1.1],
       radius: [0.5, 0.24, 0.08, 0.025],
-      children: [6, 7, 6],
+      children: [5, 4, 3],
       start: [0.55, 0.2, 0.25],
       spread: [0.85, 0.7, 0.8],
       bend: [0.1, -0.1, -0.2],
-      sides: [16, 10, 5, 3],
+      sides: [10, 5, 3, 3],
+      stations: [6, 4, 3, 3],
       apical: 0.3,
-      leaves: 14,
+      leaves: 5,
       leaf: [0.5, 0.34],
     },
     small: {
       length: [3.4, 3.2, 1.4, 0.6],
       radius: [0.18, 0.09, 0.035, 0.014],
-      children: [4, 6, 5],
+      children: [4, 3, 3],
       start: [0.5, 0.25, 0.3],
       spread: [0.75, 0.7, 0.8],
       bend: [0.3, 0.1, -0.1],
-      sides: [10, 6, 4, 3],
+      sides: [8, 4, 3, 3],
+      stations: [5, 4, 3, 3],
       apical: 0.3,
-      leaves: 12,
+      leaves: 5,
       leaf: [0.34, 0.24],
     },
   },
@@ -71,25 +75,27 @@ const RULES: Record<Exclude<TreeSpecies, 'palm'>, Record<TreeSize, GrowthRule>> 
     large: {
       length: [17, 6.5, 2.6, 0.9],
       radius: [0.24, 0.08, 0.03, 0.012],
-      children: [16, 6, 4],
+      children: [8, 3, 3],
       start: [0.3, 0.2, 0.3],
       spread: [0.6, 0.7, 0.6],
       bend: [0.25, -0.5, -0.9],
-      sides: [14, 6, 4, 3],
+      sides: [10, 5, 3, 3],
+      stations: [6, 4, 3, 3],
       apical: 0.55,
-      leaves: 10,
+      leaves: 5,
       leaf: [0.34, 0.22],
     },
     small: {
       length: [7, 2.2, 1, 0.5],
       radius: [0.1, 0.035, 0.015, 0.008],
-      children: [10, 5, 3],
+      children: [5, 3, 2],
       start: [0.3, 0.2, 0.3],
       spread: [0.6, 0.7, 0.6],
       bend: [0.25, -0.5, -0.9],
-      sides: [10, 5, 3, 3],
+      sides: [8, 4, 3, 3],
+      stations: [5, 4, 3, 3],
       apical: 0.55,
-      leaves: 10,
+      leaves: 5,
       leaf: [0.26, 0.17],
     },
   },
@@ -101,6 +107,13 @@ const LOOK = {
   birch: { bark: SURFACES.birchBark, leaves: SURFACES.birchLeaves },
 };
 
+/** Preserve canopy width and height as branch detail is reduced for mass placement. */
+const SILHOUETTE: Record<Exclude<TreeSpecies, 'palm'>, Record<TreeSize, [number, number]>> = {
+  pine: { small: [1.18, 1.025], large: [1.12, 1.025] },
+  oak: { small: [1.3, 1.09], large: [1.3, 0.976] },
+  birch: { small: [1.32, 1.14], large: [1.25, 1.09] },
+};
+
 /** One tree prop. `seed` varies every branch and leaf; the height is the species' own. */
 export function tree(species: TreeSpecies, size: TreeSize, seed: number): PropMesh {
   const id = `tree-${species}-${size}`;
@@ -108,7 +121,13 @@ export function tree(species: TreeSpecies, size: TreeSize, seed: number): PropMe
   const rule = RULES[species][size],
     branches = grow(rule, seed),
     { bark, leaves } = LOOK[species];
-  return prop(id, [...wood(bark, branches, rule), foliage(leaves, branches, rule, seed)]);
+  const [width, height] = SILHOUETTE[species][size];
+  return prop(
+    id,
+    [...wood(bark, branches, rule), foliage(leaves, branches, rule, seed)].map((part) =>
+      transform(part, { scale: [width, height, width] }),
+    ),
+  );
 }
 
 /** All eight trees. */

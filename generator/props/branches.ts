@@ -28,6 +28,8 @@ export type GrowthRule = {
   bend: PerLevel;
   /** Tube sides per level. */
   sides: PerLevel;
+  /** Optional station cap per level for distant, densely repeated trees. */
+  stations?: PerLevel;
   /** How much shorter children grow toward the parent's tip (0 none, 1 vanishing: a cone). */
   apical: number;
   /** Leaves per twig, their length and width (m). */
@@ -51,7 +53,10 @@ export function grow(rule: GrowthRule, seed: number): Branch[] {
   let serial = 0;
   const shoot = (origin: Vec3, direction: Vec3, level: number, length: number, radius: number) => {
     const id = serial++,
-      stations = Math.max(3, Math.round(4 + (length * 1.5) / (level + 1))),
+      stations = Math.min(
+        rule.stations?.[level] ?? Infinity,
+        Math.max(3, Math.round(4 + (length * 1.5) / (level + 1))),
+      ),
       points: Vec3[] = [origin],
       radii: number[] = [radius];
     let dir = direction;
@@ -123,6 +128,20 @@ export function blade(out: Sheet, base: Vec3, dir: Vec3, up: Vec3, length: numbe
   for (const k of [0, 3, 1, 1, 3, 2, 0, 1, 4, 1, 2, 4]) out.indices.push(first + k);
 }
 
+/** One broad, double-sided leaf card using two triangles for distant repeated trees. */
+function canopyCard(out: Sheet, base: Vec3, dir: Vec3, up: Vec3, length: number, width: number) {
+  const side = unit(cross(dir, up)),
+    tip = add(base, dir, length),
+    first = out.positions.length / 3;
+  out.positions.push(
+    ...add(base, side, width * 0.5),
+    ...add(base, side, -width * 0.5),
+    ...add(tip, side, width * 0.3),
+    ...add(tip, side, -width * 0.3),
+  );
+  for (const k of [0, 1, 2, 2, 1, 3]) out.indices.push(first + k);
+}
+
 /**
  * Leaf blades along the outer part of every twig (the deepest level), facing broadly up and
  * out.
@@ -146,7 +165,7 @@ export function foliage(
         lift: Vec3 = [hash01(seed, n, l, 4) - 0.5, 0, hash01(seed, n, l, 5) - 0.5],
         up = unit(add(cross(dir, cross([0, 1, 0], dir)), lift, 0.6)),
         size = 0.75 + 0.5 * hash01(seed, n, l, 6);
-      blade(sheet, twig.points[s + 1], dir, up, length * size, width * size);
+      canopyCard(sheet, twig.points[s + 1], dir, up, length * size, width * size * 1.35);
     }
   });
   return meshPart(surface, sheet.positions, sheet.indices);

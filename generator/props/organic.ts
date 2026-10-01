@@ -51,13 +51,13 @@ export const rocks = (seed: number): PropMesh[] => [
 const SHRUB: GrowthRule = {
   length: [0.35, 0.9, 0.4],
   radius: [0.04, 0.02, 0.008],
-  children: [9, 6],
+  children: [7, 5],
   start: [0.1, 0.3],
   spread: [0.9, 0.8],
   bend: [0.2, -0.1],
   sides: [5, 4, 3],
   apical: 0.2,
-  leaves: 14,
+  leaves: 8,
   leaf: [0.16, 0.1],
 };
 
