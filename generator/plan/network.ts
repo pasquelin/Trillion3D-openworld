@@ -2,7 +2,7 @@ import { CITY_CORES } from './geography.ts';
 import type { Bridge, RoadClass, Settlement, Vec3 } from './contract.ts';
 import type { Lake, Platform, RoadCourse } from './carve.ts';
 import { REGION_BOUNDS } from './layout.ts';
-import type { Point2 } from './polyline.ts';
+import { distanceXZ as dist, type Point2 } from './polyline.ts';
 import { onAirfield, onOperationalAirfield, type AirfieldPlatforms } from './airfields.ts';
 import type { Tunnel } from './tunnels.ts';
 import { layRoad, buildRoad, ROAD_STEP, type Ground } from './roads.ts';
@@ -112,7 +112,8 @@ export function planNetwork(
   }
   const resort = find('ski-resort'),
     mountainTown = find('mountains-town');
-  if (mountainTown) road('mountains-town/road', 'pass', xz(mountainTown), 'network');
+  if (mountainTown)
+    road('mountains-town/road', 'pass', xz(mountainTown), xz(find('city-northeast')!));
   if (resort && mountainTown) road('pass', 'pass', xz(mountainTown), xz(resort));
   const mountainBounds = REGION_BOUNDS.mountains;
   const summit = groundSummits(
@@ -197,4 +198,3 @@ export function planNetwork(
   );
   return { courses, bridges, tunnels: joinedTunnels, viewpoints, failedConnections };
 }
-const dist = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[2] - b[2]);
