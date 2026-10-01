@@ -44,9 +44,18 @@ performance. Its `failure.txt` SHA-256 is
 `9b274851aec030a5c02056ad84b545600af84f651ec0c24ddb65ecb9e5e540f0`;
 its Chromium log SHA-256 is
 `c2f744803249becc103f7db4cb5b0dcda9b7ab0206bc64178de8f866654b7e29`.
-The local diagnostics remain outside Git. Instrument the browser's startup
-stages and memory before attributing the stall to the engine, transport or
-software renderer. A hardware capture of the same full scene is still needed.
+The local diagnostics remain outside Git. A second 150-second SwiftShader run
+reached the `Starting the physics` overlay, while the engine warned that no
+frame had drawn and its session was still at `backend-preparation-start`.
+DevTools counted 50,216 requests, 42,149 `ERR_INSUFFICIENT_RESOURCES` failures,
+and 42,279 failed fetches for the same `world-roots.bin` URL (including aborted
+requests). The engine bundle emitted `RangeError: Maximum call stack size
+exceeded`. No route selector, selected-triangle count or valid image resulted.
+The [upstream engine issue #1457](https://github.com/pasquelin/Trillion3D/issues/1457)
+tracks the request storm and stack overflow. A cloud proxy contribution has
+not been ruled out, and hardware performance remains unmeasured. Compare the
+same cache under direct/local serving and named hardware before assigning the
+precise failure cause.
 
 ## Latest source and preview
 
