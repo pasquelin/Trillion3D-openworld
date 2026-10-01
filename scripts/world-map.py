@@ -111,7 +111,7 @@ ax.set(xlim=(-4,4), ylim=(4,-4), xlabel='East / West (km)',
 ax.legend(loc='lower left', fontsize=8, facecolor='white')
 fig.colorbar(im, ax=ax, label='Composed altitude (m)', shrink=.75)
 coverage = census['coverage']
-fig.text(.1,.015, f"Source key {census['sourceCookKey']} · includes #19 / #20 / local #21 · not an engine capture\n"
+fig.text(.1,.015, f"Source key {census['sourceCookKey']} · includes #15 / #19 / #20 / #21 · not an engine capture\n"
     f"{census['nodes']:,} nodes · {100*coverage['within10mFraction']:.2f}% eligible 20 m samples within 10 m"
     f" · {100*coverage['beyond30mFraction']:.2f}% ≥30 m (censored)\n"
     'Conservative actual vertex witnesses; roads, fields, water and steep cliffs excluded. '

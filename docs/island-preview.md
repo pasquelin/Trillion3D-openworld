@@ -52,7 +52,9 @@ terrain height, water, roads, and existing solid footprints. Primary city instan
 
 The density-only four-tile district capture rendered 18,080 objects, 775 resident pages and
 1,679,598 selected triangles. Its rows follow the diagonal avenues, but broad grassy pockets
-are still visible. It predates the local-street surface fix and a later tower-source cleanup;
-the combined scene needs its own capture. Software-rendered screenshots establish appearance
-and loading, not interactive frame rate. Distant dark tower crowns and segmented shafts remain
-visible in the tower diagnostic image.
+are still visible. The combined local-street surface diagnostic then rendered the same 18,080
+objects, 775 resident pages and 1,679,685 selected triangles with paved block streets visible.
+Its strict capture result is invalid because one network request ended with `ERR_ABORTED`; the
+WebGL2 renderer was ready and reported no JavaScript exception. Software-rendered screenshots
+establish appearance and loading, not interactive frame rate. Grassy parcels, dark distant tower
+crowns and segmented shafts remain visible limitations.

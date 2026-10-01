@@ -1,12 +1,12 @@
 {
-  "sourceHead": "a8e7fe1ae5fe38c52853692fa4b8ef3af9fe27ef",
-  "sourceCookKey": "54fa54fd3fcc34f9",
-  "censusContentHash": "c59169bb85d9b07aa56c81975ee36ce56023ac713ecbc3b93fe5a2717e617c40",
+  "sourceHead": "3cb49bf18f1134000235d97c6c419d6ff70dff0e",
+  "sourceCookKey": "32fb331f98244021",
+  "censusContentHash": "dd04a72023d7b2c04606f44c4358a26bfe13267928713157ad1bbff82973dc22",
   "engineCommit": "7f810cbe344ee10fdcc910a8f5659e1536edbc2d",
   "seed": 332,
-  "mapInputSha256": "079f9977c3639d549307a96d24944002fa996b16c72718fa704623c6cc9c4c4b",
-  "pngSha256": "1ae894636426e2563b5dd04a39672363dfb865b227b5cac107befd1889079457",
+  "mapInputSha256": "5b1a0b5c0e619da70664fe187659048ef4b7330ea941aa96ec4e632c62f20826",
+  "pngSha256": "39a1859be54f2f094413c5ed1f8ecd9041d52719f218e2e6652f54e6dbf396fa",
   "renderer": "scripts/world-map.py",
-  "rendererSha256": "7719bad1d42664c9d206bd3894f04691d261a7b291bce3df7524c7ce316560c4",
+  "rendererSha256": "acfd3f69db6e5a2cc6a367a458f1b1299cf218a669d052249fea1f99a36b0ee3",
   "scope": "Actual source placements; no native GPU capture"
 }

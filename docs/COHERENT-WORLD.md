@@ -45,7 +45,8 @@ water, operational fields, roads and steep cliffs are reported separately.
 Approximately 10 m coverage is a local target, not a proved whole-island promise.
 The initial `fill.empty` count is separate from the final proximity observations.
 
-The final source census includes #19, #20 and the tested local #21 route source.
+The final source census includes #15 city density and local-street surfaces, #19,
+#20 and the tested local #21 route source.
 The 281-test source suite passed at the preceding world checkpoint; targeted
 vegetation, stand and countryside checks pass after the tree-mesh reduction.
 Source maps and cook-time timing/memory are not native GPU
@@ -81,35 +82,42 @@ records the source cook key, engine pin, census hash and map/PNG SHA-256 hashes.
 
 ## Integrated source measurements
 
-The measured source checkpoint is `a8e7fe1`,
-with cook key `54fa54fd3fcc34f9`. Both censuses include #19, #20 and the tested local
-#21 route source. These are source-generation observations; GPU performance
+The measured source checkpoint is `3cb49bf`,
+with cook key `32fb331f98244021`. Both censuses include the #15 city density and
+local-street surface changes as well as #19, #20 and the tested local #21 route
+source. These are source-generation observations; GPU performance
 requires a separate check.
 
 | Seed | Placed nodes | Unique mesh triangles | Mesh buffers | Homes | Eligible samples ≤10 m | Eligible samples ≥30 m | Generation |   Peak RSS |
 | ---- | -----------: | --------------------: | -----------: | ----: | ---------------------: | ---------------------: | ---------: | ---------: |
-| 332  |      150,705 |             2,494,671 |   100.67 MiB |   671 |                 84.32% |                  0.47% |   113.92 s | 743.85 MiB |
-| 333  |      146,364 |             2,224,220 |    88.67 MiB |   496 |                 83.86% |                  1.63% |   119.03 s | 702.07 MiB |
+| 332  |      150,246 |             2,499,303 |   100.93 MiB |   671 |                 85.76% |                  0.46% |   115.38 s | 745.45 MiB |
+| 333  |      145,905 |             2,228,852 |    88.93 MiB |   496 |                 85.74% |                  1.59% |   121.40 s | 735.18 MiB |
 
-The 90th-percentile distance is 11.34 m / 11.63 m; the 95th percentile is
-13.47 m / 14.42 m. Operational fields, roads, water and steep cliffs are excluded
-and counted separately. Seeds 332 / 333 retain 248 / 870 eligible cells at least 30 m from
+The 90th-percentile distance is 11.07 m / 11.24 m; the 95th percentile is
+13.30 m / 14.13 m. Operational fields, roads, water and steep cliffs are excluded
+and counted separately. Seeds 332 / 333 retain 239 / 850 eligible cells at least 30 m from
 retained mesh witnesses. Airport and coast node allowances remain saturated at
 15,000 and 40,000 respectively. The separate gap map displays this residual;
 the approximately 10 m target is not achieved everywhere.
 
 | Seed 332 centre | Buildings | Maximum building height | Maximum roof altitude | Building footprint union | Dry urban blocks | Roads |
 | --------------- | --------: | ----------------------: | --------------------: | -----------------------: | ---------------: | ----: |
-| Primary south   |     1,238 |                 315.5 m |               332.3 m |               325,196 m² |        2.203 km² |   263 |
-| West            |       300 |                 125.4 m |               150.6 m |                54,277 m² |        0.438 km² |    60 |
-| Interior        |       523 |                 125.4 m |               257.2 m |               106,946 m² |        0.828 km² |    94 |
-| Northeast       |       277 |                 125.4 m |               267.5 m |                56,452 m² |        0.469 km² |    63 |
-| East            |       309 |                 125.4 m |               143.6 m |                68,156 m² |        0.516 km² |    76 |
+| Primary south   |     1,448 |                 315.5 m |               332.3 m |               395,532 m² |        2.203 km² |   263 |
+| West            |       314 |                 125.4 m |               150.6 m |                66,181 m² |        0.438 km² |    60 |
+| Interior        |       553 |                 125.4 m |               257.2 m |               132,482 m² |        0.828 km² |    94 |
+| Northeast       |       326 |                 125.4 m |               267.5 m |                72,900 m² |        0.469 km² |    63 |
+| East            |       343 |                 125.4 m |               143.6 m |                84,604 m² |        0.516 km² |    76 |
 
-Every centre has a connected street component and physical buildings. Composed
+The footprint column sums designated dry district catchments; the primary core
+also has 150 road-facing terraces outside those catchments, with 81,900 m² of
+additional physical footprint and 309 boulevard oaks. Its Bay Center downtown
+catchment now has 107,336 m² of building footprint across 0.266 km² of dry blocks,
+or 40.41% coverage, versus 13.93% before the density change. Every centre has a
+connected street component and physical buildings. Composed
 40 m relief samples reach 1,890 m / 1,899 m. Both seeds report no traversal
 validation failures. Road-water checks find 0 submerged samples out of 1,275
-wet samples on seed 332 and 659 on seed 333. The 34 / 21 emitted bridge bays
+wet samples on seed 332 and 659 on seed 333 (102,270 / 113,388 road samples).
+The 34 / 21 emitted bridge bays
 match their graded road decks with no mismatch. D1 uses the actual graded
 mountain pass off the lowland ring; its connector joins the authored centreline.
 F2 is a camera replay with exact
@@ -133,13 +141,18 @@ roads, both airfields, water and actual vegetation roots.
 
 ## Validation
 
-At source commit `a8e7fe1`, the direct Prettier, ESLint, TypeScript, Knip,
-line-count and build gates passed. The 281-test full suite passed on the preceding
-`4d5a489` checkpoint; vegetation, stand and countryside tests pass on `a8e7fe1`. The
+The exact seed-332/333 source census above ran on `3cb49bf` and passed road-water,
+bridge-deck and traversal audits on both seeds. The local #15 density tests,
+TypeScript, ESLint, Prettier and line-count gate passed on the immediately prior
+city commit `f143cbb`; the road-surface change was checked by its focused tests
+before `3cb49bf`. At historical source commit `a8e7fe1`, the direct Prettier,
+ESLint, TypeScript, Knip, line-count and build gates passed. The 281-test full suite
+passed on the preceding `4d5a489` checkpoint; vegetation, stand and countryside
+tests passed on `a8e7fe1`. The
 seed-332 desert test separately checks that each local street follows the true
 ground at intervals no greater than 5 m, stays below 10% longitudinal grade,
-and reaches a real highway node through the walking travel graph. The complete
-source census repeats road-water, bridge-deck and authored traversal audits on
+and reaches a real highway node through the walking travel graph. The new source
+census repeats road-water, bridge-deck and authored traversal audits on
 both seeds; neither seed has a reported failure.
 
 The first official full cache attempt at `4d5a489` reached 97% of native
@@ -151,7 +164,7 @@ On the previous glTF node distribution, the sum of per-mesh triangles multiplied
 by placement counts falls from 1.863 billion to an estimated 494.5 million
 (73.5% lower). This is an input-load estimate, not a GPU frame measurement.
 
-The official `a8e7fe1` cook completed with the pinned native compiler after
+The historical official `a8e7fe1` cook completed with the pinned native compiler after
 4,576.7 s (including 1,529.9 s in native compilation). It selected 150,747
 drawn mesh nodes and 479,030,012 instance-expanded triangles. Its scene proxy
 has 247,787 triangles and reached 12.76 GB native peak RSS. The engine's
@@ -159,8 +172,8 @@ has 247,787 triangles and reached 12.76 GB native peak RSS. The engine's
 the whole `dist/assets/54fa54fd3fcc34f9/` folder including source, heights,
 colliders and page JSON occupies 2,795.96 MiB. The largest cache products are
 `world-roots.bin` (1,574.68 MiB) and `world-roots.json` (309.60 MiB). These
-measurements expose a remaining cooked-disk bottleneck despite successful
-compilation; they do not establish runtime frame rate or residency.
+measurements expose a cooked-disk bottleneck at that checkpoint despite successful
+compilation; they do not establish runtime frame rate or residency for current source.
 
 The `world-roots.json` table contains 675,869 page records (199.19 MB) and
 333,571 placed-primitive dependency records across 315 cells (120.57 MB). The
