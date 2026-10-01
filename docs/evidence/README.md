@@ -4,10 +4,10 @@ Issue #22 has two separate gates. A software browser can prove that the **actual
 world** loads and draws a selected route. Only a named hardware run can establish the
 island's frame times, memory behavior and game performance. Keep their results separate.
 
-The [October 2026 checkpoint](full-island-checkpoint.md) records the completed #15
-full cook, its disk budget miss, a bounded full-world browser attempt, and the
-separate downtown preview. It is an input to this protocol, not a passing full-island
-render or performance result.
+The [October 2026 checkpoint](full-island-checkpoint.md) separates the final #15
+source census and downtown diagnostic from an earlier completed full cook, its
+disk budget miss and a bounded full-world browser attempt. It is an input to
+this protocol, not a passing full-island render or performance result.
 
 ## Capture the cooked world
 

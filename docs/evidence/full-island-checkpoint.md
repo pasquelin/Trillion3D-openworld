@@ -1,12 +1,33 @@
 # Full-island cook and browser checkpoint — 2026-10-01
 
-This checkpoint reports observations from Open World #15, source commit `a8e7fe1`,
-seed 332, cook key `54fa54fd3fcc34f9`, and engine pin
-`7f810cbe344ee10fdcc910a8f5659e1536edbc2d`. The #15
+Open World #15 finished at source commit `41c64a0`. Its latest measured source
+checkpoint is `3cb49bf`, seed 332/333, cook key `32fb331f98244021`. The
+completed full cook, cache measurements and failed full-world browser attempt
+below belong to the earlier `a8e7fe1` checkpoint, seed 332, cook key
+`54fa54fd3fcc34f9`. They do **not** measure the final source. Both checkpoints
+use engine pin `7f810cbe344ee10fdcc910a8f5659e1536edbc2d`. The #15
 `docs/COHERENT-WORLD.md` and `docs/island-preview.md` describe the source and
-preview; the local #15 cook log and browser `capture-roof-range` diagnostics
-record the attempts. These artifacts are tied to that checkpoint. Repeat after
-any change to the application, engine pin, source or cook inputs.
+previews; the local #15 cook log and browser `capture-roof-range` diagnostics
+record the historical attempts. Repeat the full cook and capture after source,
+engine pin or cook input changes.
+
+## Latest source and preview
+
+| Seed | Placed nodes | Unique mesh triangles | Eligible samples within 10 m | Road-water, bridge-deck and route failures |
+| --- | ---: | ---: | ---: | ---: |
+| 332 | 150,246 | 2,499,303 | 85.76% | 0 |
+| 333 | 145,905 | 2,228,852 | 85.74% | 0 |
+
+These are source census and validation results at `3cb49bf`, not a native cook
+or GPU benchmark. The generated 2 × 2 km downtown diagnostic with local-street
+surfaces showed paved block roads and reported 18,080 objects, 775 resident pages
+and 1,679,685 selected triangles in WebGL2/SwiftShader. Its strict capture was
+invalid because one network request ended with `ERR_ABORTED`; the renderer was
+ready and reported no JavaScript exception. Large green gaps and X-shaped roads
+remain visible. This diagnostic does not pass the full-world render
+gate or establish interactive performance.
+
+## Earlier completed full cook
 
 | Observation | Result | Scope |
 | --- | ---: | --- |
@@ -41,7 +62,7 @@ frame-time distribution, GPU timing or resident-memory measurement resulted.
 The previous full-world smoke image had zero selected triangles. Both attempts
 remain diagnostics, not successful render evidence.
 
-A separate 2 × 2 km downtown preview compiled a 506 MiB native cache, with a
+A separate preview at the earlier source checkpoint compiled a 506 MiB native cache, with a
 42 MiB `world-roots.json`. At 960 × 540 in Chromium WebGL2/SwiftShader, its
 neighborhood view reached ready with 759 resident pages and 1,232,142 selected
 triangles; the towers, aerial and district views also produced inspected captures.
@@ -71,8 +92,10 @@ streaming smoothness, or the 800 MiB full-world disk target.
    `unavailable`. Compare quality at the same camera poses before treating a
    performance change as an improvement.
 
-The current disposition is **full cook completed; disk budget failed; preview
-render passed; full-world render and hardware performance unverified**. The
-largest measured bottleneck is the world-roots cache. Any reduction should be
-made against a reproducible cache/capture baseline and retested for appearance,
-loading, and residency. No engine change or hardware FPS claim is made here.
+The current disposition is **latest source census passed; latest strict preview
+capture invalid; final-source full cook, disk budget, full-world render and
+hardware performance unverified**. The earlier full cook completed but missed
+the disk budget by more than 3×. Its largest measured products were the
+world-roots files. Retest the final source for cache size, appearance, loading
+and residency before accepting any improvement. No engine change or hardware
+FPS claim is made here.
