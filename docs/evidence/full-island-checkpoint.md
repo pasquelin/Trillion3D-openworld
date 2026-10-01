@@ -70,6 +70,45 @@ These counts and images prove that generated subset geometry rendered in the
 software backend. They do not establish full-world loading, hardware FPS,
 streaming smoothness, or the 800 MiB full-world disk target.
 
+## Reducing scene weight
+
+Unreal's World Partition streams nearby cells while hierarchical LOD (HLOD)
+keeps distant groups visible with coarse proxies. Apply that pattern here as an
+application-level prototype: keep one coarse proxy for the entire roughly 8 km
+island loaded, split detailed geometry and colliders into region caches, and use
+the public `scene.load` / `scene.remove` path to change active regions. Predict
+regions ahead of vehicle and flight cameras; retain recently visited regions
+with distance and time hysteresis so a boundary crossing does not unload and
+reload them repeatedly. Changing the loaded model set currently reopens the
+engine session, so batch transitions and measure their pause. If reopening is
+too costly, record that limitation for an upstream streaming API request.
+
+This separates two budgets. **Active** transfer and residency can fall when
+only nearby region data is loaded. **Total** cooked disk size will not fall just
+because the 2,577.01 MiB cache is split into files. The historical
+`world-roots.bin` alone is 1,574.68 MiB and its JSON index is 309.60 MiB.
+Reduce their underlying contents through measured HLOD for distant detail,
+shared meshes/materials and real instancing or page deduplication for repeated
+trees/buildings, and compact procedural seeds where reconstruction preserves
+appearance and collision. Count bytes and dependencies after each change; any
+compiler-format or engine API change belongs upstream, not in this application.
+
+Prototype the smallest downtown region first, with its coarse proxy and one
+adjacent region. Compare identical camera poses and a boundary crossing before
+expanding to the island. Proposed acceptance targets on a named hardware profile
+at the fixed settings in [the protocol](README.md#named-hardware-measurement):
+
+| Gate | Proposed target |
+| --- | --- |
+| Cold start | First useful frame ≤10 s and route ready ≤30 s; record both distributions over three cold runs |
+| Active data | ≤256 MiB transferred to first route frame; resident geometry ≤512 MiB and textures ≤256 MiB, measured separately |
+| Total cooked disk | All native caches together ≤800 MiB, including persistent and regional products |
+| Flight crossing | No missing region; frame-interval p95 ≤33.3 ms and maximum hitch ≤100 ms over three F2 runs |
+| Long vistas | At fixed summit, coast and flight poses, continuous island silhouette to the 8 km proxy extent; zero missing-region frames in stills and video |
+
+These are targets, not measured results. Keep the same visual detail in near
+views and compare captures before accepting a byte or timing improvement.
+
 ## Reproduce and accept
 
 1. On a clean #15 source checkpoint, record the full 40-character application
