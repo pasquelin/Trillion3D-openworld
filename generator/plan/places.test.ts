@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { mountainsRegion } from '../regions/mountains/index.ts';
 import { bridgeDeck } from './bridges.ts';
 import { WORLD } from './contract.ts';
-import { BAND, REGION_BOUNDS } from './layout.ts';
+import { REGION_BOUNDS } from './layout.ts';
 import { createPlan, isTerrainPlan, subSeedOf } from './plan.ts';
 import { ROAD_STEP } from './roads.ts';
 import { COVER, CROWN, MIN_RUN } from './tunnels.ts';
@@ -27,16 +27,24 @@ describe('open world plan: places, shores, seeds, bridges and tunnels', () => {
       },
       refined = createPlan(WORLD.seed, [desert]),
       lift = (x: number, z: number) => refined.uneroded(x, z) - refined.relief.height(x, z),
-      border = REGION_BOUNDS.desert.maxX;
-    const near = (value: number, expected: number) =>
-      assert.ok(Math.abs(value - expected) < 1e-9, `${value}`);
-    near(lift(border - BAND, 0), 40);
-    near(lift(border + BAND, 0), 0);
-    near(lift(border, 0), 20);
-    // A smoothstep over the band climbs at most 1.5 times its mean slope.
-    const steepest = (1.5 * 40 * 10) / BAND;
-    for (let x = border - BAND; x < border + BAND; x += 10)
-      assert.ok(Math.abs(lift(x + 10, 0) - lift(x, 0)) <= steepest, `step at ${x}`);
+      samples: number[] = [];
+    for (let x = -3500; x <= -1300; x += 100)
+      for (let z = -2500; z <= 900; z += 100) {
+        if (refined.relief.height(x, z) <= 2) continue;
+        const value = lift(x, z);
+        assert.ok(value >= -1e-9 && value <= 40 + 1e-9);
+        assert.ok(Math.abs(lift(x + 10, z) - value) < 4, `transition ${x},${z}`);
+        samples.push(value);
+      }
+    assert.ok(Math.max(...samples) > 10, 'the organic desert receives its refinement');
+    assert.ok(
+      samples.some((value) => value === 0),
+      'other ownership stays unchanged',
+    );
+    assert.ok(
+      samples.some((value) => value > 1 && value < 30),
+      'the boundary blends',
+    );
   });
   it('grows every shore through sea level without a step, with a beach band', () => {
     let beach = 0;

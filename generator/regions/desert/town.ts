@@ -19,9 +19,11 @@ import {
   tube,
   type PropLamp,
 } from '../../props/index.ts';
-import { PLINTH } from './houses.ts';
 import { DESERT } from './palette.ts';
 import { domedHall } from './hall.ts';
+
+/** Stone foundation below the oasis pool on uneven desert ground. */
+export const POOL_PLINTH = 6;
 
 /** A market stall 3 × 2.4 m: four posts, a counter, a sagging striped awning, goods. */
 function stall(id: string, seed: number): PropMesh {
@@ -63,12 +65,12 @@ function pool(): PropMesh {
     const q = outline[(i + 1) % outline.length],
       a = inner[i],
       b = inner[(i + 1) % inner.length];
-    return extrude(DESERT.mudBrick, [p, q, b, a], 0.6 + PLINTH, { caps: 'top' });
+    return extrude(DESERT.mudBrick, [p, q, b, a], 0.6 + POOL_PLINTH, { caps: 'top' });
   });
   return prop('desert/pool', [
-    ...kerb.map((k) => transform(k, { at: [0, -PLINTH, 0] })),
-    transform(extrude(DESERT.water, inner, 0.45 + PLINTH, { caps: 'top' }), {
-      at: [0, -PLINTH, 0],
+    ...kerb.map((k) => transform(k, { at: [0, -POOL_PLINTH, 0] })),
+    transform(extrude(DESERT.water, inner, 0.45 + POOL_PLINTH, { caps: 'top' }), {
+      at: [0, -POOL_PLINTH, 0],
     }),
     ...[0, 1, 2].map((k) =>
       transform(box(DESERT.mudPlaster, [3, 0.2, 0.5]), { at: [0, 0.2 * k, 10.2 + 0.5 * (2 - k)] }),

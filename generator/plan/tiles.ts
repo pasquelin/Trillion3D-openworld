@@ -11,7 +11,7 @@
 import { TERRAIN_BYTES } from './budget.ts';
 import { bakeTile } from './bake.ts';
 import { BINS_PER_OCTAVE, conform, countTriangles, thresholdCurve, type Tile } from './conform.ts';
-import { WORLD, type Instance, type PropMesh, type RegionModule } from './contract.ts';
+import { WORLD, type Instance, type PropMesh, type RegionModule, type Road } from './contract.ts';
 import { groundColour } from './paint.ts';
 import type { TerrainPlan } from './plan.ts';
 import { splitTerrain } from './resolution.ts';
@@ -38,6 +38,7 @@ export function terrainTiles(
   window = WHOLE,
   /** False skips the image bake (a budget check needs the meshes only); the meshes still name it. */
   bake = true,
+  localRoads: readonly Road[] = [],
 ) {
   const shape = hierarchy(TILE_GRID),
     tiles: Tile[] = [],
@@ -64,7 +65,7 @@ export function terrainTiles(
   const wet = tiles.map((tile) => tile.deep || tile.grid.minimum() < WORLD.seaLevel),
     keys = new Set(tiles.map(({ grid }) => `${grid.tx}_${grid.tz}`)),
     flat =
-      [...flatParts(plan, 0)].reduce(
+      [...flatParts(plan, 0, localRoads)].reduce(
         (sum, [key, list]) =>
           sum + (keys.has(key) ? list.reduce((n, p) => n + p.indices.length / 3, 0) : 0),
         0,
@@ -80,7 +81,7 @@ export function terrainTiles(
     if (ground + flat <= budget) {
       // A road ribbon floats over the most its levelled ground may be missed by: the threshold
       // (land weighs one), plus a few centimetres.
-      const parts = flatParts(plan, threshold + 0.05),
+      const parts = flatParts(plan, threshold + 0.05, localRoads),
         meshes: PropMesh[] = [],
         instances: Instance[] = [],
         textures = bakeAll(plan, regions, tiles, bake ? split.size : 0),

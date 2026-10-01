@@ -35,7 +35,10 @@ test('density counts explicit buildings and reconciles footprint union on actual
     if (i.instance.prop === 'city/tower-round-310') continue;
     assert.ok(i.building!.height >= min && i.building!.height <= max, i.instance.prop);
   }
-  assert.equal(count, city.kept.filter((i) => i.building).length);
+  assert.equal(
+    count + city.report.avenueInfill.terraceCount,
+    city.kept.filter((i) => i.building).length,
+  );
   assert.ok(city.output.instances.length > count * 2, 'accessories are not counted as buildings');
   const footprints = new Occupancy<string>(100);
   for (const i of city.kept.filter((i) => i.building)) {

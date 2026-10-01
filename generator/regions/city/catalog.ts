@@ -16,6 +16,8 @@ import { chimney, neonSigns } from './signs.ts';
 import { stadium } from './stadium.ts';
 import { towers } from './towers.ts';
 import { buildingMetadata } from './metadata.ts';
+import { downtownStreetwall } from './streetwall.ts';
+import { terrace } from './terrace.ts';
 
 /** A superblock (the stadium's) spans two blocks and the street between them. */
 export const superblockSize = ({ block, street }: { block: number; street: number }) =>
@@ -41,6 +43,8 @@ export function cityCatalog(seed: number, grid: { block: number; street: number 
     ...tower.map((t) => t.prop),
     ...midrise.map((m) => m.prop),
     ...house.map((h) => h.prop),
+    downtownStreetwall(seed + 300),
+    terrace(seed + 320),
     arena.prop,
     gardenFence(),
     pavedBlock(IDS.paved, grid.block),
@@ -63,6 +67,11 @@ export function cityCatalog(seed: number, grid: { block: number; street: number 
   const buildings = buildingMetadata([
     ...house.map((h) => ({ ...h, class: 'low' as const })),
     ...midrise.map((m) => ({ ...m, class: 'mid' as const })),
+    {
+      prop: props.find((p) => p.id === 'city/downtown-streetwall')!,
+      class: 'mid' as const,
+    },
+    { prop: props.find((p) => p.id === 'city/terrace')!, class: 'low' as const },
     ...tower.map((t) => ({ ...t, class: 'high' as const })),
     { ...arena, class: 'civic' as const },
   ]);

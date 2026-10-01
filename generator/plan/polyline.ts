@@ -2,6 +2,12 @@
 
 export type Point2 = readonly [number, number];
 
+/** Horizontal distance between two world points, ignoring altitude. */
+export const distanceXZ = (
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+) => Math.hypot(a[0] - b[0], a[2] - b[2]);
+
 /** Chaikin corner cutting: each pass rounds every corner, keeping both end points. */
 export function chaikin(points: readonly Point2[], passes: number): Point2[] {
   let current = [...points];

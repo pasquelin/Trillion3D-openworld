@@ -1,0 +1,31 @@
+{
+  "valid": true,
+  "url": "http://127.0.0.1:4195/island-preview.html?view=district",
+  "evidence": {
+    "status": "Generated island — downtown subset (2 × 2 km) · Rooftop district · 17,925 objects",
+    "ready": true,
+    "renderer": "webgl2",
+    "frames": 4,
+    "residentPages": 775,
+    "selectedTriangles": 1500478,
+    "webgl2": true,
+    "viewport": [960, 540]
+  },
+  "pixel": {
+    "rgba": [0, 0, 0, 0],
+    "error": 0,
+    "size": [960, 540]
+  },
+  "screenshotBytes": 404695,
+  "screenshotSha256": "e17b65571df06074e0441f22e19563e9ff97c9ecd54c5f0c9b1244341d66dcb7",
+  "exceptions": [],
+  "responses": 2497,
+  "httpErrors": [
+    {
+      "url": "http://127.0.0.1:4195/favicon.ico",
+      "status": 404
+    }
+  ],
+  "failures": [],
+  "performance": "unavailable; this is a software-rendered visual and loading smoke test"
+}

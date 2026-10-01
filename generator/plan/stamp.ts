@@ -8,8 +8,18 @@
 import { WORLD, type Surface } from './contract.ts';
 import type { TerrainPlan } from './plan.ts';
 import { roadSurface, SURFACE } from './surfaces.ts';
+import type { Lake } from './carve.ts';
+import { lakeDistance } from './lake-shore.ts';
 
-type Segment = { ax: number; az: number; bx: number; bz: number; half: number; surface: Surface };
+type Segment = {
+  ax: number;
+  az: number;
+  bx: number;
+  bz: number;
+  half: number;
+  lake?: Lake;
+  surface: Surface;
+};
 
 const TILES = WORLD.size / WORLD.tile;
 const tileOf = (value: number) => Math.floor((value + WORLD.size / 2) / WORLD.tile);
@@ -60,6 +70,7 @@ export function pathIndex(plan: TerrainPlan) {
       bx: lake.x,
       bz: lake.z,
       half: lake.radius,
+      lake,
       surface: SURFACE.seabed,
     });
   return (tx: number, tz: number): readonly Segment[] => byTile.get(tz * TILES + tx) ?? [];
@@ -67,6 +78,7 @@ export function pathIndex(plan: TerrainPlan) {
 
 /** Distance from (x, z) to the segment. */
 function distance(s: Segment, x: number, z: number) {
+  if (s.lake) return lakeDistance(s.lake, x, z);
   const dx = s.bx - s.ax,
     dz = s.bz - s.az,
     length = dx * dx + dz * dz,

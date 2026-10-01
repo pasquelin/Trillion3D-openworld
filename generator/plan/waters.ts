@@ -4,12 +4,14 @@
  * countryside and one in the mountains, clear of the rivers.
  */
 import type { Lake } from './carve.ts';
+import { urbanPlateau } from './urban-ground.ts';
 import { WORLD } from './contract.ts';
-import { REGION_BOUNDS } from './layout.ts';
+import { REGION_BOUNDS, REGIONS, landWeights } from './layout.ts';
 import type { Relief } from './relief.ts';
 import { planRivers } from './rivers.ts';
 import type { HeightGrid } from './route.ts';
 import { airportPlatform, basinLake } from './sites.ts';
+import { generalPlatform, onAirfield } from './airfields.ts';
 
 export function planWaters(
   grid: HeightGrid,
@@ -17,11 +19,8 @@ export function planWaters(
   relief: Relief,
 ) {
   const platform = airportPlatform(grid),
-    onPlatform = (x: number, z: number) =>
-      x > platform.minX - 300 &&
-      x < platform.maxX + 300 &&
-      z > platform.minZ - 300 &&
-      z < platform.maxZ + 300,
+    airfields = { main: platform, general: generalPlatform(grid) },
+    onPlatform = (x: number, z: number) => onAirfield(airfields, x, z, 300),
     // The main river reaches the sea in the city, the east river in the coast region.
     mouth = [-1_500, relief.southCoastZ(-1_500)] as const,
     eastMouth = 2_800,
@@ -32,38 +31,54 @@ export function planWaters(
         south: [mouth[0], mouth[1] + 300],
         east: [eastMouth, relief.southCoastZ(eastMouth) + 300],
       },
-      onPlatform,
+      (x, z) => onPlatform(x, z) || urbanPlateau(x, z, 150),
     );
   const nearRiver = (x: number, z: number, margin: number) =>
     rivers.some(({ river }) => river.points.some((p) => Math.hypot(p[0] - x, p[2] - z) < margin));
   // A lake keeps its whole rim on the map.
   const inland = (x: number, z: number) =>
     Math.max(Math.abs(x), Math.abs(z)) < WORLD.size / 2 - 600;
+  const owns = (name: string, x: number, z: number) => {
+    const weights = landWeights(x, z, undefined, relief.coast);
+    return REGIONS[weights.indexOf(Math.max(...weights))] === name;
+  };
   const lakes = [
     basinLake(
       grid,
       'lake-countryside',
       REGION_BOUNDS.countryside,
       350,
-      (x, z, h) => h > 20 && inland(x, z) && !onPlatform(x, z) && !nearRiver(x, z, 500),
+      (x, z, h) =>
+        h > 20 &&
+        owns('countryside', x, z) &&
+        inland(x, z) &&
+        !onPlatform(x, z) &&
+        !nearRiver(x, z, 500),
     ),
     basinLake(
       grid,
       'lake-alpine',
       REGION_BOUNDS.mountains,
       250,
-      (x, z, h) => h > 900 && h < 1_800 && inland(x, z) && !nearRiver(x, z, 400),
+      (x, z, h) =>
+        h > 900 && h < 1_800 && owns('mountains', x, z) && inland(x, z) && !nearRiver(x, z, 400),
     ),
   ];
-  return { platform, onPlatform, mouth, rivers, lakes };
+  const organic = lakes.map((lake, i) => ({
+    ...lake,
+    shore: { yaw: i ? -0.6 : 0.4, ratio: i ? 0.78 : 0.7, phase: (lake.x + lake.z) / 700 },
+  }));
+  return { platform, airfields, onPlatform, mouth, rivers, lakes: organic };
 }
 
 /** `lake` in its place, its level read again on `grid`: the lowest point of its rim. */
-export const relevel = (grid: HeightGrid, lake: Lake): Lake =>
-  basinLake(
+export const relevel = (grid: HeightGrid, lake: Lake): Lake => ({
+  ...basinLake(
     grid,
     lake.id,
     { minX: lake.x, maxX: lake.x, minZ: lake.z, maxZ: lake.z },
     lake.radius,
     () => true,
-  );
+  ),
+  shore: lake.shore,
+});

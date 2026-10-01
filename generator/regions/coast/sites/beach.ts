@@ -8,6 +8,7 @@ import { PIER } from '../props/pier.ts';
 import { shoreFrame, type ShoreFrame } from './frame.ts';
 import type { Layout } from './layout.ts';
 import type { Shore } from './map.ts';
+import { promenade } from './promenade.ts';
 import { EYE } from '../../../build/markers.ts';
 
 /** The resort's half-length along the coast, metres, and the promenade's width. */
@@ -52,22 +53,6 @@ function pier(layout: Layout, f: ShoreFrame): Vec3 | undefined {
     : undefined;
 }
 
-/** The promenade line at the dry edge of the sand, with its furniture both sides. */
-function promenade(layout: Layout, f: ShoreFrame): Vec3[] {
-  const points: Vec3[] = [];
-  for (let u = -HALF; u <= HALF; u += 20) {
-    const v = f.inland(u, DRY);
-    if (v === undefined) continue;
-    const [x, z] = f.at(u, v + PROMENADE / 2 + 2);
-    const b = layout.map.bounds;
-    if (x < b.minX || x > b.maxX || z < b.minZ || z > b.maxZ) continue;
-    points.push([x, layout.map.height(x, z), z]);
-  }
-  if (points.length > 2)
-    layout.addRoad({ id: 'coast/promenade', class: 'street', width: PROMENADE, points });
-  return points;
-}
-
 /** Furniture at `offset` metres seaward of each promenade point (negative: inland). */
 function along(
   layout: Layout,
@@ -88,7 +73,7 @@ export function beachResort(layout: Layout, avoid?: Vec3): Resort | undefined {
   const s = longestBeach(layout, avoid) ?? longestBeach(layout);
   if (!s) return undefined;
   const f = shoreFrame(layout.map, s),
-    line = promenade(layout, f),
+    line = promenade(layout, f, HALF, PROMENADE, DRY),
     pierHead = pier(layout, f),
     half = PROMENADE / 2;
   // Lamps' arms reach inland over the promenade's edge; benches between them face the sea.

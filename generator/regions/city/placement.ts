@@ -106,7 +106,7 @@ export class Placer {
   name(stem: string) {
     const n = this.counts.get(stem) ?? 0;
     this.counts.set(stem, n + 1);
-    return `city/${stem}-${n}`;
+    return `${this.site.city.id}/${stem}-${n}`;
   }
 
   /** Places `prop` when its footprint fits (or it has none); returns the item or nothing. */

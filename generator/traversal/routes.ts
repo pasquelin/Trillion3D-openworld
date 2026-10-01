@@ -4,13 +4,19 @@ import { graphPath, travelGraph, type TravelGraph } from './graph.ts';
 import { sampleRoute } from './samples.ts';
 import type { ReplayRoute } from './types.ts';
 
-const nearest = (graph: TravelGraph, p: Vec3, radius: number, highway = false) => {
+const nearest = (
+  graph: TravelGraph,
+  p: Vec3,
+  radius: number,
+  highway = false,
+  authoredHeight = false,
+) => {
   let best = -1,
     distance = radius;
   graph.points.forEach((v, k) => {
     if (highway && !graph.edges[k].some((edge) => edge.road.startsWith('highway-'))) return;
     // Settlement centres precede earthworks; their road checkpoint uses the authored deck height.
-    const d = Math.hypot(v[0] - p[0], highway ? 0 : v[1] - p[1], v[2] - p[2]);
+    const d = Math.hypot(v[0] - p[0], highway || authoredHeight ? 0 : v[1] - p[1], v[2] - p[2]);
     if (d < distance) {
       best = k;
       distance = d;
@@ -35,8 +41,9 @@ export function drivingRoutes(plan: TerrainPlan, roads: readonly Road[]) {
   stops.push(interchange, stops[0]);
   for (let k = 1; k < stops.length; k++) {
     if (!stops[k - 1] || !stops[k]) continue;
-    const from = nearest(graph, stops[k - 1]!, 150, true),
-      to = nearest(graph, stops[k]!, 150, true);
+    // The mountain stop uses its graded pass spur rather than the lowland highway ring.
+    const from = nearest(graph, stops[k - 1]!, 150, order[k - 1] !== 'mountains-town', true),
+      to = nearest(graph, stops[k]!, 150, order[k] !== 'mountains-town', true);
     const path = from >= 0 && to >= 0 ? graphPath(graph, from, to) : null;
     if (!path) {
       failures.push(`D1: disconnected ${k - 1} → ${k}`);

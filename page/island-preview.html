@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Open world — downtown subset</title>
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #9ab8d0; }
+      #view { display: block; width: 100%; height: 100%; }
+      #status { position: fixed; top: 16px; left: 16px; max-width: 380px; padding: 10px 14px; background: #102130dd; color: white; font: 14px system-ui; border-radius: 5px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="status">Loading generated island subset…</div>
+    <script type="module">
+      import { createWorld, light, math, metric } from './runtime/engine.js';
+      const status = document.getElementById('status');
+      try {
+        const response = await fetch('./island-preview/preview.json');
+        if (!response.ok) throw new Error('Preview source is missing. Run pnpm run preview:island.');
+        const preview = await response.json();
+        const requested = new URL(location.href).searchParams.get('view') ?? 'neighborhood';
+        const pose = preview.views[requested] ?? preview.views.neighborhood;
+        const world = createWorld('view', { renderer: 'webgl2', pixelRatio: 1 });
+        let frames = 0;
+        world.onFrame(() => { frames++; });
+        world.camera.position.set(...pose.position);
+        world.camera.lookAt(math.vector3(...pose.target));
+        world.camera.far = pose.far;
+        world.scene.background = math.color([0.56, 0.72, 0.85]);
+        const sun = light.directional({ color: [1, 0.94, 0.82], intensity: 3, position: [-250, 500, 150], target: [pose.target[0], 0, pose.target[2]] });
+        const fill = light.hemisphere({ color: [0.73, 0.83, 1], groundColor: [0.33, 0.28, 0.22], intensity: 1 });
+        world.scene.add(sun, sun.target, fill);
+        status.textContent = `${preview.label} · ${pose.label} · reading scene`;
+        await world.scene.load('./island-preview/cache/native/full/manifest.json');
+        status.textContent = `${preview.label} · ${pose.label} · streaming visible geometry`;
+        await world.awaitPages();
+        world.invalidate();
+        const frame = () => metric.frame(world);
+        status.textContent = `${preview.label} · ${pose.label} · ${preview.objects.toLocaleString()} objects`;
+        window.islandPreview = { world, preview, frame, frames: () => frames };
+      } catch (error) {
+        status.textContent = `Preview failed: ${error.message}`;
+        console.error(error);
+      }
+    </script>
+  </body>
+</html>

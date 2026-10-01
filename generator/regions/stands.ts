@@ -1,11 +1,11 @@
 /**
  * Where a forest patch (`props/stands.ts`) may stand, the same way for every region: patches
  * tile a world-aligned grid of their own side, so two regions' forests meet square to square,
- * and each cell is fitted to its ground. The ground is sampled across the square, its fall is
- * read along the grid axis it falls most steeply on, and the variant whose plane misses the
+ * and each cell is fitted to its ground. The actual downhill direction seats each sloped patch,
+ * and the variant whose plane misses the
  * samples least is chosen — if its stems stay buried less than their bare bole. The patch
- * stands on the lowest sample, so no stem floats. Level patches turn by quarter turns, which
- * keeps the grid and hides that neighbours are the same mesh; sloped ones turn downhill.
+ * stands below both lattice and actual root samples, so no stem floats. Level patches turn
+ * by quarter turns; sloped ones turn downhill and occupancy keeps rotated patches apart.
  */
 import { TERRAIN_TRIANGLES } from '../plan/budget.ts';
 import { WORLD, type Instance } from '../plan/contract.ts';
@@ -37,13 +37,13 @@ function fitStand(
   x: number,
   z: number,
   seed: number,
+  height: (x: number, z: number) => number,
 ): StandSpot | undefined {
   const moment = samples.reduce((sum, [dx]) => sum + dx * dx, 0),
     gx = samples.reduce((sum, [dx, , h]) => sum + dx * h, 0) / moment,
     gz = samples.reduce((sum, [, dz, h]) => sum + dz * h, 0) / moment;
   // A patch's +X runs downhill: yaw 0 sends it to +X, π to −X, −π/2 to +Z, π/2 to −Z.
-  const along = Math.abs(gx) >= Math.abs(gz),
-    downhill = along ? (gx > 0 ? Math.PI : 0) : gz > 0 ? Math.PI / 2 : -Math.PI / 2,
+  const downhill = Math.atan2(gz, -gx),
     quarter = (Math.floor(hash01(seed, Math.round(x), Math.round(z)) * 4) * Math.PI) / 2;
   let best: StandSpot | undefined,
     span = Infinity;
@@ -54,8 +54,16 @@ function fitStand(
       low = Math.min(...rise),
       miss = Math.max(...rise) - low;
     if (miss <= variant.tolerance && miss < span) {
+      // Fit every actual stem, rather than assuming a sample lattice catches local humps.
+      const roots = variant.roots.map(([dx, dz, burial]) => ({
+          rise: height(x + dx * cos + dz * sin, z - dx * sin + dz * cos) + variant.gradient * dx,
+          burial,
+        })),
+        y = Math.min(low, ...roots.map((r) => r.rise));
+      if (roots.some((r) => r.rise - y > r.burial) || rise.some((h) => h - y > variant.tolerance))
+        continue;
       span = miss;
-      best = { variant, x, z, y: low, yaw };
+      best = { variant, x, z, y, yaw };
     }
   }
   return best;
@@ -74,16 +82,16 @@ export type StandOptions = {
 };
 
 /**
- * Patches on every patch-grid cell whose centre lies in the deeper half of `cells`, deepest
- * first; `place` seats each one and says whether it held. The shallower half is the woodland's
- * margin, where a wood thins out into single trees: it keeps half the woodland's nodes.
+ * Patches visit the whole organic woodland, deepest first; no coarse half-cell cutoff remains.
+ * `place` seats each patch and checks its rotated occupancy. Half the woodland's nodes remain
+ * for single trees, which also populate margins and curved ground unsuitable for a rigid mesh.
  */
 export function plantStands(options: StandOptions): { patches: number; trees: number } {
   const { seed, height, biomeAt, place } = options,
     limit = Math.floor(options.nodes / 2),
     { variants } = forestStands(seed),
     sorted = [...options.cells].sort((a, b) => b[3] - a[3] || a[0] - b[0] || a[1] - b[1]),
-    cells = sorted.slice(0, Math.ceil(sorted.length / 2));
+    cells = sorted;
   let patches = 0,
     trees = 0;
   for (const [minX, minZ, side] of cells) {
@@ -115,6 +123,7 @@ export function plantStands(options: StandOptions): { patches: number; trees: nu
           x,
           z,
           seed,
+          height,
         );
         if (
           !spot ||

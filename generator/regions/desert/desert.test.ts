@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import { WORLD, type Instance } from '../../plan/contract.ts';
 import { createPlan } from '../../plan/plan.ts';
 import { propProblems, triangleCount } from '../../props/index.ts';
+import { graphPath, travelGraph } from '../../traversal/graph.ts';
 import { footprints, type Footprint } from './catalog.ts';
 import { overlaps, segmentDistance, type Point } from './geometry2.ts';
 import { inBounds as within, outputBytes, outputPoints, standProblems } from '../testing.ts';
@@ -93,7 +94,6 @@ describe('desert region', () => {
       assert.ok(low > WORLD.seaLevel, `${name} stands in the sea`);
     }
   });
-
   it('keeps every footprint off the roads, the plan’s and its own', () => {
     const lines = [...plan.roads, ...out.roads].flatMap((road) =>
       road.points.slice(1).map((b, i) => {
@@ -118,12 +118,47 @@ describe('desert region', () => {
       assert.ok(segmentDistance(node.shape, p, q) >= road.half, `on a road: ${node.shape}`);
     }
   });
-
   it('grows palm groves round its oases, each standing right', () => {
     assert.ok(out.instances.some((i) => i.prop === 'tree-stand-palm-0'));
     assert.deepEqual(standProblems(plan, out), []);
   });
-
+  it('keeps the oasis streets on passable ground and joins the highway at a real node', () => {
+    const local = out.roads.filter((road) => road.id.startsWith('desert/desert-town/'));
+    assert.ok(local.some((road) => road.id.endsWith('/track')));
+    for (const road of local)
+      for (const [i, point] of road.points.entries()) {
+        assert.ok(Math.abs(point[1] - plan.height(point[0], point[2])) < 1e-3, road.id);
+        if (!i) continue;
+        const previous = road.points[i - 1],
+          run = Math.hypot(point[0] - previous[0], point[2] - previous[2]);
+        assert.ok(run <= 5.01, road.id);
+        assert.ok(Math.abs(point[1] - previous[1]) <= run * 0.1001, road.id);
+      }
+    const end = local.find((road) => road.id.endsWith('/track'))!.points.at(-1)!;
+    assert.ok(
+      plan.roads.some((road) =>
+        road.points.some(
+          (point) =>
+            Math.hypot(point[0] - end[0], point[2] - end[2]) < 1e-5 &&
+            Math.abs(point[1] - end[1]) < 0.2,
+        ),
+      ),
+    );
+    const graph = travelGraph(
+        [...plan.roads.filter((road) => road.class === 'highway'), ...local],
+        true,
+      ),
+      start = local.find((road) => road.id.endsWith('/ring'))!.points[0],
+      nodeAt = (point: typeof start) =>
+        graph.points.findIndex(
+          (v) =>
+            Math.hypot(v[0] - point[0], v[2] - point[2]) < 1e-4 && Math.abs(v[1] - point[1]) < 0.2,
+        ),
+      from = nodeAt(start),
+      to = nodeAt(end);
+    assert.ok(from >= 0 && to >= 0);
+    assert.ok(graphPath(graph, from, to));
+  });
   it('builds sound props and places only props it has or the kit shares', () => {
     const ids = out.props.map((p) => p.id);
     assert.equal(new Set(ids).size, ids.length);
@@ -133,7 +168,6 @@ describe('desert region', () => {
     for (const id of [...out.instances.map((i: Instance) => i.prop), ...models])
       assert.ok(known.has(id), id);
   });
-
   it('fills the contract: relief, ground, teleports, a car, effects, night lamps, rotors', () => {
     assert.equal(desertRegion.name, 'desert');
     assert.ok(Number.isFinite(desertRegion.refine!(-15_000, 0, 500)));

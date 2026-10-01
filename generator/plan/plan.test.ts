@@ -101,8 +101,12 @@ describe('open world plan', () => {
       });
     // At least 5 km of representative 50 m land samples remain after geometry-based exclusions.
     assert.ok(checked > onLand / 10, `${checked} of ${onLand} road points checked`);
-    for (const cls of ['highway', 'secondary', 'pass', 'avenue', 'dirt'])
-      assert.ok(classes.has(cls), cls);
+    for (const cls of ['highway', 'secondary', 'avenue', 'dirt']) assert.ok(classes.has(cls), cls);
+    assert.ok(
+      classes.has('pass') ||
+        plan.courses.some((c) => c.road.class === 'pass' && c.tunnel.some(Boolean)),
+      'mountain pass has a level surface or a physical tunnel',
+    );
   });
   it('plans every road class, a bridge over each river and trails to walk', () => {
     const classes = new Set(plan.roads.map((road) => road.class));

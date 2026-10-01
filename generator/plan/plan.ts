@@ -7,14 +7,7 @@
  */
 import type { Biome, Bridge, RegionModule, RegionName, Vec3, WorldPlan } from './contract.ts';
 import { WORLD } from './contract.ts';
-import {
-  platformLeveller,
-  roadLeveller,
-  waterCarver,
-  type Lake,
-  type Platform,
-  type RoadCourse,
-} from './carve.ts';
+import { roadLeveller, waterCarver, type Lake, type Platform, type RoadCourse } from './carve.ts';
 import { REGION_BOUNDS, REGIONS, landWeights } from './layout.ts';
 import { planWaters, relevel } from './waters.ts';
 import { planNetwork } from './network.ts';
@@ -28,6 +21,9 @@ import { heightGrid } from './route.ts';
 import { preserveShore } from './shore.ts';
 import { planSettlements } from './settlements.ts';
 import type { Tunnel } from './tunnels.ts';
+import { levelAirfields, type AirfieldPlatforms } from './airfields.ts';
+import { urbanRivers } from './urban-rivers.ts';
+import { urbanGround } from './urban-ground.ts';
 
 /**
  * The plan `createPlan` returns: the contract's `WorldPlan` plus what the plan knows beyond it.
@@ -44,6 +40,7 @@ export type TerrainPlan = WorldPlan & {
   erosion: ErosionFields;
   lakes: readonly Lake[];
   platform: Platform;
+  airfields: AirfieldPlatforms;
   courses: readonly RoadCourse[];
   /** The ground before road earthworks: the natural ground, river and lake cuts, the airport. */
   beforeRoads(x: number, z: number): number;
@@ -77,7 +74,7 @@ export function createPlan(
   const uneroded = (x: number, z: number) => {
     const base = relief.height(x, z);
     if (!refined) return base;
-    landWeights(x, z, weights);
+    landWeights(x, z, weights, relief.coast);
     let height = base;
     refiners.forEach((refine, index) => {
       if (refine && weights[index] > 0) height += weights[index] * refine(x, z, base);
@@ -88,14 +85,17 @@ export function createPlan(
   // erosion, which drains into them as its base level: sediment settles at their banks and
   // never fills them. A lake reads its level again on its eroded rim.
   const waters = planWaters(heightGrid(uneroded), uneroded, relief),
-    { platform, mouth, rivers } = waters,
+    { platform, airfields, mouth } = waters,
     { natural, erosion } = erodedGround(seed, refiners, uneroded, waters),
     naturalGrid = heightGrid(natural),
     lakes = waters.lakes.map((lake) => relevel(naturalGrid, lake));
-  const water = waterCarver(rivers, lakes, naturalGrid),
-    level = platformLeveller(platform, 400),
-    carved = (x: number, z: number) =>
-      preserveShore(natural(x, z), level(x, z, water(x, z, natural(x, z))), natural(x, z), 0.5),
+  const urban = urbanGround(natural),
+    level = levelAirfields(airfields),
+    rivers = urbanRivers(waters.rivers, natural, (x, z, h) => level(x, z, urban(x, z, h))),
+    water = waterCarver(rivers, lakes, naturalGrid),
+    carvedAt = (x: number, z: number, base: number) =>
+      preserveShore(base, level(x, z, water(x, z, urban(x, z, base))), base, 0.5),
+    carved = (x: number, z: number) => carvedAt(x, z, natural(x, z)),
     ground: Ground = {
       grid: heightGrid(carved),
       height: carved,
@@ -111,10 +111,12 @@ export function createPlan(
       relief.islands,
       (x, z) => relief.coast(x, z) > 150,
     ),
-    network = planNetwork(ground, settlements, lakes, platform),
+    network = planNetwork(ground, settlements, lakes, platform, airfields),
     roads = roadLeveller(network.courses),
-    height = (x: number, z: number) =>
-      preserveShore(natural(x, z), roads(x, z, carved(x, z)), natural(x, z), 0.5),
+    height = (x: number, z: number) => {
+      const base = natural(x, z);
+      return preserveShore(base, roads(x, z, carvedAt(x, z, base)), base, 0.5);
+    },
     budgets = regionBudgets();
   const biomeWeights = new Float64Array(REGIONS.length);
   const biome = (x: number, z: number) => {
@@ -123,7 +125,7 @@ export function createPlan(
     let owner: Biome = 'sea',
       top = sea;
     if (sea > 0) out.sea = sea;
-    landWeights(x, z, biomeWeights);
+    landWeights(x, z, biomeWeights, relief.coast);
     REGIONS.forEach((name, index) => {
       const weight = biomeWeights[index] * (1 - sea);
       if (weight <= 0) return;
@@ -154,6 +156,7 @@ export function createPlan(
     beforeRoads: carved,
     lakes,
     platform,
+    airfields,
     courses: network.courses,
     tunnels: network.tunnels,
     viewpoints: network.viewpoints,

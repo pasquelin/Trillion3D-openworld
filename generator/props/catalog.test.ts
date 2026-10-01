@@ -18,16 +18,16 @@ import { propProblems } from './validate.ts';
  * together is 2 000 000 unique triangles: dense meshes, each shared by many nodes.
  */
 const TRIANGLES: Record<string, number> = {
-  'tree-pine-small': 12_650,
-  'tree-pine-large': 32_674,
-  'tree-oak-small': 10_012,
-  'tree-oak-large': 24_190,
-  'tree-birch-small': 11_624,
-  'tree-birch-large': 30_672,
+  'tree-pine-small': 1_488,
+  'tree-pine-large': 2_620,
+  'tree-oak-small': 1_432,
+  'tree-oak-large': 2_360,
+  'tree-birch-small': 1_350,
+  'tree-birch-large': 2_888,
   'tree-palm-small': 8_568,
   'tree-palm-large': 20_200,
-  'bush-round': 4_722,
-  'bush-wild': 4_730,
+  'bush-round': 1_722,
+  'bush-wild': 1_730,
   'rock-boulder': 12_288,
   'rock-slab': 6_912,
   'rock-spire': 6_912,
@@ -86,6 +86,9 @@ test('shared props are sound, within budget, and measured prop by prop', () => {
   const props = sharedProps(332),
     counts = Object.fromEntries(props.map((p) => [p.id, triangleCount(p)]));
   assert.deepEqual(counts, TRIANGLES);
+  for (const species of ['pine', 'oak', 'birch'])
+    for (const size of ['small', 'large'])
+      assert.ok(counts[`tree-${species}-${size}`] <= 3_000, `${species} ${size} proxy load`);
   const vehicles = Object.fromEntries(vehicleProps().map((p) => [p.id, triangleCount(p)])),
     total = [...Object.values(counts), ...Object.values(vehicles)].reduce((a, b) => a + b, 0);
   assert.deepEqual(vehicles, VEHICLE_TRIANGLES);

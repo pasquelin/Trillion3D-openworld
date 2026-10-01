@@ -1,12 +1,10 @@
 /**
  * Plants and loose rock over the open desert, until the region's node budget is spent. Where
- * sand is scarce (the gravel plain) cacti, succulents, shrubs and boulders grow in clumps; on
- * the erg's fringe only shrubs and tumbleweed hold; the heart of the sand sea stays bare.
+ * grade permits settlement cacti, succulents, shrubs and boulders grow in clumps; on
+ * steeper soil shrubs and tumbleweed hold. Operational strips and roads remain clear.
  */
 import { between, hash01 } from '../../props/index.ts';
 import type { Build } from './build.ts';
-import { sandSupply } from './dunes.ts';
-import { rockAt } from './relief.ts';
 
 /** Clump members by ground: plain (reg), erg fringe. Relative frequencies by repetition. */
 const REG = [
@@ -38,28 +36,31 @@ const FRINGE = [
   'desert/agave',
 ];
 
-/** Nodes left for scatter once `target` is reached: stop. Clumps of 1–6 within 14 m. */
+/** Real dry ownership and local grade determine plants, rather than the former biome rectangle. */
 export function scatter(b: Build, target: number) {
-  const { minX, minZ, maxX, maxZ } = b.site.bounds,
-    tries = target * 8;
-  for (let i = 0; i < tries && b.site.instances.length < target; i++) {
-    const x = minX + (maxX - minX) * hash01(b.seed + 21, i),
-      z = minZ + (maxZ - minZ) * hash01(b.seed + 22, i),
-      sand = sandSupply(x, z),
-      rock = rockAt(x, z).owned;
-    // Plants keep off the tablelands' cliffs and tops; the talus has its own scree.
-    const kind = sand < -0.1 ? REG : sand < 0.3 ? FRINGE : undefined;
-    const chance = kind === REG ? 1 : kind ? 0.35 : 0;
-    if (rock > 0.2 || hash01(b.seed + 23, i) >= chance || !kind) continue;
-    const members = 1 + Math.floor(hash01(b.seed + 24, i) * 6);
-    for (let m = 0; m < members && b.site.instances.length < target; m++) {
-      const prop = kind[Math.floor(hash01(b.seed + 25, i, m) * kind.length)],
-        a = between(b.seed + 26, i * 8 + m, 0, Math.PI * 2),
-        r = m ? between(b.seed + 27, i * 8 + m, 3, 14) : 0,
-        size = prop.startsWith('desert/boulder')
-          ? between(b.seed + 28, i * 8 + m, 0.5, 1.4)
-          : between(b.seed + 28, i * 8 + m, 0.75, 1.2);
-      b.site.place(prop, x + Math.cos(a) * r, z + Math.sin(a) * r, a * 3, { scale: size });
+  const { minX, minZ, maxX, maxZ } = b.site.bounds;
+  for (let x = minX + 9; x < maxX; x += 18)
+    for (let z = minZ + 9; z < maxZ; z += 18) {
+      if (b.site.instances.length >= target) return;
+      const px = x + (hash01(b.seed + 21, x, z) - 0.5) * 6,
+        pz = z + (hash01(b.seed + 22, x, z) - 0.5) * 6;
+      if (b.plan.biome(px, pz).owner !== 'desert') continue;
+      const height = b.plan.height(px, pz),
+        grade =
+          Math.hypot(
+            b.plan.height(px + 5, pz) - b.plan.height(px - 5, pz),
+            b.plan.height(px, pz + 5) - b.plan.height(px, pz - 5),
+          ) / 10;
+      if (height < 1 || grade > 0.7) continue;
+      const kind = grade < 0.3 ? REG : FRINGE;
+      for (let m = 0; m < 3 && b.site.instances.length < target; m++) {
+        const prop = kind[Math.floor(hash01(b.seed + 25, x, z, m) * kind.length)],
+          a = hash01(b.seed + 26, x, z, m) * Math.PI * 2,
+          radius = m ? between(b.seed + 27, x * 10003 + z + m, 3, 7) : 0,
+          size = between(b.seed + 28, x * 10003 + z + m, 0.75, 1.2);
+        b.site.place(prop, px + Math.cos(a) * radius, pz + Math.sin(a) * radius, a * 3, {
+          scale: size,
+        });
+      }
     }
-  }
 }

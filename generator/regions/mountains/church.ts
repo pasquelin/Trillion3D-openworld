@@ -2,7 +2,7 @@
  * The village church: a whitewashed nave under a slate roof laid tile by tile, stone quoins,
  * tall arched windows, a round apse, and a front tower with clock faces, louvred belfry
  * openings and a verdigris onion dome crowned by a gilt cross. The door faces +Z; origin at
- * the floor level, the stone plinth reaching `BASEMENT` below.
+ * the floor level, the stone plinth reaches the deepest supported terrace below.
  */
 import type { MeshPart, PropMesh } from '../../plan/contract.ts';
 import {
@@ -15,7 +15,7 @@ import {
   transform,
   type PropLamp,
 } from '../../props/index.ts';
-import { BASEMENT } from './chalet.ts';
+import { TERRACES } from './chalet.ts';
 import { boxAt, gable, shingleRoof } from './parts.ts';
 import { MOUNTAIN_SURFACES as S } from './surfaces.ts';
 
@@ -63,7 +63,9 @@ const archedWindow = (w: number, h: number): MeshPart[] => [
 function nave(): MeshPart[] {
   const { width: w, length: l, height: h } = NAVE,
     parts = [
-      boxAt(S.stoneWall, [w + 0.4, BASEMENT + 0.6, l + 0.4], { at: [0, -BASEMENT, 0] }),
+      boxAt(S.stoneWall, [w + 0.4, TERRACES.at(-1)! + 0.6, l + 0.4], {
+        at: [0, -TERRACES.at(-1)!, 0],
+      }),
       boxAt(S.whitewash, [w, h, l], { at: [0, 0.6, 0] }),
       ...quoins(w, l, h + 0.6),
       cylinder(S.whitewash, 4, 7.5, { segments: 32 }),

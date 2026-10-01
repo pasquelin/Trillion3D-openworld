@@ -3,10 +3,12 @@
  * discs at their level, rivers as ribbons on their water line, and roads as ribbons on the
  * levelled ground. Each piece goes to the tile holding its middle, in that tile's local frame.
  */
-import { WORLD, type Surface, type Vec3 } from './contract.ts';
+import { WORLD, type River, type Road, type Surface, type Vec3 } from './contract.ts';
+import type { Lake } from './carve.ts';
 import type { TerrainPlan } from './plan.ts';
 import { roadSurface, SURFACE } from './surfaces.ts';
 import { tileOrigin } from './tileGrid.ts';
+import { lakeRadiusAt } from './lake-shore.ts';
 
 export type FlatPart = { surface: Surface; positions: number[]; indices: number[] };
 /** Flat parts per tile, keyed `tx_tz`. */
@@ -16,7 +18,7 @@ const TILES = WORLD.size / WORLD.tile;
 const tileOf = (value: number) =>
   Math.min(TILES - 1, Math.max(0, Math.floor((value + WORLD.size / 2) / WORLD.tile)));
 /** Segments of a lake's shore: a vertex every few metres of its rim at the lakes' sizes. */
-const LAKE_SEGMENTS = 48;
+const LAKE_SEGMENTS = 96;
 /** How far a water or road surface reaches under the ground at its edges, metres. */
 const TUCK = 2;
 
@@ -32,6 +34,17 @@ function part(parts: FlatParts, x: number, z: number, surface: Surface) {
   return { target: found, x0: tileOrigin(tx), z0: tileOrigin(tz) };
 }
 
+/** The exact lateral unit normals of the emitted ribbon vertices. */
+export function ribbonSides(points: readonly Vec3[]) {
+  return points.map((p, k) => {
+    const [a, b] = [points[Math.max(0, k - 1)], points[Math.min(points.length - 1, k + 1)]],
+      dx = b[0] - a[0],
+      dz = b[2] - a[2],
+      length = Math.hypot(dx, dz) || 1;
+    return [-dz / length, dx / length];
+  });
+}
+
 /** A strip of quads along a polyline, `half[k]` metres each side, `lift` metres above it. */
 function ribbon(
   parts: FlatParts,
@@ -41,13 +54,7 @@ function ribbon(
   skip: (k: number) => boolean,
   lift: number,
 ) {
-  const side = points.map((p, k) => {
-    const [a, b] = [points[Math.max(0, k - 1)], points[Math.min(points.length - 1, k + 1)]],
-      dx = b[0] - a[0],
-      dz = b[2] - a[2],
-      length = Math.hypot(dx, dz) || 1;
-    return [-dz / length, dx / length];
-  });
+  const side = ribbonSides(points);
   for (let k = 0; k < points.length - 1; k++) {
     if (skip(k)) continue;
     const [a, b] = [points[k], points[k + 1]],
@@ -67,9 +74,9 @@ function ribbon(
  * Every flat part of the world: rivers, lakes, roads (bridge spans and tunnels left to the regions' bridge
  * models), lifted by `lift` metres over the ground they lie on.
  */
-export function flatParts(plan: TerrainPlan, lift: number): FlatParts {
+export function aquaticParts(rivers: readonly River[], lakes: readonly Lake[]): FlatParts {
   const parts: FlatParts = new Map();
-  for (const river of plan.rivers)
+  for (const river of rivers)
     ribbon(
       parts,
       river.points,
@@ -78,21 +85,30 @@ export function flatParts(plan: TerrainPlan, lift: number): FlatParts {
       () => false,
       0,
     );
-  for (const lake of plan.lakes) {
+  for (const lake of lakes) {
     const { target, x0, z0 } = part(parts, lake.x, lake.z, SURFACE.lake),
-      base = target.positions.length / 3,
-      radius = lake.radius + TUCK;
+      base = target.positions.length / 3;
     target.positions.push(lake.x - x0, lake.level, lake.z - z0);
     for (let k = 0; k < LAKE_SEGMENTS; k++) {
       const angle = (k / LAKE_SEGMENTS) * Math.PI * 2;
       target.positions.push(
-        lake.x + radius * Math.cos(angle) - x0,
+        lake.x + (lakeRadiusAt(lake, angle) + TUCK) * Math.cos(angle) - x0,
         lake.level,
-        lake.z + radius * Math.sin(angle) - z0,
+        lake.z + (lakeRadiusAt(lake, angle) + TUCK) * Math.sin(angle) - z0,
       );
       target.indices.push(base, base + 1 + ((k + 1) % LAKE_SEGMENTS), base + 1 + k);
     }
   }
+  return parts;
+}
+
+/** Water and road surfaces share their authored geometry with placement audits. */
+export function flatParts(
+  plan: TerrainPlan,
+  lift: number,
+  localRoads: readonly Road[] = [],
+): FlatParts {
+  const parts = aquaticParts(plan.rivers, plan.lakes);
   for (const { road, bridge, tunnel } of plan.courses)
     ribbon(
       parts,
@@ -100,6 +116,15 @@ export function flatParts(plan: TerrainPlan, lift: number): FlatParts {
       () => road.width / 2,
       roadSurface(road.class),
       (k) => bridge[k] || tunnel[k],
+      lift,
+    );
+  for (const road of localRoads)
+    ribbon(
+      parts,
+      road.points,
+      () => road.width / 2,
+      roadSurface(road.class),
+      () => false,
       lift,
     );
   return parts;

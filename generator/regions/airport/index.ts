@@ -26,6 +26,7 @@
 import type { RegionModule, RegionOutput, WorldPlan } from '../../plan/contract.ts';
 import { hash01 } from '../../props/index.ts';
 import { apron } from './apron.ts';
+import { generalLayout } from './general.ts';
 import type { Context } from './context.ts';
 import { buildings, carPark, CAR_PARK, fence } from './landside.ts';
 import { maintenance } from './maintenance.ts';
@@ -63,7 +64,8 @@ function refine(x: number, z: number): number {
 
 /** The whole layout: the region's output, and every placed node with its footprint. */
 export function layout(plan: WorldPlan) {
-  const site = siteOf(plan),
+  const general = generalLayout(plan),
+    site = siteOf(plan),
     roads = airportRoads(plan, site),
     ctx: Context = {
       plan,
@@ -94,18 +96,24 @@ export function layout(plan: WorldPlan) {
     [1, -1].flatMap((d) => [...designator(ctx, t, d).join('')]),
   );
   const output: RegionOutput = {
-    props: airportProps(characters),
-    instances: ctx.placer.instances,
+    props: [...airportProps(characters), ...(general?.output.props ?? [])],
+    instances: [...ctx.placer.instances, ...(general?.output.instances ?? [])],
     lights: ctx.lights,
-    markers: markers(ctx),
+    markers: [...markers(ctx), ...(general?.output.markers ?? [])],
     movers: movers(
       ctx,
       [tower[0], tower[1] + TOWER_BEACON[1], tower[2]],
       [radar[0], radar[1] + RADAR_HEIGHT, radar[2]],
     ),
-    roads,
+    roads: [...roads, ...(general?.output.roads ?? [])],
   };
-  return { output, placed: ctx.placer.placed, roads: [...plan.roads, ...roads] };
+  if (output.instances.length > plan.regions.airport.budget.nodes)
+    throw new Error(`airport: ${output.instances.length} nodes exceed the region budget`);
+  return {
+    output,
+    placed: [...ctx.placer.placed, ...(general?.placed ?? [])],
+    roads: [...plan.roads, ...output.roads],
+  };
 }
 
 export const airportRegion: RegionModule = {

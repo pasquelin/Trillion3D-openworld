@@ -13,7 +13,7 @@ const CHOSEN_AREAS = { suburb: 1, midrise: 0.8, downtown: 0.25, park: 0.15 } as 
 const TARGETS = {
   suburb: { areaKm2: 4, density: [900, 1400], height: [5, 15], coverage: [0.12, 0.2] },
   midrise: { areaKm2: 2.5, density: [200, 320], height: [15, 50], coverage: [0.08, 0.16] },
-  downtown: { areaKm2: 0.8, density: [70, 110], height: [80, 220], coverage: [0.1, 0.18] },
+  downtown: { areaKm2: 0.8, density: [260, 340], height: [20, 310], coverage: [0.38, 0.45] },
   park: { areaKm2: 0.7 },
 } as const;
 
@@ -27,6 +27,15 @@ export function cityReport(
 ) {
   const network = streetAccessGraph(site, segments);
   const groups: District[] = ['suburb', 'midrise', 'downtown', 'park'];
+  const within = (item: Item, blocks: readonly Cell[]) =>
+    blocks.some((block) => {
+      const offset: [number, number] = [
+        item.box!.centre[0] - block.box.centre[0],
+        item.box!.centre[1] - block.box.centre[1],
+      ];
+      const [u, v] = turn(offset, -block.box.yaw);
+      return Math.abs(u) <= block.box.half[0] && Math.abs(v) <= block.box.half[1];
+    });
   const rows = groups.map((district) => {
     const blocks = [...cells.values()].filter((c) =>
       district === 'park'
@@ -34,7 +43,12 @@ export function cityReport(
         : c.district === district,
     );
     const kind = NEIGHBORHOODS[district].buildingClass;
-    const buildings = kept.filter((i) => i.building?.class === kind && i.box);
+    // A downtown block mixes towers and low street frontages. Count the actual structures in
+    // its catchment rather than assigning every mid-height building to the midrise district.
+    const buildings = kept.filter((item) => {
+      if (!item.building || !item.box) return false;
+      return district === 'park' ? item.building.class === kind : within(item, blocks);
+    });
     const area = blocks.length * site.pitch ** 2;
     // 25 m midpoint quadrature, clipped per catchment; no street/open-lot subtraction.
     const n = Math.ceil(site.pitch / 25),
@@ -83,16 +97,33 @@ export function cityReport(
     };
   });
   let dryLand = 0;
-  for (let x = site.bounds.minX + 12.5; x < site.bounds.maxX; x += 25)
-    for (let z = site.bounds.minZ + 12.5; z < site.bounds.maxZ; z += 25)
-      if (dry(site, [x, z])) dryLand += 625;
+  const [cx, , cz] = site.city.centre,
+    radius = site.city.radius * 1.5;
+  for (let x = cx - radius + 12.5; x < cx + radius; x += 25)
+    for (let z = cz - radius + 12.5; z < cz + radius; z += 25)
+      if (
+        Math.hypot(x - cx, z - cz) <= radius &&
+        site.plan.biome(x, z).owner === 'city' &&
+        dry(site, [x, z])
+      )
+        dryLand += 625;
   return {
     regionDryLandKm2: dryLand / 1e6,
+    regionDryLandScope: 'city-owned ground within 1.5 settlement radii of this core',
     seed: site.plan.seed,
     areaSamplingM: 25,
     areaDefinition: 'disjoint block catchments including half adjacent streets and open lots',
     coverageDefinition: 'union of conservative building OBB footprints / usable dry catchment area',
     districts: rows,
+    avenueInfill: {
+      terraceCount: kept.filter((i) => i.instance.prop === 'city/terrace').length,
+      boulevardTreeCount: kept.filter(
+        (i) => i.instance.prop === 'tree-oak-large' && i.box && !within(i, [...cells.values()]),
+      ).length,
+      footprintUnionM2: kept
+        .filter((i) => i.instance.prop === 'city/terrace' && i.box)
+        .reduce((n, i) => n + 4 * i.box!.half[0] * i.box!.half[1], 0),
+    },
     interfaceCells: [...cells.values()]
       .filter((c) => c.interface)
       .map((c) => ({ cellId: `${c.i},${c.j}`, district: c.district, center: c.box.centre })),

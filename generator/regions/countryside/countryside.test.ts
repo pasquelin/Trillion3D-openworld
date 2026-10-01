@@ -19,7 +19,7 @@ import { PLINTH } from './site.ts';
 const plan = createPlan(undefined, [countrysideRegion]),
   { bounds, budget } = plan.regions.countryside,
   output = countrysideRegion.generate(plan),
-  shared = sharedProps(plan.seed),
+  shared = sharedProps(plan.subSeed('props')),
   known = new Map([...shared, ...output.props].map((p) => [p.id, p]));
 
 const within = inBounds(bounds);

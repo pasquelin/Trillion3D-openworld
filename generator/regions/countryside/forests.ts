@@ -7,6 +7,9 @@
  */
 // Waiting on the engine: instances scattered on the GPU, so the woods could fill all the land
 // the forest field gives them instead of the share of nodes the cache budget leaves.
+import { solidColliders } from '../../build/colliders.ts';
+import { crosses } from '../../build/footprint.ts';
+import { solidIndex } from '../../build/solids.ts';
 import type { PropMesh } from '../../plan/contract.ts';
 import { hash01, partBounds } from '../../props/index.ts';
 import { plantStands } from '../stands.ts';
@@ -44,17 +47,32 @@ const STAND = { pine: 'alpine', birch: 'birch', oak: 'broadleaf' } as const;
 
 /** The closed stands over the woodland `cells`, up to `nodes` placed nodes in all. */
 function stands(site: Site, land: Land, nodes: number, cells: readonly [number, number, number][]) {
-  const seed = site.plan.subSeed('props');
+  const seed = site.plan.subSeed('props'),
+    { near } = solidIndex(solidColliders([...site.meshes.values()], site.instances));
   return plantStands({
     seed,
     height: site.plan.height,
     cells: cells.map(([x, z, depth]) => [x, z, CELL, depth] as const),
     biomeAt: (x, z) => (land.forest(x, z) > 0 ? STAND[speciesAt(site, land, x, z)] : undefined),
-    place: (spot, name) =>
-      site.place(spot.variant.id, spot.x, spot.z, spot.yaw, {
+    place: (spot, name) => {
+      const half = 16,
+        high = partBounds(site.meshes.get(spot.variant.id)!.parts)[1][1];
+      if (
+        near(spot.x, spot.z, half * Math.SQRT2).some((s) =>
+          crosses(
+            s,
+            { radius: half * Math.SQRT2, rect: [-half, -half, half, half], low: 0, high },
+            { x: spot.x, z: spot.z, feet: spot.y, yaw: spot.yaw },
+            spot.variant.tolerance,
+          ),
+        )
+      )
+        return undefined;
+      return site.place(spot.variant.id, spot.x, spot.z, spot.yaw, {
         seat: { y: spot.y },
         name: `countryside/${name}`,
-      }),
+      });
+    },
     nodes: nodes - site.instances.length,
   });
 }

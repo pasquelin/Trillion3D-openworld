@@ -18,6 +18,7 @@ import { FORECOURT_LAMPS, TRUCK_CANOPY_LAMPS } from './canopy.ts';
 import { DINER_LAMPS, PRICE_SIGN_LAMPS, stationProps } from './station.ts';
 import { HALL_LAMPS } from './hall.ts';
 import { LANTERN_LAMPS, townProps } from './town.ts';
+import { POOL_PLINTH } from './town.ts';
 import { truckProps } from './trucks.ts';
 
 /**
@@ -56,7 +57,7 @@ const NEEDS: readonly [prefix: string, plinth: number, sink: number][] = [
   ['desert/house', PLINTH, 0],
   ['desert/courtyard', PLINTH, 0],
   ['desert/domed-hall', PLINTH, 0],
-  ['desert/pool', PLINTH, 0],
+  ['desert/pool', POOL_PLINTH, 0],
   ['desert/forecourt', PLINTH, 0],
   ['desert/station-shop', PLINTH, 0],
   ['desert/diner', PLINTH, 0],

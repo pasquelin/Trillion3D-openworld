@@ -148,13 +148,14 @@ test('props are sound, placed by known ids, and the region reads as an airport',
     kinds('spawn')
       .map((m) => m.kind === 'spawn' && m.vehicle)
       .sort(),
-    ['car', 'plane'],
+    ['car', 'plane', 'plane'],
   );
   assert.ok(kinds('emitter').length >= 2);
   assert.ok(output.lights.length > 0 && output.lights.every((l) => l.night));
   assert.deepEqual([...new Set(output.roads.map((r) => r.class))].sort(), [
     'avenue',
     'runway',
+    'secondary',
     'taxiway',
   ]);
   assert.ok(plan.roads.some((road) => road.id === 'airport-access' && road.class === 'secondary'));

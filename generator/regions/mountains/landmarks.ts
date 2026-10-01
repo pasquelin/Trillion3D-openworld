@@ -7,7 +7,7 @@ import type { LampLight, Marker, Mover, Vec3, WorldPlan } from '../../plan/contr
 import { placeLamps } from '../../props/index.ts';
 import { BASEMENT } from './chalet.ts';
 import type { Lake } from './lake.ts';
-import { DOME_HEIGHT, OBSERVATORY_LAMPS } from './observatory.ts';
+import { DOME_HEIGHT, OBS_BASEMENT, OBSERVATORY_LAMPS } from './observatory.ts';
 import { headingYaw } from './route.ts';
 import type { Placer } from './space.ts';
 import { SNOW_LINE, TREE_LINE } from './terrain.ts';
@@ -55,6 +55,11 @@ export function dressLake(placer: Placer, { id, centre, radius, spill, fall }: L
 /** The summit's cross and the viewpoint turned toward the city (or the map's centre). */
 export function dressSummit(placer: Placer, plan: WorldPlan, summit: Vec3): Marker {
   const city = plan.settlements.find((s) => s.kind === 'city')?.centre ?? ([0, 0, 0] as Vec3);
+  const trailEnd = plan.roads.find((r) => r.id === 'summit-trail')?.points.at(-1),
+    view =
+      trailEnd && Math.hypot(trailEnd[0] - summit[0], trailEnd[2] - summit[2]) <= 100
+        ? ([trailEnd[0], plan.height(trailEnd[0], trailEnd[2]), trailEnd[2]] as Vec3)
+        : summit;
   placer.place('mountains/summit-cross', summit[0] + 3, summit[2], {
     sink: 0.3,
     name: 'mountains/summit-cross',
@@ -62,25 +67,25 @@ export function dressSummit(placer: Placer, plan: WorldPlan, summit: Vec3): Mark
   return {
     kind: 'teleport',
     name: 'mountains/summit-viewpoint',
-    position: [summit[0], summit[1] + EYE, summit[2]],
-    yaw: headingYaw(city[0] - summit[0], city[2] - summit[2]),
+    position: [view[0], view[1] + EYE, view[2]],
+    yaw: headingYaw(city[0] - view[0], city[2] - view[2]),
     pitch: -0.12,
   };
 }
 
-/** The observatory on the highest top above the tree line at least 2 km from the summit. */
+/** The observatory on the highest top above the tree line at least 1 km from the summit. */
 export function placeObservatory(placer: Placer, tops: readonly Vec3[]): Landmark {
   const summit = tops[0];
   for (const top of tops.slice(1)) {
-    if (top[1] < TREE_LINE || Math.hypot(top[0] - summit[0], top[2] - summit[2]) < 2_000) continue;
-    for (let k = 0; k < 640; k++) {
+    if (top[1] < TREE_LINE || Math.hypot(top[0] - summit[0], top[2] - summit[2]) < 1_000) continue;
+    for (let k = 0; k < 3_000; k++) {
       const [x, z] = [
           top[0] + Math.cos(k * 2.399963) * Math.sqrt(k) * 9.25,
           top[2] + Math.sin(k * 2.399963) * Math.sqrt(k) * 9.25,
         ],
         base = placer.place('mountains/observatory', x, z, {
           seat: 'high',
-          basement: BASEMENT,
+          basement: OBS_BASEMENT,
           name: 'mountains/observatory',
         });
       if (!base) continue;

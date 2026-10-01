@@ -7,6 +7,8 @@
 import { WORLD } from './contract.ts';
 import { fbm, hash2, nameSeed, ridged, smoothstep } from './noise.ts';
 import { enclosingCoast, preserveShore } from './shore.ts';
+import { AIRFIELD_AREAS, mountainEnvelope } from './geography.ts';
+import { airportInfluence } from './airfields.ts';
 
 /** Depth scale of the continental shelf, metres: the sea a swimmer or a boat sees near shore. */
 const SHELF = 80;
@@ -25,13 +27,7 @@ export type Relief = {
 
 export function createRelief(seed: number): Relief {
   const s = (name: string) => nameSeed(seed, `relief/${name}`),
-    [southSeed, rangeSeed, axisSeed, rollSeed, islandSeed] = [
-      'south',
-      'range',
-      'axis',
-      'roll',
-      'islands',
-    ].map(s),
+    [southSeed, rangeSeed, rollSeed, islandSeed] = ['south', 'range', 'roll', 'islands'].map(s),
     coast = enclosingCoast(southSeed),
     southCoastZ = (x: number) => {
       let low = -500,
@@ -64,15 +60,13 @@ export function createRelief(seed: number): Relief {
     let height = shore;
     // Each layer is evaluated only where its envelope is non-zero: the sea skips them all.
     if (inland > 0) {
-      const end = -2_300 + 300 * smoothstep(800, -800, x),
-        envelope = smoothstep(-1_400, end, z),
-        plateau = smoothstep(-1_600, -2_200, x) * smoothstep(1_000, 0, z);
-      let land = 25 * fbm(rollSeed, x / 1_500, z / 1_500, 4) * (1 + 2 * plateau) + 120 * plateau;
-      if (envelope > 0) {
-        const axis = -2_700 + 100 * fbm(axisSeed, x / 3_000, 0.3, 2),
-          range = Math.exp(-(((z - axis) / 1_100) ** 2)) * envelope;
-        land += 2_000 * range * (0.35 + 0.65 * ridged(rangeSeed, x / 2_000, z / 2_000, 6));
-      }
+      const mountain = mountainEnvelope(x, z),
+        plain = airportInfluence(AIRFIELD_AREAS, x, z, 250, 0.5 / 0.9),
+        plateau = smoothstep(-1_600, -2_400, x) * smoothstep(500, -800, z),
+        rolling = 90 + 70 * fbm(rollSeed, x / 1_100, z / 1_100, 4),
+        foothills = 220 * Math.sqrt(mountain),
+        crest = 1_800 * mountain * (0.5 + 0.5 * ridged(rangeSeed, x / 1_600, z / 1_600, 5));
+      const land = (rolling + 70 * plateau + foothills + crest) * (1 - 0.9 * plain);
       height += inland * land;
     }
     for (const island of islands) {
@@ -84,7 +78,7 @@ export function createRelief(seed: number): Relief {
     }
     return preserveShore(-SHELF, height, Math.min(3_750 - Math.abs(x), 3_750 - Math.abs(z)), 200);
   };
-  // Scale the land so the highest point of the map, found on a 100 m grid, is exactly the peak.
+  // Normalise on a 100 m grid; a smooth summit ceiling also bounds peaks between samples.
   let highest = 0;
   for (let z = -WORLD.size / 2; z <= WORLD.size / 2; z += 100)
     for (let x = -WORLD.size / 2; x <= WORLD.size / 2; x += 100)
@@ -92,7 +86,11 @@ export function createRelief(seed: number): Relief {
   const scale = WORLD.peak / highest;
   const height = (x: number, z: number) => {
     const value = raw(x, z);
-    return value > 0 ? value * scale : value;
+    if (value <= 0) return value;
+    const scaled = value * scale,
+      knee = WORLD.peak * 0.95,
+      headroom = WORLD.peak - knee;
+    return scaled > knee ? knee + (scaled - knee) / (1 + (scaled - knee) / headroom) : scaled;
   };
   return { height, coast, southCoastZ, islands };
 }

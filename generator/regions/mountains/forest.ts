@@ -123,9 +123,14 @@ function cellsOf(placer: Placer, layer: Layer) {
     cells: { x: number; z: number; d: number }[] = [];
   for (let x = bounds.minX; x < bounds.maxX; x += CELL)
     for (let z = bounds.minZ; z < bounds.maxZ; z += CELL) {
-      const [cx, cz] = [x + CELL / 2, z + CELL / 2];
-      if (!placer.owns(cx, cz)) continue;
-      const d = layer.density(cx, cz, plan.height(cx, cz), slopeOf(plan.height, cx, cz));
+      let d = 0;
+      for (const u of [0.25, 0.75])
+        for (const v of [0.25, 0.75]) {
+          const cx = x + CELL * u,
+            cz = z + CELL * v;
+          if (placer.owns(cx, cz))
+            d += layer.density(cx, cz, plan.height(cx, cz), slopeOf(plan.height, cx, cz)) / 4;
+        }
       if (d > 0) cells.push({ x, z, d });
     }
   return cells;

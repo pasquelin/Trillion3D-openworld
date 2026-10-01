@@ -83,6 +83,8 @@ export type StandVariant = {
   gradient: number;
   side: number;
   trees: number;
+  /** Actual tree root offsets and permitted burial, metres. */
+  roots: readonly (readonly [number, number, number])[];
   /** How far the ground may rise above the patch's plane, metres. */
   tolerance: number;
 };
@@ -97,7 +99,8 @@ export function forestPatch(id: string, biome: StandBiome, gradient: number, see
     count = Math.round((stand.density * STAND_SIDE * STAND_SIDE) / 1e4),
     stems = spread(STAND_SIDE, count, seed),
     grown = new Map<string, MeshPart[]>(),
-    parts: MeshPart[] = [];
+    parts: MeshPart[] = [],
+    roots: [number, number, number][] = [];
   const grow = (species: TreeSpecies, k: number) => {
     const key = `${species}-${k}`;
     if (!grown.has(key)) grown.set(key, standTree(species, seed + k * 7919));
@@ -108,6 +111,7 @@ export function forestPatch(id: string, biome: StandBiome, gradient: number, see
     const species = stand.mix.find(([, share]) => (pick -= share) < 0)?.[0] ?? stand.mix[0][0],
       scale = SCALE[0] + (SCALE[1] - SCALE[0]) * hash01(seed, n, 4),
       at = [x, -gradient * x, z] as const;
+    roots.push([x, z, boleHeight(species) * scale]);
     for (const part of grow(species, Math.floor(hash01(seed, n, 5) * STEMS)))
       parts.push(transform(part, { at, yaw: hash01(seed, n, 6) * 6.2832, scale }));
   });
@@ -125,7 +129,7 @@ export function forestPatch(id: string, biome: StandBiome, gradient: number, see
       ),
     );
   }
-  return { mesh: prop(id, parts), trees: stems.length };
+  return { mesh: prop(id, parts), trees: stems.length, roots };
 }
 
 /** The gradients a biome's variants are built for: level, then one step per burial span. */
@@ -154,6 +158,7 @@ export function forestStands(seed: number) {
         gradient,
         side: STAND_SIDE,
         trees: patch.trees,
+        roots: patch.roots,
         tolerance,
       });
     });

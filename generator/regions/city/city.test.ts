@@ -28,7 +28,7 @@ const withNodes = (nodes: number): WorldPlan => ({
 });
 
 test('the same plan gives the same bytes', () => {
-  assert.ok(outputBytes(output).equals(outputBytes(cityRegion.generate(plan))));
+  assert.ok(outputBytes(output).equals(outputBytes(buildCity(plan).output)));
 });
 
 test('props are sound, named under city/, and every placed id exists', () => {

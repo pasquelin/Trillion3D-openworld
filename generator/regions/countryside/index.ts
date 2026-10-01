@@ -14,7 +14,7 @@
  * Emitters: birds over the farms, fireflies by the rivers and the lake, dust on the dirt tracks.
  * Movers: the windmill's sails, tractors driving the tracks.
  *
- * Budgets: the woods take every node the other placements leave; the fields take the triangles
+ * Budgets: woods keep a quarter of the node allowance for distributed infill; fields take triangles
  * the region's other props leave, never meshed finer than the terrain they lie on.
  */
 import {
@@ -41,6 +41,7 @@ import { fieldMesh, fieldTriangles } from './fields.ts';
 import { crownRadius, deepestWood, plantForests } from './forests.ts';
 import { GROUND, refineHills } from './ground.ts';
 import { land } from './land.ts';
+import { placeResidences } from './residences.ts';
 import { clearing, placeWindmill, viewpoint } from './landmarks.ts';
 import { farmLife, fireflies } from './life.ts';
 import { hayBales, tractor, windmillSails, windmillTower } from './machines.ts';
@@ -114,7 +115,7 @@ function generate(plan: WorldPlan): RegionOutput {
   const { bounds, seed, budget } = plan.regions.countryside,
     // The lakes the plan carved and the viewpoints its trails lead to, when it publishes them.
     terrain = isTerrainPlan(plan) ? plan : undefined,
-    shared = sharedProps(plan.seed),
+    shared = sharedProps(plan.subSeed('props')),
     inside = (x: number, z: number) =>
       x > bounds.minX && x < bounds.maxX && z > bounds.minZ && z < bounds.maxZ,
     { props, lamps } = catalogue(seed),
@@ -147,10 +148,11 @@ function generate(plan: WorldPlan): RegionOutput {
   const mill = placeWindmill(site, country, sub('windmill')),
     farms = placeFarms(site, country, sub('farms')),
     fields = farms.flatMap((farm) => farm.fields);
+  placeResidences(site, country, sub('residences'));
   plantForests(
     site,
     country,
-    budget.nodes - fields.length,
+    Math.floor(budget.nodes * 0.75) - fields.length,
     2 * crownRadius(shared),
     sub('forests'),
   );

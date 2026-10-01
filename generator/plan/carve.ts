@@ -3,6 +3,7 @@
  * function of (x, z, height below it), continuous everywhere, so the terrain has no step and two
  * tiles that sample one point read one height.
  */
+import { lakeDistance, type LakeShore } from './lake-shore.ts';
 import type { Road } from './contract.ts';
 import { lerp, smoothstep } from './noise.ts';
 import { REPOSE, type RiverCourse } from './rivers.ts';
@@ -28,6 +29,7 @@ export type Lake = {
   radius: number;
   level: number;
   depth: number;
+  shore?: LakeShore;
 };
 export type Platform = { minX: number; minZ: number; maxX: number; maxZ: number; level: number };
 /**
@@ -76,12 +78,14 @@ export function waterCarver(
       if (faded < ground) ground = faded;
     }
     for (const lake of lakes) {
-      const r = Math.hypot(x - lake.x, z - lake.z),
+      const r = lakeDistance(lake, x, z),
         target =
           r < lake.radius
-            ? lake.level - lake.depth * (1 - (r / lake.radius) ** 2)
-            : lake.level + (r - lake.radius) * REPOSE;
-      if (target < ground) ground = target;
+            ? lake.level - lake.depth * (1 - (r / lake.radius) ** 2) ** 2
+            : lake.level + (r - lake.radius) * REPOSE * smoothstep(0, 30, r - lake.radius),
+        blend = Math.max(0, 8 - Math.abs(target - ground)) / 8;
+      // Compact smooth minimum joins the bank to existing relief without a normal seam.
+      ground = Math.min(target, ground) - 2 * blend * blend;
     }
     return ground;
   };
@@ -96,15 +100,6 @@ function earthwork(land: number, surface: number, outside: number, cap: number) 
   const slope = outside * REPOSE,
     shaped = Math.min(surface + slope, Math.max(surface - slope, land));
   return lerp(shaped, land, smoothstep(0, cap, outside));
-}
-
-/** Levels the airport platform: a flat rectangle whose shoulders run to the land. */
-export function platformLeveller(platform: Platform, cap: number) {
-  return (x: number, z: number, height: number) => {
-    const dx = Math.max(platform.minX - x, 0, x - platform.maxX),
-      dz = Math.max(platform.minZ - z, 0, z - platform.maxZ);
-    return earthwork(height, platform.level, Math.hypot(dx, dz), cap);
-  };
 }
 
 /**
