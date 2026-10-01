@@ -3,18 +3,13 @@ import { between, hash01 } from '../../props/index.ts';
 import { facing, placeLit, teleport, type Build } from './build.ts';
 import type { Point } from './geometry2.ts';
 import { corners } from './site.ts';
-import { oasisRoadSafety } from './road-safety.ts';
+import { EDGE, oasisStreets, RING, STREET, TRACK } from './oasis-streets.ts';
 import { groveSite, groves } from './oasis-groves.ts';
-import { flattest, nearest, street } from './streets.ts';
-
-/** Ring street radius and street widths, metres: a lane each way in town, a wide track out. */
-const RING = 58,
-  STREET = 6,
-  TRACK = 7;
+import { rankedSites, street } from './streets.ts';
 
 type Plan = { edge: number; palms: number; lanterns: number; civic: boolean };
-const TOWN: Plan = { edge: 260, palms: 60, lanterns: 20, civic: true };
-const VILLAGE: Plan = { edge: 140, palms: 30, lanterns: 10, civic: false };
+const TOWN: Plan = { edge: EDGE, palms: 30, lanterns: 12, civic: true };
+const VILLAGE: Plan = { edge: EDGE, palms: 20, lanterns: 8, civic: false };
 
 const HOUSES = [
   'desert/house-small',
@@ -31,66 +26,47 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
     { edge } = layout,
     name = `desert/${home.id}`,
     seed = b.plan.subSeed(name),
-    { clear, suitable: dryRoads } = oasisRoadSafety(
-      b,
-      edge,
-      layout.civic,
-      highway,
-      seed,
-      RING,
-      STREET,
-    ),
+    streets = oasisStreets(b, layout.civic ? highway : undefined),
     suitable = (x: number, z: number) =>
-      b.site.canPlace('desert/pool', x, z, 0) && groveSite(b, [x, z], edge) && dryRoads(x, z),
-    [cx, cz] = heart(
+      b.site.canPlace('desert/pool', x, z, 0) &&
+      groveSite(b, [x, z], edge) &&
+      !!streets.layoutAt([x, z], false),
+    sites = rankedSites(
       b,
-      name,
-      flattest(
-        b,
-        [home.centre[0], home.centre[2]],
-        Math.min(home.radius, 400),
-        edge + 60,
-        suitable,
-      ),
+      [home.centre[0], home.centre[2]],
+      Math.min(home.radius, 400),
+      edge + 60,
       suitable,
-    ),
-    polar = (r: number, a: number): Point => [cx + r * Math.cos(a), cz + r * Math.sin(a)],
-    join = layout.civic && highway ? nearest(highway, [cx, cz], 8000) : undefined,
-    toward = join ? Math.atan2(join[1] - cz, join[0] - cx) : hash01(seed, 7) * Math.PI * 2;
+    );
+  let chosen: { at: Point; roads: NonNullable<ReturnType<typeof streets.layoutAt>> } | undefined;
+  for (const at of sites) {
+    const roads = streets.layoutAt(at, true);
+    if (roads) {
+      chosen = { at, roads };
+      break;
+    }
+  }
+  if (!chosen) throw new Error(`${name}: no passable track from pool to highway`);
+  const {
+    at: [cx, cz],
+    roads: roadLayout,
+  } = chosen;
+  if (!b.site.place('desert/pool', cx, cz, 0, { name: `${name}/pool` }))
+    throw new Error(`${name}: no grounded pool on passable dry streets`);
+  const polar = (r: number, a: number): Point => [cx + r * Math.cos(a), cz + r * Math.sin(a)],
+    toward = (roadLayout.exit * Math.PI) / 4;
   for (let i = 0; i < layout.palms; i++) {
     const a = between(seed, i, 0, Math.PI * 2),
       palm = i % 3 ? 'tree-palm-large' : 'tree-palm-small';
-    b.site.place(palm, ...polar(between(seed + 1, i, 22, RING - 5), a), a * 3);
-    b.site.place('desert/reeds', ...polar(between(seed + 2, i, 17, 21), a + 0.05), a);
+    b.site.place(palm, ...polar(between(seed + 1, i, RING + 10, RING + 19), a), a * 3);
+    b.site.place('desert/reeds', ...polar(between(seed + 2, i, 14, 19), a + 0.05), a);
   }
-  const ring = Array.from({ length: 41 }, (_, i) => polar(RING, toward + (i / 40) * Math.PI * 2));
-  street(b, `${name}/ring`, 'street', STREET, ring);
-  for (let k = 0; k < 4; k++) {
-    const a = toward + (k * Math.PI) / 2;
-    street(b, `${name}/street-${k}`, 'street', STREET, [polar(RING, a), polar(edge, a)]);
+  street(b, `${name}/ring`, 'street', STREET, streets.ring([cx, cz]));
+  for (const [i, k] of roadLayout.angles.entries()) {
+    const a = (k * Math.PI) / 4;
+    street(b, `${name}/street-${i}`, 'street', STREET, [polar(RING, a), polar(edge, a)]);
   }
-  if (join) {
-    if (!clear(polar(edge, toward), join, TRACK)) throw new Error(`${name}: track crosses water`);
-    track(b, name, polar(edge, toward), join);
-    const town: Point = [home.centre[0], home.centre[2]],
-      distance = Math.hypot(join[0] - town[0], join[1] - town[1]);
-    if (distance > 0.01) {
-      if (!clear(town, join, TRACK)) throw new Error(`${name}: town link crosses water`);
-      const n = Math.ceil(distance / 10),
-        samples = Array.from({ length: n + 1 }, (_, k) => {
-          const t = k / n;
-          return b.plan.height(
-            town[0] + (join[0] - town[0]) * t,
-            town[1] + (join[1] - town[1]) * t,
-          );
-        }),
-        grade = Math.max(
-          ...samples.slice(1).map((y, k) => (Math.abs(y - samples[k]) * n) / distance),
-        );
-      if (grade > 0.1) throw new Error(`${name}: town link grade ${grade.toFixed(3)}`);
-      street(b, `${name}/town-link`, 'dirt', TRACK, [town, join]);
-    }
-  }
+  if (roadLayout.route) track(b, name, roadLayout.route);
   const hall = layout.civic ? civic(b, name, [cx, cz], polar, toward) : undefined;
   // Lanterns along the ring, their brackets over the street.
   for (let i = 0; i < layout.lanterns; i++) {
@@ -107,35 +83,10 @@ export function oasis(b: Build, home: Settlement, highway?: readonly Vec3[]) {
   if (hall) teleport(b, 'desert/oasis', ...polar(44, toward - Math.PI * 0.75), hall, -0.02);
 }
 
-/**
- * The pool, the settlement's heart: at `site`, or as near it as the ground and the plan's roads
- * allow (a village road ends at the settlement's centre). Returns where it stands.
- */
-function heart(
-  b: Build,
-  name: string,
-  [x, z]: Point,
-  suitable: (x: number, z: number) => boolean,
-): Point {
-  for (let k = 0; k < 80; k++) {
-    const r = 12 * Math.sqrt(k),
-      a = k * 2.39996,
-      at: Point = [x + r * Math.cos(a), z + r * Math.sin(a)];
-    if (suitable(...at) && b.site.place('desert/pool', ...at, 0, { name: `${name}/pool` }))
-      return at;
-  }
-  throw new Error(`${name}: no grounded pool on dry streets`);
-}
-
 /** A dirt track from the town's edge to the highway, dust on its middle. */
-function track(b: Build, name: string, [sx, sz]: Point, [jx, jz]: Point) {
-  const n = Math.max(2, Math.ceil(Math.hypot(jx - sx, jz - sz) / 50)),
-    points = Array.from({ length: n + 1 }, (_, i): Point => [
-      sx + ((jx - sx) * i) / n,
-      sz + ((jz - sz) * i) / n,
-    ]);
+function track(b: Build, name: string, points: Point[]) {
   street(b, `${name}/track`, 'dirt', TRACK, points);
-  const [mx, mz] = points[n >> 1];
+  const [mx, mz] = points[points.length >> 1];
   b.markers.push({
     kind: 'emitter',
     effect: 'road-dust',
@@ -153,14 +104,14 @@ function civic(
   polar: (r: number, a: number) => Point,
   toward: number,
 ) {
-  const hallAt = polar(100, toward + Math.PI * 0.25),
+  const hallAt = polar(62, toward + Math.PI * 0.25),
     market = toward + Math.PI * 1.25;
   placeLit(b, 'desert/domed-hall', ...hallAt, facing(cx - hallAt[0], cz - hallAt[1]), {
     name: `${name}/hall`,
   });
   for (let i = 0; i < 4; i++)
     for (let j = 0; j < 3; j++) {
-      const [x, z] = polar(85 + i * 9, market + (j - 1) * 0.09);
+      const [x, z] = polar(48 + i * 9, market + (j - 1) * 0.09);
       b.site.place(
         j % 2 ? 'desert/stall-fruit' : 'desert/stall-spice',
         x,
@@ -169,7 +120,7 @@ function civic(
       );
     }
   const square = { minX: -30, maxX: 30, minZ: -22, maxZ: 22, plinth: 0, sink: 0 };
-  b.site.claim(corners(square, ...polar(100, market), market));
+  b.site.claim(corners(square, ...polar(62, market), market));
   return hallAt;
 }
 
@@ -181,10 +132,10 @@ function houses(
   edge: number,
   polar: (r: number, a: number) => Point,
 ) {
-  for (let r = 72, ring = 0; r < edge; r += 19, ring++)
+  for (let r = 43, ring = 0; r < edge; r += 18, ring++)
     for (let a = 0, k = 0; a < Math.PI * 2; k++) {
       const roll = hash01(seed + 11, ring, k),
-        big = r > 150 && roll > 0.8,
+        big = r > 60 && roll > 0.8,
         manor = roll > 0.93 ? 'desert/courtyard-manor' : 'desert/courtyard-house',
         prop = big ? manor : HOUSES[Math.floor(roll * 1.25 * HOUSES.length) % HOUSES.length],
         [x, z] = polar(r, a);
@@ -192,7 +143,7 @@ function houses(
       a += (big ? 30 : 13) / r;
     }
   for (let i = 0; i < 4; i++) {
-    const at = polar(between(seed + 12, i, 70, edge - 30), between(seed + 13, i, 0, 6.28));
+    const at = polar(between(seed + 12, i, 42, edge - 12), between(seed + 13, i, 0, 6.28));
     b.site.place('desert/well', ...at, 0);
   }
 }
