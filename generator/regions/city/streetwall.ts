@@ -8,7 +8,7 @@ import { footprint, inCell, type Cell } from './grid.ts';
 import { KERB } from './ground-props.ts';
 import { RANK, type Placer } from './placement.ts';
 
-export const STREETWALL_HALF = [44, 8] as const;
+const STREETWALL_HALF = [44, 8] as const;
 const WIDTH = STREETWALL_HALF[0] * 2;
 const DEPTH = STREETWALL_HALF[1] * 2;
 const SHOP = 4.2;

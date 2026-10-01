@@ -9,23 +9,12 @@
     "residentPages": 775,
     "selectedTriangles": 1500478,
     "webgl2": true,
-    "viewport": [
-      960,
-      540
-    ]
+    "viewport": [960, 540]
   },
   "pixel": {
-    "rgba": [
-      0,
-      0,
-      0,
-      0
-    ],
+    "rgba": [0, 0, 0, 0],
     "error": 0,
-    "size": [
-      960,
-      540
-    ]
+    "size": [960, 540]
   },
   "screenshotBytes": 404695,
   "screenshotSha256": "e17b65571df06074e0441f22e19563e9ff97c9ecd54c5f0c9b1244341d66dcb7",
