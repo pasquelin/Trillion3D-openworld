@@ -23,9 +23,13 @@ published `world.json` responded HTTP 200 with 3,424,707 bytes and SHA-256
 `f39d9233770fdfd4d05b61557d006ec7c6394661a7eb68f530b7991428968b74`.
 The native full manifest responded HTTP 200 with 236 bytes and SHA-256
 `b6d86464a28c5c7901f713dfe4ba6f6c4c6adf2ccbb5c1df2f98f44fece9675d`.
-The site, runtime and current cache are deployed; current aggregate cache bytes
+The site, runtime and current cache are deployed. Published current
+`world-roots.json` is 326,512,069 bytes (311.39 MiB) and `world-roots.bin` is
+1,647,400,232 bytes (1,571.08 MiB); together they are 1,882.47 MiB. A
+64-byte HTTP Range request to the binary returned 206,
+`Content-Range: bytes 0-63/1647400232` and exactly 64 bytes. Current **aggregate** cache bytes
 were not recovered from the CI logs. The earlier 2,577.01 MiB must not be
-presented as the current cache size.
+presented as the current aggregate cache size.
 
 A bounded Chromium 151 / Debian 13 attempt used the published site, 1600 × 900,
 WebGL2 SwiftShader requested, `V1-roof`, `--wait=10000`, `--timeout=420000`
