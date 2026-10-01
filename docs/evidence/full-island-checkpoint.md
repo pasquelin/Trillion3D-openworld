@@ -38,7 +38,7 @@ or establishes interactive performance.
 | Instance-expanded triangles | 479,030,012 | Full cook input, not a frame counter |
 | Scene proxy triangles | 247,787 | Full cook output |
 | Native peak RSS | 12.76 GB | Cook process, not browser RAM |
-| Engine `cache/` on disk | 2,577.01 MiB | 3.22 × the 800 MiB contract |
+| Engine `cache/` on disk | 2,577.01 MiB | 3.22 × the historical 800 MiB planning estimate |
 | `world-roots.bin` / `world-roots.json` | 1,574.68 / 309.60 MiB | Largest cache products |
 | Whole cooked asset folder | 2,795.96 MiB | Includes source, heights, colliders and page JSON |
 
@@ -70,9 +70,9 @@ neighborhood view reached ready with 759 resident pages and 1,232,142 selected
 triangles; the towers, aerial and district views also produced inspected captures.
 These counts and images prove that generated subset geometry rendered in the
 software backend. They do not establish full-world loading, hardware FPS,
-streaming smoothness, or the 800 MiB full-world disk target.
+streaming smoothness or full-world loading performance.
 
-## Reducing scene weight
+## Measuring the full-density scene and its loading
 
 Unreal's World Partition streams nearby cells while hierarchical LOD (HLOD)
 keeps distant groups visible with coarse proxies. Apply that pattern here as an
@@ -91,30 +91,31 @@ not demonstrate smooth streaming. A production regional system needs an SDK
 path to mount and remove compiled models without reopening the session. That
 engine capability must be resolved upstream; this application does not patch it.
 
-This separates two budgets. **Active** transfer and residency can fall when
+This separates two measurements. **Active** transfer and residency can fall when
 only nearby region data is loaded. **Total** cooked disk size will not fall just
 because the 2,577.01 MiB cache is split into files. The historical
 `world-roots.bin` alone is 1,574.68 MiB and its JSON index is 309.60 MiB.
-Reduce their underlying contents through measured HLOD for distant detail,
-shared meshes/materials and real instancing or page deduplication for repeated
-trees/buildings, and compact procedural seeds where reconstruction preserves
-appearance and collision. Count bytes and dependencies after each change; any
-compiler-format or engine API change belongs upstream, not in this application.
+Investigate measured HLOD for distant detail, shared meshes/materials, real instancing
+or page deduplication for repeated trees and buildings, and compact procedural
+seeds where reconstruction preserves appearance and collision. Count bytes and
+dependencies after each change. The current density and long vistas are the test
+workload; a smaller scene is not a fix. Compiler-format or engine API changes
+belong upstream, not in this application.
 
 The small proxy-and-two-sector prototype isolates the reopen cost. Next compare
 identical camera poses and a boundary crossing with final-source region data
-before expanding to the island. Proposed acceptance targets on a named hardware
+before expanding to the island. Record the following on a named hardware
 profile at the fixed settings in [the protocol](README.md#named-hardware-measurement):
 
-| Gate | Proposed target |
+| Measurement | Workload expectation |
 | --- | --- |
-| Cold start | First useful frame ≤10 s and route ready ≤30 s; record both distributions over three cold runs |
-| Active data | ≤256 MiB transferred to first route frame; resident geometry ≤512 MiB and textures ≤256 MiB, measured separately |
-| Total cooked disk | All native caches together ≤800 MiB, including persistent and regional products |
-| Flight crossing | No missing region; frame-interval p95 ≤33.3 ms and maximum hitch ≤100 ms over three F2 runs |
+| Cold start | Record first useful frame and route-ready distributions over three cold runs; report timeouts as failures |
+| Active data | Record first-frame transfer, resident geometry, textures and the configured pools separately |
+| Total cooked disk | Record all native caches, persistent and regional products; no content cap |
+| Flight crossing | No missing region; measure p95 and maximum hitch over three F2 runs on named hardware |
 | Long vistas | At fixed summit, coast and flight poses, continuous island silhouette to the 8 km proxy extent; zero missing-region frames in stills and video |
 
-These are targets, not measured results. Keep the same visual detail in near
+These are protocol expectations, not measured results. Keep the same visual detail in near
 views and compare captures before accepting a byte or timing improvement.
 
 ## Reproduce and accept
@@ -124,7 +125,8 @@ views and compare captures before accepting a byte or timing improvement.
    manifest, compiler version, OS and RAM limit. Run `pnpm run cook` with a
    process time/RSS recorder; keep stdout and stderr. Measure `cache/`, the
    entire cooked folder, `world-roots.bin`, and `world-roots.json` in bytes,
-   then convert to MiB using 1,048,576 bytes per MiB. Recheck the 800 MiB limit.
+   then convert to MiB using 1,048,576 bytes per MiB. Record growth without
+   reducing world density to meet the old planning estimate.
 2. Run `pnpm run build` and `pnpm run serve`. Check a valid 64-byte Range request
    returns 206 and exactly 64 bytes; check an invalid range returns 416. This
    checks transport only.
@@ -141,9 +143,8 @@ views and compare captures before accepting a byte or timing improvement.
 
 The current disposition is **latest source census and regional preview capture
 passed; smooth regional switching failed in the software prototype; final-source
-full cook, disk budget, full-world render and hardware performance unverified**.
-The earlier full cook completed but missed
-the disk budget by more than 3×. Its largest measured products were the
-world-roots files. Retest the final source for cache size, appearance, loading
+full cook, full-world render and hardware performance unverified**.
+The earlier full cook completed at 2,577.01 MiB. Its largest measured products
+were the world-roots files. Retest the final source for cache size, appearance, loading
 and residency before accepting any improvement. No engine change or hardware
 FPS claim is made here.

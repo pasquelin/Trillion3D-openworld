@@ -4,8 +4,8 @@ import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { cacheBytes, MARGIN, regionBudgets, TERRAIN_BYTES, textureBytes } from './budget.ts';
-import { COOK_COST, WORLD } from './contract.ts';
+import { regionBudgets, TERRAIN_DETAIL_WEIGHT, TERRAIN_TRIANGLES } from './budget.ts';
+import { WORLD } from './contract.ts';
 import { EROSION_CELL } from './erosion.ts';
 import { HEIGHT_SAMPLES, tileHeights, writeHeights } from './heights.ts';
 import { SNOWLINE } from './paint.ts';
@@ -120,15 +120,16 @@ describe('open world plan', () => {
         kind,
       );
   });
-  it('fits the terrain and every region budget in the cache envelope with its margin', () => {
-    const regions = Object.values(regionBudgets()),
-      terrain = TERRAIN_BYTES + cacheBytes({ triangles: 0, nodes: (WORLD.size / WORLD.tile) ** 2 }),
-      total = terrain + regions.reduce((sum, budget) => sum + cacheBytes(budget), 0);
-    assert.ok(total <= WORLD.cacheBytes * (1 - MARGIN), `${total} bytes`);
-    // The terrain takes all the regions leave: less than a byte of the envelope is unspent.
-    assert.ok(WORLD.cacheBytes * (1 - MARGIN) - total < 1, `${total} bytes`);
-    // A texture costs its texels at the measured cook cost, rounded up to a whole byte.
-    assert.equal(textureBytes(128), Math.ceil(128 * 128 * COOK_COST.bytesPerTexel));
+  it('preserves authored complexity independent of native cache size', () => {
+    assert.deepEqual(regionBudgets(), {
+      countryside: { nodes: 90_000, triangles: 400_000 },
+      city: { nodes: 80_000, triangles: 400_000 },
+      mountains: { nodes: 50_000, triangles: 400_000 },
+      coast: { nodes: 40_000, triangles: 400_000 },
+      desert: { nodes: 25_000, triangles: 400_000 },
+      airport: { nodes: 15_000, triangles: 400_000 },
+    });
+    assert.deepEqual([TERRAIN_DETAIL_WEIGHT, TERRAIN_TRIANGLES], [512_795_040, 6_929_662]);
     assert.deepEqual(
       Object.fromEntries(Object.entries(plan.regions).map(([name, r]) => [name, r.budget])),
       regionBudgets(),

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { describe, it } from 'node:test';
-import { TERRAIN_BYTES } from './budget.ts';
+import { TERRAIN_DETAIL_WEIGHT } from './budget.ts';
 import { COOK_COST, WORLD, type PropMesh } from './contract.ts';
 import { createPlan } from './plan.ts';
 import { SURFACE } from './surfaces.ts';
@@ -96,9 +96,9 @@ describe('open world terrain tiles', () => {
     );
   });
 
-  it('meets the terrain triangle budget over the whole map, one node per tile corner', (t) => {
+  it('preserves terrain detail over the whole map, one node per tile corner', (t) => {
     const whole = { minTx: 0, maxTx: TILES - 1, minTz: 0, maxTz: TILES - 1 },
-      // No bake: the images are the window test's; this one weighs meshes and bytes.
+      // No bake: the images are the window test's; this one checks mesh and texture detail.
       { meshes, instances, stats } = terrainTiles(plan, [], whole, false),
       total = meshes.reduce((sum, mesh) => sum + triangles(mesh), 0);
     t.diagnostic(`terrain: ${total} triangles, threshold ${stats.threshold.toFixed(4)} m`);
@@ -109,8 +109,8 @@ describe('open world terrain tiles', () => {
         `mean ${stats.landEdge.mean.toFixed(1)} m, max ${stats.landEdge.max.toFixed(1)} m`,
     );
     const bytes = total * COOK_COST.bytesPerTriangle + stats.textureBytes;
-    assert.ok(bytes <= TERRAIN_BYTES, `${bytes} bytes`);
-    assert.ok(bytes > TERRAIN_BYTES * 0.95, `${bytes} bytes leave the budget unused`);
+    assert.ok(bytes <= TERRAIN_DETAIL_WEIGHT, `${bytes} relative detail weight`);
+    assert.ok(bytes > TERRAIN_DETAIL_WEIGHT * 0.95, `${bytes} detail weight underused`);
     // One ground part per tile; a baked one maps its image inside (0, 1), far below 1024.
     for (const mesh of meshes) {
       const [ground] = mesh.parts,

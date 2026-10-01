@@ -84,9 +84,8 @@ table and input triangle count. No internal reader is copied into the applicatio
 | sixteen-blocks | 256 | 288 | 34,287 | 2,312,112 | 13 |
 
 All three small native cooks at engine `7f810cbe344ee10fdcc910a8f5659e1536edbc2d` reloaded 28
-primitives and two texture previews. Their output directories were below the 800 MiB cooked-disk
-envelope per profile. The envelope is not a runtime memory budget or a combined world-plus-fixtures
-payload guarantee. Normal world capacity requires its own complete cook; these profiles are separate
+primitives and two texture previews. Their output directories were below the historical 800 MiB planning figure per profile.
+That figure is not a limit for the full world or a runtime memory budget. Normal world capacity requires its own complete cook; these profiles are separate
 scenes, never simultaneously loaded.
 
 Observed dense-block small-cook output on 2026-09-30 (directory sizes include compiler sidecars and source.bin):

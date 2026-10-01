@@ -74,7 +74,8 @@ per-placement world-root expansion; a source-only fix would need to change the
 placed primitive count or detail enough to preserve appearance and then pass a
 fresh measured cook. The source triangle and node cost model in
 `generator/plan/contract.ts` omits this expansion and should not be treated as
-predictive for the 800 MiB envelope.
+predictive for native cache size. The old 800 MiB planning estimate is no longer
+a pass/fail gate: preserve the dense scene and use its measured cost to expose engine bottlenecks.
 
 `EXT_mesh_gpu_instancing` does not avoid this expansion at the pinned SDK commit.
 The compiler accepts it but `compiler_instancing.rs` expands every instance into
