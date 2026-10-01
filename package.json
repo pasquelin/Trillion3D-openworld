@@ -15,6 +15,8 @@
     "engine:compiler": "node scripts/engine.ts --compiler",
     "cook": "node scripts/cook.ts",
     "workload": "node scripts/workload.ts",
+    "preview:island": "node scripts/island-preview.ts",
+    "capture:preview": "node scripts/capture-preview.mjs",
     "build": "node scripts/build.ts",
     "serve": "node scripts/serve.ts",
     "test": "node --test \"generator/**/*.test.ts\" \"page/**/*.test.ts\"",
