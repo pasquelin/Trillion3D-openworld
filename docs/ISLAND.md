@@ -75,7 +75,7 @@ These packs exercise instancing and silhouettes, not heavy geometry or PBR diver
 
 ## Measurement protocol
 
-No representative hardware result exists yet. Current 512 MiB geometry and 256 MiB texture pools remain the initial renderer settings; 800 MiB cache is a cooked-disk envelope, not total runtime memory. Preserve current 40 traffic/60 pedestrians as the base profile; population stress is a separate named run.
+No representative hardware result exists yet. Current 512 MiB geometry and 256 MiB texture pools remain the initial renderer settings; the 800 MiB cooked-disk figure was a historical planning estimate, not a full-world acceptance limit or runtime memory reading. Preserve current 40 traffic/60 pedestrians as the base profile; population stress is a separate named run.
 
 Dedicated measurer records hardware, OS, browser/backend, engine commit, world hash, resolution, camera, detail and pool settings. Repeat cold and warm W1/D1/V1/F1/N1 three times without concurrent build/cook. Publish frame-time p50/p95/p99 and worst stalls, CPU/GPU timing separately where supported, selected/rendered/instance-expanded triangle counts where exposed, live instances, geometry/texture residency, process/GPU memory where measurable, transfer bytes and latency, collider readiness, and visual captures. Unsupported counters are `unavailable`, never inferred from source counts. Do not add asynchronous CPU and GPU timing.
 

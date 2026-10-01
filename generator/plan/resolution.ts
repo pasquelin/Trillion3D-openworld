@@ -1,5 +1,5 @@
 /**
- * How the terrain's share of the cache splits between triangles and baked ground textures
+ * How the terrain's authored detail weight splits between triangles and baked ground textures
  * (Trillion3D#332). Both errors are lengths on the ground, in metres, so they are compared in one unit: a
  * triangle mesh misses the relief by up to its error threshold, and an image misplaces a colour
  * by up to half its texel. The split keeps the larger of the two as small as it can be; a
@@ -13,14 +13,14 @@ export type TerrainSplit = {
   size: number;
   /** Triangles the geometry may hold, flat parts included. */
   triangles: number;
-  /** Published bytes of every baked texture together, bound. */
+  /** Estimated relative cost of the baked textures, not measured native cache bytes. */
   textureBytes: number;
 };
 
 const LARGEST = 4096;
 
 /**
- * The split of `bytes` over `textured` baked tiles, `flat` fixed triangles and the ground a
+ * The split of relative detail weight `bytes` over `textured` baked tiles, `flat` fixed triangles and the ground a
  * threshold keeps (`threshold(triangles)`, the histogram's answer).
  */
 export function splitTerrain(

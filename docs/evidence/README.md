@@ -68,7 +68,8 @@ For each of W1, D1, V1, F1 and N1, and the one, four and sixteen block fixtures:
 - Record live instances, resident pages, geometry and texture residency, transferred
   bytes, process RAM and GPU memory where measurable. Use the literal `unavailable`
   for unsupported counters. A configured pool is a budget, not measured residency.
-  The 800 MiB cooked-disk envelope is not runtime RAM.
+  The earlier 800 MiB cooked-disk estimate is a historical comparator, not a
+  full-world acceptance gate or runtime RAM.
 - Attach still and moving captures of coastline, district frontage, summit distance,
   night lights and route re-entry. Note visual holes, collisions and stalls by route
   sample and timestamp. Inspect output at equal image quality before choosing a

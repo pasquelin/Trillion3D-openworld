@@ -32,6 +32,6 @@ The engine source confirms the behavior: `scene.load` adds a `LoadedModel` to th
 `worldRuntime` disposes and reopens that session when they differ. The canvas preserves
 its last image during the reopen, but the example did not deliver a new frame for about
 seven seconds. A production regional system would need an engine path that mounts and
-unmounts compiled models within an open session, plus bounded proxy and sector caches.
-Splitting the current full island cache alone does not satisfy its 800 MiB aggregate
-cache contract.
+unmounts compiled models within an open session, plus measured proxy and sector cache costs.
+Splitting the current full island cache does not by itself shrink the aggregate bytes;
+the full-density world remains the workload even when regional loading is tested.

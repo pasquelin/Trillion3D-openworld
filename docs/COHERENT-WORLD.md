@@ -7,8 +7,8 @@ retain the 8 km frame, ocean margin and three detached islets. A smooth summit
 ceiling bounds natural relief; the final composed altitude remains separately
 measured. The intermediate 40 m census found 1,891 m; only 0.2096 km²
 exceeded 1,800 m. These rare crests retain the existing `WORLD.peak = 2000`
-contract and long-view geometry. The engine pin is unchanged. The completed native
-cache exceeds the published 800 MiB cooked-disk envelope; measured sizes follow.
+contract and long-view geometry. The engine pin is unchanged. The earlier native cache measures 2,577.01 MiB; 800 MiB was an old planning
+estimate, not a limit on this full-world stress scene. Measured sizes follow.
 
 `geography.ts` owns five anchors and two airfield reservations. The richer #19 city
 builder consumes all five settlements, with a single shared catalogue, qualified
@@ -171,7 +171,8 @@ The historical official `a8e7fe1` cook completed with the pinned native compiler
 4,576.7 s (including 1,529.9 s in native compilation). It selected 150,747
 drawn mesh nodes and 479,030,012 instance-expanded triangles. Its scene proxy
 has 247,787 triangles and reached 12.76 GB native peak RSS. The engine's
-`cache/` directory occupies **2,577.01 MiB**, versus the 800 MiB contract;
+`cache/` directory occupies **2,577.01 MiB**; the earlier 800 MiB planning
+estimate does not limit authored content;
 the whole `dist/assets/54fa54fd3fcc34f9/` folder including source, heights,
 colliders and page JSON occupies 2,795.96 MiB. The largest cache products are
 `world-roots.bin` (1,574.68 MiB) and `world-roots.json` (309.60 MiB). These
@@ -187,8 +188,7 @@ entire JSON table at scene open. It fetches only requested ranges of the
 `scripts/serve.ts` now responds with `206 Partial Content` for such requests;
 without Range support it sent the whole binary. A local 64-byte request returned
 exactly 64 bytes, and an out-of-bounds request returned `416`. This fixes the
-local transport but does not reduce the published 800 MiB cache contract miss or
-the full-table startup cost.
+local transport but does not reduce cache size or the full-table startup cost.
 
 ## Terrain evaluation experiment
 

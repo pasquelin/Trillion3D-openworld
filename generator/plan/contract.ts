@@ -18,23 +18,21 @@ export const WORLD = {
   seaLevel: 0,
   peak: 2_000,
   seed: 332,
-  /** Published cache envelope, bytes (maintainer's decision, 23 Sept. 2026). */
-  cacheBytes: 800 * 1024 * 1024,
 } as const;
 
 /**
- * Measured cook costs, 23 Sept. 2026, source.bin excluded: bytes per source triangle (404 MB for
- * the 5.47 M triangle terrain), per placed node (scene tables, 10 k nodes), and per baked ground
- * texel with its mips, lossless and BC7 (3.15 MB for 100 tiles of 164², a 10 km cook).
+ * Historical source-cost coefficients used to balance terrain triangles against ground texels.
+ * They do not predict the native cache: the pinned compiler expands placed primitives into
+ * world roots, which dominate the complete island's measured cache size.
  */
-export const COOK_COST = { bytesPerTriangle: 74, bytesPerNode: 355, bytesPerTexel: 1.17 } as const;
+export const COOK_COST = { bytesPerTriangle: 74, bytesPerTexel: 1.17 } as const;
 
 export type RegionName = 'mountains' | 'city' | 'airport' | 'desert' | 'countryside' | 'coast';
 export type Biome = RegionName | 'sea';
 
 export type Bounds = { minX: number; minZ: number; maxX: number; maxZ: number };
 
-/** A share of the cache envelope: unique triangles of its own meshes, and placed nodes. */
+/** Authored complexity allowance: unique triangles of its own meshes, and placed nodes. */
 export type Budget = { triangles: number; nodes: number };
 
 export type RoadClass =

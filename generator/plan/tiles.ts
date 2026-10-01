@@ -6,9 +6,9 @@
  * nothing over its first metre. Where two tiles meet, each takes the other's border vertices
  * too, so their edges hold the same vertices at the same heights and no crack opens. Every tile
  * that is not deep sea wears one baked base colour image (`bake.ts`); the terrain's share of the
- * cache is split between those images and the triangles (`resolution.ts`).
+ * source-detail weight is split between those images and the triangles (`resolution.ts`).
  */
-import { TERRAIN_BYTES } from './budget.ts';
+import { TERRAIN_DETAIL_WEIGHT } from './budget.ts';
 import { bakeTile } from './bake.ts';
 import { BINS_PER_OCTAVE, conform, countTriangles, thresholdCurve, type Tile } from './conform.ts';
 import { WORLD, type Instance, type PropMesh, type RegionModule, type Road } from './contract.ts';
@@ -30,20 +30,22 @@ const WHOLE: TileWindow = { minTx: 0, minTz: 0, maxTx: TILES - 1, maxTz: TILES -
 
 /**
  * Every terrain tile's mesh and node, and the figures the build reached. A `window` builds only
- * that block, with the budget share its tile count earns.
+ * that block, with the source-detail share its tile count earns.
  */
 export function terrainTiles(
   plan: TerrainPlan,
   regions: readonly RegionModule[] = [],
   window = WHOLE,
-  /** False skips the image bake (a budget check needs the meshes only); the meshes still name it. */
+  /** False skips the image bake (a detail check needs the meshes only); the meshes still name it. */
   bake = true,
   localRoads: readonly Road[] = [],
 ) {
   const shape = hierarchy(TILE_GRID),
     tiles: Tile[] = [],
     columns = window.maxTx - window.minTx + 1,
-    bytes = Math.floor((TERRAIN_BYTES * columns * (window.maxTz - window.minTz + 1)) / TILES ** 2);
+    bytes = Math.floor(
+      (TERRAIN_DETAIL_WEIGHT * columns * (window.maxTz - window.minTz + 1)) / TILES ** 2,
+    );
   for (let tz = window.minTz; tz <= window.maxTz; tz++)
     for (let tx = window.minTx; tx <= window.maxTx; tx++) {
       const grid = new TileGrid(tx, tz, plan.height),
