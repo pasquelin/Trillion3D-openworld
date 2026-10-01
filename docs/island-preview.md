@@ -12,6 +12,7 @@ Build the browser runtime with `node scripts/build.ts`, cook the preview with
 Open `/island-preview.html?view=neighborhood`, `?view=towers`, `?view=aerial`, or
 `?view=district`. Each view is explicitly labeled as a subset. All use WebGL2 and an 800 m
 camera far plane so the session streams nearby partition cells.
+The preview server listens on `127.0.0.1` so captures stay on the local machine.
 
 To capture a view, run:
 
